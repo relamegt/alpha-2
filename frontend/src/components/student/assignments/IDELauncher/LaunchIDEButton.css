@@ -1,0 +1,107 @@
+.launch-ide-card {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #2a2a3e;
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.ide-header {
+    margin-bottom: 25px;
+}
+
+.ide-type-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(233, 69, 96, 0.2);
+    color: #e94560;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.init-steps {
+    background: #13131f;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.init-steps h4 {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.init-steps ul {
+    list-style: none;
+    padding: 0;
+}
+
+.init-steps li {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #e0e0e0;
+}
+
+.init-steps li span {
+    width: 24px;
+    height: 24px;
+    background: #2a2a3e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e94560;
+}
+
+.github-url-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 25px;
+}
+
+.github-url-box .label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 700;
+}
+
+.github-url-box .url {
+    font-size: 13px;
+    word-break: break-all;
+    text-decoration: none;
+}
+
+.launch-controls .btn-launch {
+    width: 100%;
+    padding: 18px;
+    background: #e94560;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(233, 69, 96, 0.3);
+}
+
+.launch-controls .btn-launch:hover:not(:disabled) {
+    background: #ff4d6d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(233, 69, 96, 0.4);
+}

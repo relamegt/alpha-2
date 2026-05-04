@@ -1,0 +1,876 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                       String                     @id @default(uuid())
+  email                    String                     @unique
+  password                 String?
+  firstName                String?
+  lastName                 String?
+  batchId                  String?
+  registeredForContest     String?
+  isActive                 Boolean                    @default(true)
+  isFirstLogin             Boolean                    @default(true)
+  profileCompleted         Boolean                    @default(false)
+  isPublicProfile          Boolean                    @default(true)
+  activeSessionToken       String?
+  deviceFingerprint        String?
+  profile                  Json?
+  education                Json?
+  tokenVersion             Int                        @default(0)
+  lastLogin                DateTime?
+  lastCoinUpdate           DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  alphaCoins               Int                        @default(0)
+  assignedBatchIds         Json                       @default("[]")
+  branch                   String?
+  degree                   String?
+  endYear                  Int?
+  googleId                 String?                    @unique
+  institution              String?
+  isEmailVerified          Boolean                    @default(false)
+  phone                    String?
+  profileImage             String?
+  rollNumber               String?
+  startYear                Int?
+  tempPassword             String?
+  username                 String?                    @unique
+  whatsapp                 String?
+  role                     UserRole
+  skills                   Json                       @default("[]")
+  contestSubmissions       ContestSubmission[]
+  courseContestLeaderboard CourseContestLeaderboard[] @relation("CourseContestLeaderboard")
+  courseContestSubmissions CourseContestSubmission[]  @relation("CourseContestSubmissions")
+  courseLeaderboards       CourseLeaderboard[]        @relation("UserCourseLeaderboards")
+  courseOrders             CourseOrder[]
+  externalProfiles         ExternalProfile[]
+  interviewSessions        InterviewSession[]
+  assignmentSubmissions    AssignmentSubmission[]
+  ideSessions              IDESession[]
+  leaderboardEntry         Leaderboard?
+  progress                 Progress[]
+  submissions              Submission[]
+  userBatches              UserBatch[]
+  aiCredits                AiCredits?
+  batch                    Batch?                     @relation("BatchUsers", fields: [batchId], references: [id])
+  lastAnnouncementCheck    DateTime?
+  sheetProgress            SheetProgress[]
+  publicArticles           PublicArticle[]     @relation("PublicArticleAuthor")
+  savedPublicArticles      PublicArticleSave[]
+  courseRatings            CourseRating[]
+  interviewExperiences     InterviewExperience[]
+
+  @@index([batchId])
+  @@index([role])
+  @@map("users")
+}
+
+model Batch {
+  id              String          @id @default(uuid())
+  slug            String          @unique
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  deleteOn        DateTime
+  status          String          @default("active")
+  description     String          @default("")
+  studentCount    Int             @default(0)
+  education       Json?
+  createdBy       String
+  createdAt       DateTime        @default(now())
+  isActive        Boolean         @default(true)
+  type            BatchType       @default(OFFLINE)
+  branches        Json            @default("[]")
+  assignedCourses Json            @default("[]")
+  contests        Contest[]
+  courseContests  CourseContest[]
+  onlineCourse    Course?         @relation("CourseOnlineBatch")
+  userBatches     UserBatch[]
+  users           User[]          @relation("BatchUsers")
+
+  @@map("batches")
+}
+
+model Problem {
+  id                       String                    @id @default(uuid())
+  slug                     String                    @unique
+  title                    String
+  section                  String?
+  type                     String                    @default("problem")
+  points                   Int                       @default(100)
+  description              String
+  constraints              Json                      @default("[]")
+  inputFormat              String?
+  outputFormat             String?
+  edgeCases                Json?
+  examples                 Json                      @default("[]")
+  testCases                Json?
+  timeComplexity           String?
+  spaceComplexity          String?
+  timeLimit                Int                       @default(2000)
+  editorial                Json?
+  editorialLink            String?
+  videoUrl                 String?
+  solutionCode             Json?
+  isContestProblem         Boolean                   @default(false)
+  contestId                String?
+  createdBy                String
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  category                 String                    @default("General")
+  difficulty               Difficulty                @default(Easy)
+  courseContestSubmissions CourseContestSubmission[] @relation("CourseContestProblemSubmissions")
+  contest                  Contest?                  @relation(fields: [contestId], references: [id])
+  progress                 Progress[]                @relation("ProblemProgress")
+  submissions              Submission[]
+
+  @@index([section])
+  @@index([difficulty])
+  @@index([isContestProblem])
+  @@index([contestId])
+  @@map("problems")
+}
+
+model SqlProblem {
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  description      String
+  difficulty       Difficulty   @default(Easy)
+  section          String?
+  points           Int          @default(50)
+  sqlSchema        String?
+  tutorial         String?
+  testCases        Json?
+  supported_dbs    Json         @default("[]")
+  solutionCode     Json?
+  article          Json?
+  articleLink      String?
+  videoUrl         String?
+  type             String       @default("sql")
+  isContestProblem Boolean      @default(false)
+  contestId        String?
+  createdBy        String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  progress         Progress[]   @relation("SqlProblemProgress")
+  submissions      Submission[]
+
+  @@index([section])
+  @@index([difficulty])
+  @@map("sql_problems")
+}
+
+model Video {
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  section          String?
+  difficulty       Difficulty   @default(Easy)
+  points           Int          @default(0)
+  description      String
+  videoUrl         String?
+  summary          Json?
+  summaryLink      String?
+  resources        Json?
+  quizQuestions    Json?
+  type             String       @default("video")
+  isContestProblem Boolean      @default(false)
+  contestId        String?
+  createdBy        String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  progress         Progress[]   @relation("VideoProgress")
+  submissions      Submission[]
+
+  @@index([section])
+  @@map("videos")
+}
+
+model Quiz {
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  section          String?
+  difficulty       Difficulty   @default(Easy)
+  points           Int          @default(10)
+  description      String
+  quizQuestions    Json?
+  article          Json?
+  articleLink      String?
+  type             String       @default("quiz")
+  isContestProblem Boolean      @default(false)
+  contestId        String?
+  createdBy        String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  progress         Progress[]   @relation("QuizProgress")
+  submissions      Submission[]
+
+  @@index([section])
+  @@map("quizzes")
+}
+
+model PrivateArticle {
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  section          String?
+  difficulty       Difficulty   @default(Easy)
+  points           Int          @default(10)
+  description      String
+  article          Json?
+  articleLink      String?
+  type             String       @default("article")
+  isContestProblem Boolean      @default(false)
+  contestId        String?
+  createdBy        String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  progress         Progress[]   @relation("PrivateArticleProgress")
+  submissions      Submission[]
+
+  @@index([section])
+  @@map("private_articles")
+}
+
+model PublicArticle {
+  id              String              @id @default(uuid())
+  slug            String              @unique
+  title           String
+  description     String
+  thumbnail       String?
+  githubUrl       String
+  youtubeUrl      String?
+  category        String              @default("General")
+  readTime        String              @default("1 min read")
+  publishedAt     DateTime            @default(now())
+  authorId        String?
+  author          User?               @relation("PublicArticleAuthor", fields: [authorId], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  savedByUsers    PublicArticleSave[]
+
+  @@index([category])
+  @@map("public_articles")
+}
+
+model PublicArticleSave {
+  id              String        @id @default(uuid())
+  userId          String
+  articleId       String
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article         PublicArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@map("public_article_saves")
+}
+
+model Submission {
+  id              String      @id @default(uuid())
+  problemId       String?
+  studentId       String
+  code            String
+  language        String
+  verdict         String
+  executionTime   Float?
+  memoryUsed      Float?
+  points          Int         @default(0)
+  metadata        Json?
+  createdAt       DateTime    @default(now())
+  articleId       String?
+  courseId        String?
+  quizId          String?
+  sqlProblemId    String?
+  testCasesPassed Int?        @default(0)
+  totalTestCases  Int?        @default(0)
+  updatedAt       DateTime    @default(now()) @updatedAt
+  videoId         String?
+  video           Video?          @relation(fields: [videoId], references: [id])
+  privateArticle  PrivateArticle? @relation(fields: [articleId], references: [id])
+  problem         Problem?        @relation(fields: [problemId], references: [id])
+  quiz            Quiz?           @relation(fields: [quizId], references: [id])
+  sqlProblem      SqlProblem?     @relation(fields: [sqlProblemId], references: [id])
+  student         User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([problemId])
+  @@index([sqlProblemId])
+  @@index([videoId])
+  @@index([quizId])
+  @@index([articleId])
+  @@index([studentId, verdict])
+  @@map("submissions")
+}
+
+model Progress {
+  id                  String               @id @default(uuid())
+  studentId           String
+  problemId           String?
+  status              String
+  lastAttemptAt       DateTime             @default(now())
+  createdAt           DateTime             @default(now())
+  articleId           String?
+  contentId           String               @default("unknown")
+  contentType         String               @default("unknown")
+  courseId            String?
+  quizId              String?
+  sqlProblemId        String?
+  updatedAt           DateTime             @default(now()) @updatedAt
+  videoId             String?
+  practicalExerciseId String?
+  assignmentId        String?
+  video               Video?               @relation("VideoProgress", fields: [videoId], references: [id])
+  privateArticle      PrivateArticle?      @relation("PrivateArticleProgress", fields: [articleId], references: [id])
+  assignment          Assignment?          @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  problem             Problem?             @relation("ProblemProgress", fields: [problemId], references: [id])
+  quiz                Quiz?                @relation("QuizProgress", fields: [quizId], references: [id])
+  sqlProblem          SqlProblem?          @relation("SqlProblemProgress", fields: [sqlProblemId], references: [id])
+  student             User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, contentType, contentId], name: "user_content_unique")
+  @@index([studentId])
+  @@index([contentType, contentId])
+  @@index([studentId, status])
+  @@map("progress")
+}
+
+model ExternalProfile {
+  id              String    @id @default(uuid())
+  studentId       String
+  platform        String
+  username        String
+  stats           Json?
+  lastSyncAt      DateTime  @default(now())
+  allContests     Json?
+  lastSynced      DateTime  @default(now())
+  nextSyncAllowed DateTime?
+  type            String    @default("coding")
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, platform])
+  @@index([studentId])
+  @@map("external_profiles")
+}
+
+model Contest {
+  id                String              @id @default(uuid())
+  slug              String              @unique
+  title             String
+  description       String?
+  startTime         DateTime
+  endTime           DateTime
+  batchId           String?
+  status            String              @default("upcoming")
+  rules             String?
+  createdBy         String
+  createdAt         DateTime            @default(now())
+  coinsReward       Int                 @default(0)
+  difficulty        Difficulty?         @default(Medium)
+  duration          Int                 @default(60)
+  maxAttempts       Int?                @default(1)
+  maxViolations     Int                 @default(5)
+  proctoringEnabled Boolean             @default(true)
+  tabSwitchLimit    Int                 @default(3)
+  updatedAt         DateTime            @updatedAt
+  submissions       ContestSubmission[]
+  batch             Batch?              @relation(fields: [batchId], references: [id])
+  problems          Problem[]
+
+  @@index([batchId])
+  @@index([startTime, endTime])
+  @@map("contests")
+}
+
+model CourseContest {
+  id                String                     @id @default(uuid())
+  slug              String?                    @unique
+  title             String
+  description       String                     @default("")
+  duration          Int                        @default(60)
+  batchId           String?
+  startTime         DateTime?
+  endTime           DateTime?
+  status            String                     @default("upcoming")
+  createdBy         String
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  maxAttempts       Int                        @default(1)
+  maxViolations     Int                        @default(5)
+  proctoringEnabled Boolean                    @default(true)
+  tabSwitchLimit    Int                        @default(3)
+  coinsReward       Int                        @default(0)
+  courseId          String?
+  difficulty        Difficulty                 @default(Medium)
+  rules             String                     @default("")
+  problemIds        Json                       @default("[]")
+  leaderboard       CourseContestLeaderboard[]
+  submissions       CourseContestSubmission[]
+  batch             Batch?                     @relation(fields: [batchId], references: [id])
+
+  @@index([courseId])
+  @@map("course_contests")
+}
+
+model CourseContestSubmission {
+  id                String        @id @default(uuid())
+  courseContestId   String
+  problemId         String?
+  studentId         String
+  code              String?
+  language          String?
+  verdict           String        @default("Pending")
+  testCasesPassed   Int           @default(0)
+  totalTestCases    Int           @default(0)
+  memoryUsed        Float         @default(0)
+  score             Int           @default(0)
+  timeTaken         Float         @default(0)
+  submittedAt       DateTime      @default(now())
+  attemptNumber     Int           @default(1)
+  fullscreenExits   Int           @default(0)
+  isAutoSubmit      Boolean       @default(false)
+  isFinalSubmission Boolean       @default(false)
+  pasteAttempts     Int           @default(0)
+  tabSwitchCount    Int           @default(0)
+  tabSwitchDuration Float         @default(0)
+  courseContest     CourseContest @relation(fields: [courseContestId], references: [id], onDelete: Cascade)
+  problem           Problem?      @relation("CourseContestProblemSubmissions", fields: [problemId], references: [id])
+  student           User          @relation("CourseContestSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([courseContestId, studentId])
+  @@index([courseContestId, verdict])
+  @@index([studentId, isFinalSubmission])
+  @@map("course_contest_submissions")
+}
+
+model CourseContestLeaderboard {
+  id              String        @id @default(uuid())
+  courseContestId String
+  studentId       String
+  totalScore      Int           @default(0)
+  problemsSolved  Int           @default(0)
+  rank            Int           @default(0)
+  attemptNumber   Int           @default(1)
+  completedAt     DateTime?
+  timeTaken       Float         @default(0)
+  updatedAt       DateTime      @updatedAt
+  courseContest   CourseContest @relation(fields: [courseContestId], references: [id], onDelete: Cascade)
+  student         User          @relation("CourseContestLeaderboard", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([courseContestId, studentId, attemptNumber])
+  @@index([courseContestId, totalScore])
+  @@map("course_contest_leaderboard")
+}
+
+model ContestSubmission {
+  id                       String   @id @default(uuid())
+  contestId                String
+  studentId                String
+  problemId                String?
+  code                     String
+  language                 String   @default("")
+  verdict                  String
+  points                   Int      @default(0)
+  executionTime            Float?
+  memoryUsed               Float?
+  createdAt                DateTime @default(now())
+  attemptNumber            Int      @default(1)
+  fullscreenExits          Int      @default(0)
+  isAutoSubmit             Boolean  @default(false)
+  isFinalContestSubmission Boolean  @default(false)
+  isViolationLog           Boolean  @default(false)
+  pasteAttempts            Int      @default(0)
+  tabSwitchCount           Int      @default(0)
+  tabSwitchDuration        Float    @default(0)
+  testCasesPassed          Int?     @default(0)
+  totalTestCases           Int?     @default(0)
+  contest                  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  student                  User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, studentId])
+  @@index([contestId, verdict])
+  @@index([studentId, isFinalContestSubmission])
+  @@index([contestId, attemptNumber])
+  @@map("contest_submissions")
+}
+
+model Course {
+  id            String              @id @default(uuid())
+  title         String
+  slug          String              @unique
+  description   String              @default("")
+  thumbnailUrl  String?
+  sections      Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  currency      String              @default("INR")
+  isPaid        Boolean             @default(false)
+  isPublished   Boolean             @default(false)
+  onlineBatchId String?             @unique
+  price         Float               @default(0)
+  accessYears   Int?
+  leaderboard   CourseLeaderboard[]
+  orders        CourseOrder[]
+  onlineBatch   Batch?              @relation("CourseOnlineBatch", fields: [onlineBatchId], references: [id])
+  userBatches   UserBatch[]
+  whatYouWillLearn String              @default("")
+  hours            Float?              @default(0)
+  language         String?             @default("English")
+  ratings       CourseRating[]
+
+  @@map("courses")
+}
+
+model UserBatch {
+  id              String        @id @default(uuid())
+  userId          String
+  batchId         String
+  courseId        String?
+  accessExpiresAt DateTime?
+  paymentId       String?
+  paymentStatus   PaymentStatus @default(COMPLETED)
+  amountPaid      Float?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  batch           Batch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  course          Course?       @relation(fields: [courseId], references: [id])
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, batchId])
+  @@map("user_batches")
+}
+
+model CourseOrder {
+  id              String        @id @default(uuid())
+  userId          String
+  courseId        String
+  razorpayOrderId String        @unique
+  amount          Float
+  currency        String        @default("INR")
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  course          Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("course_orders")
+}
+
+model CourseRating {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_ratings")
+}
+
+model Leaderboard {
+  id             String   @id @default(uuid())
+  studentId      String   @unique
+  lastUpdated    DateTime @default(now())
+  alphaCoins     Int      @default(0)
+  batchId        String?
+  externalScores Json?
+  overallScore   Int      @default(0)
+  rollNumber     String?  @default("N/A")
+  username       String?  @default("Unknown")
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([batchId, overallScore])
+  @@index([overallScore])
+  @@map("leaderboard")
+}
+
+model CourseLeaderboard {
+  id           String   @id @default(uuid())
+  courseId     String
+  studentId    String
+  username     String?
+  overallScore Int      @default(0)
+  rank         Int      @default(0)
+  lastUpdated  DateTime @default(now())
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student      User     @relation("UserCourseLeaderboards", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, studentId])
+  @@index([courseId, overallScore])
+  @@map("course_leaderboards")
+}
+
+model Assignment {
+  id            String          @id @default(uuid())
+  title         String
+  description   String          @db.Text
+  readmeUrl     String?         // GitHub URL for rendering task instructions
+  type          AssignmentType
+  difficulty    String          @default("beginner")
+  templateFiles Json            // for inline: {html, css, js} | for IDE: {githubUrl}
+  testCases     Json            // array of test cases
+  starterCode   Json?           // optional starter files
+  serviceStructure Json?            // { frontendDir: "client", backendDir: "server" }
+  defaultPorts     Json?            // { frontend: 5173, backend: 5000 }
+  courseId      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  submissions   AssignmentSubmission[]
+  progress      Progress[]
+  ideSessions   IDESession[]
+}
+
+model AssignmentSubmission {
+  id            String    @id @default(uuid())
+  userId        String
+  assignmentId  String
+  code          Json      // {html, css, js} for inline | zip URL for IDE
+  score         Int       @default(0)
+  passed        Boolean   @default(false)
+  testResults   Json?
+  submittedAt   DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment    Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+}
+
+model IDESession {
+  id           String   @id @default(uuid())
+  userId       String
+  assignmentId String
+  token        String   @unique
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, assignmentId])
+}
+
+enum AssignmentType {
+  HTML_CSS_JS
+  REACT
+  NODE
+  FULLSTACK
+  FULLSTACK_MERN
+}
+
+model AiCredits {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  credits   Int      @default(30)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_credits")
+}
+
+model Sheet {
+  id          String         @id @default(uuid())
+  name        String
+  slug        String?        @unique
+  description String?        @default("")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String
+  sections    SheetSection[]
+
+  @@map("sheets")
+}
+
+model SheetSection {
+  id          String            @id @default(uuid())
+  sheetId     String
+  name        String
+  description String?           @default("")
+  order       Int               @default(0)
+  sheet       Sheet             @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  subsections SheetSubsection[]
+
+  @@map("sheet_sections")
+}
+
+model SheetSubsection {
+  id          String         @id @default(uuid())
+  sectionId   String
+  name        String
+  description String?        @default("")
+  order       Int            @default(0)
+  section     SheetSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  problems    SheetProblem[]
+
+  @@map("sheet_subsections")
+}
+
+model SheetProblem {
+  id            String   @id @default(uuid())
+  title         String
+  practiceLink  String?  @default("")
+  platform      String?  @default("")
+  youtubeLink   String?  @default("")
+  editorialLink String?  @default("")
+  notesLink     String?  @default("")
+  difficulty    String   @default("Medium")
+  tags          Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String
+  
+  subsectionId  String?
+  subsection    SheetSubsection? @relation(fields: [subsectionId], references: [id], onDelete: SetNull)
+
+  sheetProgress SheetProgress[]
+
+  @@map("sheet_problems")
+}
+
+model SheetProgress {
+  id                String    @id @default(uuid())
+  userId            String
+  sheetProblemId    String
+  sheetId           String
+  sectionId         String
+  subsectionId      String
+  completed         Boolean   @default(false)
+  completedAt       DateTime?
+  markedForRevision Boolean   @default(false)
+  revisionMarkedAt  DateTime?
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sheetProblem      SheetProblem @relation(fields: [sheetProblemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sheetProblemId, sheetId, sectionId, subsectionId])
+  @@map("sheet_progress")
+}
+
+model Job {
+  id                    String   @id @default(uuid())
+  title                 String
+  company               String
+  about_company         String?  @default("")
+  job_description       String?  @default("")
+  job_title             String?  @default("")
+  job_type              String?  @default("Full Time")
+  location              String?  @default("")
+  experience            String?  @default("")
+  role_and_responsibility String? @default("")
+  education_and_skills  String?  @default("")
+  apply_link            String?  @default("")
+  salary                String?  @default("Not disclosed")
+  posted_date           DateTime @default(now())
+  fetchedAt             DateTime @default(now())
+  expiresAt             DateTime
+
+  @@map("jobs")
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  type        String   @default("info")
+  priority    String   @default("medium")
+  isActive    Boolean  @default(true)
+  author      String   @default("Admin")
+  links       Json     @default("[]")
+  readTime    String?  @default("2 min read")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  @@map("announcements")
+}
+
+enum UserRole {
+  student
+  instructor
+  admin
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
+}
+
+enum BatchType {
+  OFFLINE
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+
+model InterviewSession {
+  id              String   @id @default(cuid())
+  studentId       String
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  companyName     String?
+  website         String?
+  jobDescription  String?  @db.Text
+  interviewType   String   @default("HR")
+  difficulty      String   @default("Medium")
+  plannedDuration Int      @default(30)
+  voiceName       String?  @default("Puck")
+  resumeUrl       String?
+  resumeText      String?  @db.Text
+  status          String   @default("pending")
+
+  transcript      Json?
+  debrief         Json?
+
+  feedbackSummary String?
+  score           Int?
+  durationSeconds Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([studentId])
+  @@map("interview_sessions")
+}
+
+
+model InterviewExperience {
+  id                 String           @id @default(uuid())
+  authorId           String
+  companyName        String
+  jobPosition        String
+  experienceLevel    String           @default("0-1 years")
+  difficulty         String           @default("Medium")
+  timeline           String           @default("1-2 Weeks")
+  applyMethod        String           @default("Job Portal")
+  interviewMode      String           @default("Remote")
+  salaryRange        String?
+  outcome            String           @default("Selected")
+  preparationTips    String           @db.Text
+  additionalFeedback String?          @db.Text
+  isAnonymous        Boolean          @default(false)
+  upvotes            Int              @default(0)
+  upvotedBy          Json             @default("[]")
+  rounds             Json             @default("[]")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  author             User             @relation(fields: [authorId], references: [id])
+
+  @@index([authorId])
+  @@index([companyName])
+  @@map("interview_experiences")
+}
+

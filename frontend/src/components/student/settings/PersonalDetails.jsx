@@ -1,0 +1,481 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
+import profileService from '../../../services/profileService';
+import uploadService from '../../../services/uploadService';
+import authService from '../../../services/authService';
+import toast from 'react-hot-toast';
+import CustomDropdown from '../../shared/CustomDropdown';
+
+const PersonalDetails = () => {
+    const { updateUser } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [sameWhatsapp, setSameWhatsapp] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [pendingPictureFile, setPendingPictureFile] = useState(null);
+    const [pendingPicturePreview, setPendingPicturePreview] = useState(null);
+    const [pictureUploading, setPictureUploading] = useState(false);
+    const [personalData, setPersonalData] = useState({
+        username: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        profilePicture: '',
+        profilePictureFile: null,
+        phone: '',
+        whatsapp: '',
+        dob: '',
+        gender: '',
+        tshirtSize: '',
+        aboutMe: '',
+        address: {
+            building: '',
+            street: '',
+            city: '',
+            state: '',
+            postalCode: '',
+        },
+        socialLinks: {
+            facebook: '',
+            twitter: '',
+            quora: '',
+        },
+        professionalLinks: {
+            website: '',
+            linkedin: '', // Moved linkedIn here as per original
+        },
+    });
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            setInitialLoading(true);
+            try {
+                const userData = await authService.getCurrentUser();
+                setPersonalData({
+                    username: userData.username || '',
+                    firstName: userData.firstName || '',
+                    lastName: userData.lastName || '',
+                    email: userData.email || '',
+                    profilePicture: userData.profile?.profilePicture || '',
+                    phone: userData.profile?.phone || '',
+                    whatsapp: userData.profile?.whatsapp || '',
+                    dob: userData.profile?.dob || '',
+                    gender: userData.profile?.gender || '',
+                    tshirtSize: userData.profile?.tshirtSize || '',
+                    aboutMe: userData.profile?.aboutMe || '',
+                    address: userData.profile?.address || {},
+                    socialLinks: userData.profile?.socialLinks || {},
+                    professionalLinks: userData.profile?.professionalLinks || {},
+                });
+            } catch (error) {
+                toast.error('Failed to load profile');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+        fetchUserProfile();
+    }, []);
+
+    const handleProfilePictureChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size must be less than 5MB');
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Only image files are allowed');
+            return;
+        }
+
+        setPendingPictureFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPendingPicturePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSavePicture = async () => {
+        if (!pendingPictureFile) return;
+        setPictureUploading(true);
+        try {
+            const uploadResult = await uploadService.uploadProfilePicture(pendingPictureFile);
+            const url = uploadResult.data.url;
+            await profileService.updateProfile({ profilePicture: url });
+            setPersonalData(prev => ({ ...prev, profilePicture: url, profilePictureFile: null }));
+            updateUser({ profile: { ...personalData, profilePicture: url } });
+            setPendingPictureFile(null);
+            setPendingPicturePreview(null);
+            toast.success('Profile picture updated!');
+        } catch (error) {
+            toast.error(error.message || 'Failed to upload picture');
+        } finally {
+            setPictureUploading(false);
+        }
+    };
+
+    const handleCancelPicture = () => {
+        setPendingPictureFile(null);
+        setPendingPicturePreview(null);
+    };
+
+    const handleRemovePicture = async () => {
+        setPictureUploading(true);
+        try {
+            await profileService.updateProfile({ profilePicture: '' });
+            setPersonalData(prev => ({ ...prev, profilePicture: '', profilePictureFile: null }));
+            updateUser({ profile: { ...personalData, profilePicture: '' } });
+            toast.success('Profile picture removed!');
+        } catch (error) {
+            toast.error(error.message || 'Failed to remove picture');
+        } finally {
+            setPictureUploading(false);
+        }
+    };
+
+    const handleUpdatePersonal = async (e) => {
+        e.preventDefault();
+
+        if (!personalData.gender) {
+            toast.error('Gender is required');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            await profileService.updateProfile({
+                ...personalData
+            });
+            toast.success('Personal details updated successfully');
+            updateUser(personalData);
+        } catch (error) {
+            toast.error(error.message || 'Failed to update profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (initialLoading) {
+        return (
+            <div className="w-full animate-pulse transition-colors">
+                <div className="w-48 h-6 bg-gray-200 dark:bg-gray-700 rounded mb-6 pb-2 border-b border-gray-100 dark:border-gray-800"></div>
+                <div className="space-y-6 mt-4">
+                    {/* Profile Picture Skeleton */}
+                    <div className="flex items-center space-x-6">
+                        <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="flex-1 space-y-2">
+                            <div className="w-1/3 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="w-1/4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        </div>
+                    </div>
+                    {/* Basic info skeleton grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                            <div key={i}>
+                                <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
+                                <div className="w-full h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="w-full md:w-48 h-10 bg-gray-200 dark:bg-gray-700 rounded mt-4"></div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="animate-fade-in transition-colors w-full">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 pb-2 border-b border-gray-100 dark:border-gray-800">Personal Details</h2>
+            <form onSubmit={handleUpdatePersonal} className="space-y-6">
+                {/* Profile Picture */}
+                <div className="flex items-start space-x-6">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="relative group">
+                            {/* Show pending preview if exists, otherwise current picture */}
+                            {(pendingPicturePreview || personalData.profilePicture) ? (
+                                <img
+                                    src={pendingPicturePreview || personalData.profilePicture}
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-colors">
+                                    <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            )}
+
+                            {/* Remove overlay - only when image exists and no pending file */}
+                            {personalData.profilePicture && !pendingPictureFile && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemovePicture}
+                                    disabled={pictureUploading}
+                                    className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    title="Remove picture"
+                                >
+                                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            )}
+
+                            {/* Camera icon to change picture - only when no pending */}
+                            {!pendingPictureFile && (
+                                <label className="absolute bottom-0 right-0 bg-[var(--color-bg-surface)] dark:bg-gray-700 rounded-full p-1.5 shadow-md cursor-pointer border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                                    <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleProfilePictureChange}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
+                        </div>
+
+                        {/* Tick / Cross buttons - only when pending file */}
+                        {pendingPictureFile && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleSavePicture}
+                                    disabled={pictureUploading}
+                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white shadow-md transition-colors disabled:opacity-50"
+                                    title="Save picture"
+                                >
+                                    {pictureUploading ? (
+                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    )}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCancelPicture}
+                                    disabled={pictureUploading}
+                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md transition-colors disabled:opacity-50"
+                                    title="Cancel"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100">Profile Picture</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">JPG, PNG, GIF, WebP. Max 5MB</p>
+                        {pendingPictureFile && (
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">Click ✓ to save or ✗ to cancel</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Readonly Core details */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input
+                            type="text"
+                            value={personalData.firstName}
+                            readOnly
+                            disabled
+                            className="input-field bg-gray-100/80 cursor-not-allowed text-gray-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input
+                            type="text"
+                            value={personalData.lastName}
+                            readOnly
+                            disabled
+                            className="input-field bg-gray-100/80 cursor-not-allowed text-gray-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input
+                            type="text"
+                            value={personalData.username}
+                            readOnly
+                            disabled
+                            className="input-field bg-gray-100/80 cursor-not-allowed text-gray-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input
+                            type="email"
+                            value={personalData.email}
+                            readOnly
+                            disabled
+                            className="input-field bg-gray-100/80 cursor-not-allowed text-gray-500"
+                        />
+                    </div>
+
+                    {/* Editable details */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone </label>
+                        <input
+                            type="tel"
+                            value={personalData.phone}
+                            onChange={(e) => setPersonalData({ ...personalData, phone: e.target.value })}
+                            className="input-field bg-[var(--color-bg-input)] dark:text-gray-100 dark:border-gray-700"
+                            maxLength="10"
+                        />
+                    </div>
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-sm font-medium text-gray-700">WhatsApp</label>
+                            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                                <span className="text-xs text-gray-500">Same as phone</span>
+                                <div
+                                    onClick={() => setSameWhatsapp(v => !v)}
+                                    className={`w-9 h-5 rounded-full relative transition-colors duration-200 ${sameWhatsapp ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                >
+                                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${sameWhatsapp ? 'translate-x-4' : ''}`} />
+                                </div>
+                            </label>
+                        </div>
+                        <input
+                            type="tel"
+                            value={sameWhatsapp ? personalData.phone : personalData.whatsapp}
+                            onChange={(e) => setPersonalData({ ...personalData, whatsapp: e.target.value })}
+                            className="input-field"
+                            maxLength="10"
+                            disabled={sameWhatsapp}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                        <input
+                            type="date"
+                            value={personalData.dob ? new Date(personalData.dob).toISOString().split('T')[0] : ''}
+                            onChange={(e) => setPersonalData({ ...personalData, dob: e.target.value })}
+                            className="input-field"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
+                        <CustomDropdown
+                            options={[
+                                { value: '', label: 'Select Gender' },
+                                { value: 'Male', label: 'Male' },
+                                { value: 'Female', label: 'Female' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                            value={personalData.gender}
+                            onChange={(val) => setPersonalData({ ...personalData, gender: val })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">T-shirt Size</label>
+                        <CustomDropdown
+                            options={[
+                                { value: '', label: 'Select Size' },
+                                { value: 'S', label: 'S' },
+                                { value: 'M', label: 'M' },
+                                { value: 'L', label: 'L' },
+                                { value: 'XL', label: 'XL' },
+                                { value: 'XXL', label: 'XXL' },
+                                { value: 'XXXL', label: 'XXXL' }
+                            ]}
+                            value={personalData.tshirtSize}
+                            onChange={(val) => setPersonalData({ ...personalData, tshirtSize: val })}
+                        />
+                    </div>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Address</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Street / Area</label>
+                            <input
+                                type="text"
+                                value={personalData.address.street || ''}
+                                onChange={(e) => setPersonalData({ ...personalData, address: { ...personalData.address, street: e.target.value } })}
+                                className="input-field"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <input
+                                type="text"
+                                value={personalData.address.city || ''}
+                                onChange={(e) => setPersonalData({ ...personalData, address: { ...personalData.address, city: e.target.value } })}
+                                className="input-field"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <input
+                                type="text"
+                                value={personalData.address.state || ''}
+                                onChange={(e) => setPersonalData({ ...personalData, address: { ...personalData.address, state: e.target.value } })}
+                                className="input-field"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                            <input
+                                type="text"
+                                value={personalData.address.postalCode || ''}
+                                onChange={(e) => setPersonalData({ ...personalData, address: { ...personalData.address, postalCode: e.target.value } })}
+                                className="input-field"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">About Me</h3>
+                    <textarea
+                        value={personalData.aboutMe}
+                        onChange={(e) => setPersonalData({ ...personalData, aboutMe: e.target.value })}
+                        className="input-field"
+                        rows="4"
+                        maxLength="250"
+                        placeholder="Tell us about yourself (250 characters max)"
+                    />
+                    <p className="text-right text-xs text-gray-500 mt-1">
+                        {personalData.aboutMe.length}/250
+                    </p>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                    <button type="submit" disabled={loading} className="btn-primary w-full md:w-auto px-8">
+                        {loading ? (<>
+                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                        </>) : 'Save Changes'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default PersonalDetails;
+
+
+
+
+
+
+
+

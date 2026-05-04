@@ -1,0 +1,202 @@
+const rateLimit = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
+const { getRedis } = require('../config/redis');
+
+// BUG #14 FIX: All rate limiters now use Redis-backed stores.
+// Previously, loginLimiter, otpLimiter, codeExecutionLimiter, profileSyncLimiter,
+// fileUploadLimiter, and reportLimiter all used in-memory stores that are per-server-instance.
+// With horizontal scaling (multiple Node.js instances), a user could bypass any of these limits
+// by hitting different instances. Redis-backed stores enforce limits globally.
+//
+// RedisStore uses sendCommand to avoid depending on a specific Redis client version.
+// Falls back transparently to in-memory if Redis is unavailable (non-fatal).
+
+const makeStore = (prefix) => {
+    try {
+        return new RedisStore({
+            sendCommand: (...args) => getRedis().call(...args),
+            prefix: `rl:${prefix}:`
+        });
+    } catch (e) {
+        console.warn(`[RateLimiter] Redis store unavailable for '${prefix}', using in-memory fallback.`);
+        return undefined; // express-rate-limit defaults to in-memory
+    }
+};
+
+// Login rate limiter: 5 attempts per 15 minutes per user/IP combination
+// This allows multiple students on a shared college IP to login without blocking each other.
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 15, // Raised from 5 to 15 to be more permissive for legitimate retries
+    message: {
+        success: false,
+        message: 'Too many login attempts. Please try again after 15 minutes.'
+    },
+    keyGenerator: (req) => {
+        // Use email if available, otherwise just IP. 
+        // This ensures student A failing doesn't block student B on the same Wi-Fi.
+        const id = req.body?.email || req.ip;
+        return `login:${id}`;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: false,
+    validate: { ip: false },
+    store: makeStore('login')
+});
+
+// OTP rate limiter: 5 attempts per 10 minutes
+const otpLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 5, // 5 requests per window
+    message: {
+        success: false,
+        message: 'Too many OTP requests. Please try again after 10 minutes.'
+    },
+    keyGenerator: (req) => {
+        return req.body?.email || req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('otp')
+});
+
+// API rate limiter: 200 requests per 15 minutes per user/IP
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // 200 requests per window
+    message: {
+        success: false,
+        message: 'Too many API requests. Please try again later.'
+    },
+    keyGenerator: (req) => {
+        return req.user?.userId || req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('api')
+});
+
+// Code execution rate limiter: 30 submissions per 5 minutes per user
+const codeExecutionLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 30, // 30 submissions per window
+    message: {
+        success: false,
+        message: 'Too many code submissions. Please wait before submitting again.'
+    },
+    keyGenerator: (req) => {
+        return req.user?.userId || req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('code')
+});
+
+// Profile sync rate limiter: 1 request per 7 days per user (manual sync)
+const profileSyncLimiter = rateLimit({
+    windowMs: 7 * 24 * 60 * 60 * 1000, // 7 days
+    max: 1, // 1 request per week
+    message: {
+        success: false,
+        message: 'Manual sync allowed once per week. Please wait before syncing again.'
+    },
+    keyGenerator: (req) => {
+        return req.user?.userId || req.ip;
+    },
+    skip: (req, res) => {
+        // Skip limit in development mode
+        return !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipFailedRequests: true,
+    validate: { ip: false },
+    store: makeStore('sync')
+});
+
+// File upload rate limiter: 20 uploads per hour
+const fileUploadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20,
+    message: {
+        success: false,
+        message: 'Too many file uploads. Please try again later.'
+    },
+    keyGenerator: (req) => {
+        return req.user?.userId || req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('upload')
+});
+
+// Report generation rate limiter: 10 reports per hour
+const reportLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10,
+    message: {
+        success: false,
+        message: 'Too many report generation requests. Please try again later.'
+    },
+    keyGenerator: (req) => {
+        return req.user?.userId || req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('report')
+});
+
+// Signup rate limiter: 3 accounts per hour per IP
+const signupLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3,
+    message: {
+        success: false,
+        message: 'Too many accounts created from this IP. Please try again later.'
+    },
+    keyGenerator: (req) => {
+        return req.ip;
+    },
+    skip: (req, res) => {
+        return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { ip: false },
+    store: makeStore('signup')
+});
+
+module.exports = {
+    loginLimiter,
+    otpLimiter,
+    apiLimiter,
+    codeExecutionLimiter,
+    profileSyncLimiter,
+    fileUploadLimiter,
+    reportLimiter,
+    signupLimiter
+};

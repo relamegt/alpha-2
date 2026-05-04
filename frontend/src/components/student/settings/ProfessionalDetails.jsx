@@ -1,0 +1,168 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
+import authService from '../../../services/authService';
+import profileService from '../../../services/profileService';
+import toast from 'react-hot-toast';
+
+const ProfessionalDetails = () => {
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    const [professionalData, setProfessionalData] = useState({
+        education: {
+            institution: '',
+            degree: '',
+            branch: '',
+            rollNumber: '',
+            startYear: '',
+            endYear: '',
+        },
+        skills: [],
+    });
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            setInitialLoading(true);
+            try {
+                const userData = await authService.getCurrentUser(true); // force refresh for latest education data
+                setProfessionalData({
+                    education: userData.education || {},
+                    skills: userData.skills || [],
+                });
+            } catch (error) {
+                toast.error('Failed to load profile');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+        fetchUserProfile();
+    }, []);
+
+    const handleUpdateProfessional = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await profileService.updateProfile(professionalData);
+            toast.success('Professional details updated successfully');
+        } catch (error) {
+            toast.error(error.message || 'Failed to update profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (user.role !== 'student') {
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Only students have professional details.</div>;
+    }
+
+    if (initialLoading) {
+        return (
+            <div className="w-full animate-pulse transition-colors">
+                <div className="w-48 h-6 bg-gray-200 dark:bg-gray-700 rounded mb-6 pb-2 border-b border-gray-100 dark:border-gray-800"></div>
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="w-full h-32 bg-gray-100 dark:bg-gray-800/50 rounded-xl"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i}>
+                                    <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
+                                    <div className="w-full h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="animate-fade-in transition-colors w-full">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 pb-2 border-b border-gray-100 dark:border-gray-800">Professional Details</h2>
+            <form onSubmit={handleUpdateProfessional} className="space-y-6">
+
+                {/* Education Section */}
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-l-4 border-blue-500 pl-3">Education</h3>
+                    <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl p-6 transition-colors">
+                        <div className="flex items-start mb-4">
+                            <svg className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                                These details are linked to your batch registration. Please contact support if corrections are needed.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {[
+                                { label: 'Institution', value: professionalData.education.institution },
+                                { label: 'Degree', value: professionalData.education.degree },
+                                { label: 'Start Year', value: professionalData.education.startYear },
+                                { label: 'End Year', value: professionalData.education.endYear },
+                                { label: 'Roll Number', value: professionalData.education.rollNumber },
+                                { label: 'Branch', value: professionalData.education.branch },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="space-y-1.5 transition-colors">
+                                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</span>
+                                    <div className="text-gray-900 dark:text-gray-100 font-medium py-2 px-3 bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm">
+                                        {value || <span className="text-gray-400 dark:text-gray-500 italic">Not set</span>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Skills Section */}
+                <div className="space-y-4 pt-6 border-t border-[var(--color-border-interactive)]">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-l-4 border-green-500 pl-3">Skills</h3>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Technical Skills (comma separated)</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Java, Python, React, JavaScript, AWS..."
+                                value={professionalData.skills.join(', ')}
+                                onChange={(e) =>
+                                    setProfessionalData({
+                                        ...professionalData,
+                                        skills: e.target.value.split(',').map((s) => s.trim()),
+                                    })
+                                }
+                                className="input-field py-4 pl-4 bg-[var(--color-bg-input)] dark:border-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Add skills to showcase on your profile. These help in matching relevant opportunities.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                    <button type="submit" disabled={loading} className="btn-primary w-full md:w-auto px-8">
+                        {loading ? (<>
+                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                        </>) : 'Save Changes'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default ProfessionalDetails;
+
+
+
+
+
+
+
+

@@ -1,0 +1,70 @@
+.assignment-container {
+  @apply min-h-screen bg-[#0a0a0f] text-white font-sans;
+}
+
+.assignment-page-header {
+  @apply bg-[#111117]/80 backdrop-blur-md border-b border-[#282833] sticky top-0 z-50 py-6;
+}
+
+.header-content {
+  @apply max-w-7xl mx-auto px-6;
+}
+
+.back-link {
+  @apply flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-4;
+}
+
+.title-wrapper h1 {
+  @apply text-3xl font-black tracking-tighter text-white mt-2;
+}
+
+.tag {
+  @apply px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider;
+}
+
+.tag-beginner { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+.tag-intermediate { @apply bg-amber-500/10 text-amber-400 border border-amber-500/20; }
+.tag-advanced { @apply bg-red-500/10 text-red-400 border border-red-500/20; }
+.tag-assignment { @apply bg-primary-500/10 text-primary-400 border border-primary-500/20 ml-2; }
+
+.btn-launch-inline-large {
+  @apply w-full bg-primary-600 hover:bg-primary-700 text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary-600/20 active:scale-95 text-lg uppercase tracking-tight;
+}
+
+.assignment-content-wrapper {
+  @apply space-y-8;
+}
+
+.assignment-doc-card {
+  @apply transition-all duration-300;
+}
+
+.stat {
+  @apply flex items-center gap-2 text-xs font-bold text-gray-400 bg-[#0a0a0f] px-3 py-1.5 rounded-full border border-[#282833];
+}
+
+.StatGrid {
+  @apply grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8;
+}
+
+.markdown-viewer {
+  @apply leading-relaxed text-gray-300;
+}
+
+.markdown-viewer h1 { @apply text-2xl font-bold mb-6 text-white border-b border-[#282833] pb-4; }
+.markdown-viewer h2 { @apply text-xl font-bold mt-8 mb-4 text-white; }
+.markdown-viewer h3 { @apply text-lg font-bold mt-6 mb-3 text-white; }
+.markdown-viewer p { @apply mb-4 text-gray-400; }
+.markdown-viewer ul, .markdown-viewer ol { @apply mb-6 ml-6 space-y-2 list-disc; }
+.markdown-viewer li { @apply text-gray-400; }
+.markdown-viewer code { @apply bg-[#1e1e27] px-1.5 py-0.5 rounded text-primary-300 font-mono text-sm; }
+.markdown-viewer pre { @apply bg-[#0a0a0f] p-4 rounded-xl border border-[#282833] my-6 overflow-x-auto; }
+.markdown-viewer blockquote { @apply border-l-4 border-primary-500/30 pl-4 py-1 italic text-gray-400 my-6 bg-primary-500/5 rounded-r-lg; }
+
+.assignment-loading, .assignment-error {
+  @apply flex flex-col items-center justify-center min-h-[80vh] text-center p-12 text-white;
+}
+
+.spinner {
+  @apply w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin mb-8 shadow-2xl;
+}

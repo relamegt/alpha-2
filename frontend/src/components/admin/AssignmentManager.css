@@ -1,0 +1,107 @@
+.admin-assignment-manager {
+  @apply p-8 bg-[#0a0a0f] min-h-screen text-white;
+}
+
+.manager-header {
+  @apply flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10;
+}
+
+.title-section h1 {
+  @apply text-3xl font-black tracking-tighter mb-2;
+}
+
+.title-section p {
+  @apply text-gray-400 text-sm;
+}
+
+.header-actions {
+  @apply flex items-center gap-4 w-full md:w-auto;
+}
+
+.search-box {
+  @apply flex items-center gap-2 bg-[#111117] border border-[#282833] px-4 py-2 rounded-xl text-gray-400 focus-within:border-primary-500/50 transition-all flex-1 md:flex-initial;
+}
+
+.search-box input {
+  @apply bg-transparent border-none outline-none text-sm text-white placeholder-gray-600 w-full md:w-64;
+}
+
+.btn-create {
+  @apply flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-primary-600/20 whitespace-nowrap;
+}
+
+.table-wrapper {
+  @apply bg-[#111117] border border-[#282833] rounded-2xl overflow-hidden shadow-2xl;
+}
+
+.admin-custom-table {
+  @apply w-full text-left border-collapse;
+}
+
+.admin-custom-table th {
+  @apply px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider bg-[#0a0a0f]/50 border-b border-[#282833];
+}
+
+.admin-custom-table td {
+  @apply px-6 py-5 border-b border-[#282833] align-middle;
+}
+
+.title-group {
+  @apply flex flex-col gap-1;
+}
+
+.main-title {
+  @apply font-bold text-white text-base;
+}
+
+.sub-description {
+  @apply text-[12px] text-gray-500;
+}
+
+.env-badge {
+  @apply px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border;
+}
+
+.env-badge.react { @apply bg-blue-500/10 text-blue-400 border-blue-500/20; }
+.env-badge.node { @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20; }
+.env-badge.fullstack { @apply bg-purple-500/10 text-purple-400 border-purple-500/20; }
+.env-badge.html_css_js { @apply bg-amber-500/10 text-amber-400 border-amber-500/20; }
+
+.diff-badge {
+  @apply text-xs font-bold capitalize;
+}
+
+.diff-badge.beginner { @apply text-emerald-400; }
+.diff-badge.intermediate { @apply text-amber-400; }
+.diff-badge.advanced { @apply text-red-400; }
+
+.test-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold;
+}
+
+.test-badge.active { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+.test-badge.empty { @apply bg-gray-500/10 text-gray-500 border border-gray-500/20; }
+
+.action-row {
+  @apply flex items-center gap-2;
+}
+
+.icon-btn {
+  @apply p-2 rounded-lg transition-all border border-transparent;
+}
+
+.icon-btn.view { @apply hover:bg-blue-500/10 hover:text-blue-400; }
+.icon-btn.build { @apply hover:bg-primary-500/10 hover:text-primary-400; }
+.icon-btn.delete { @apply hover:bg-red-500/10 hover:text-red-400; }
+
+.empty-state {
+  @apply py-12 text-center text-gray-500 font-medium italic;
+}
+
+.admin-loader-container {
+  @apply flex flex-col items-center justify-center min-h-[50vh] gap-4;
+}
+
+.spinner {
+  @apply w-10 h-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin;
+}
