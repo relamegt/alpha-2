@@ -65,7 +65,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                     
                     return (
                         <div 
-                            key={course._id} 
+                            key={course._id || course.id} 
                             className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col hover:-translate-y-1 relative"
                         >
                             {/* Static Ambient Glow - Mimicking CodeTyper effect */}
@@ -148,11 +148,11 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
 
                                 {/* Actions */}
                                 <div className="flex flex-col gap-2 pt-2">
-                                    {activeTab === 'continue' && (
+                                    {activeTab !== 'all' && (
                                         <button 
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigate(`/dashboard/courses/${course._id}/leaderboard`);
+                                                navigate(`/dashboard/courses/${course._id || course.id}/leaderboard`);
                                             }}
                                             className="w-full btn-secondary"
                                         >
@@ -160,11 +160,11 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                             Analytics
                                         </button>
                                     )}
-                                    {activeTab === 'continue' ? (
+                                    {activeTab !== 'all' ? (
                                         <button 
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                const cSlug = course.slug || course._id;
+                                                const cSlug = course.slug || course._id || course.id;
                                                 window.open(`/workspace/${cSlug}`, '_blank', 'noopener,noreferrer');
                                             }}
                                             className="w-full btn-primary"
@@ -173,7 +173,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                         </button>
                                     ) : (
                                         <Link 
-                                            to={`/dashboard/courses/${course.slug || course._id}`}
+                                            to={`/dashboard/courses/${course.slug || course._id || course.id}`}
                                             className="w-full btn-primary"
                                         >
                                             Preview

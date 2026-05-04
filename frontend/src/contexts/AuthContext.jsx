@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
                     setUser(userData);
                     setIsAuthenticated(true);
 
-                    if (userData.isFirstLogin && !userData.isSpotUser && window.location.pathname !== '/complete-profile') {
+                    if (userData.isFirstLogin && userData.role === 'student' && !userData.isSpotUser && window.location.pathname !== '/complete-profile') {
                         navigate('/complete-profile');
                     }
                 }
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
                     });
                 }
 
-                if (response.isFirstLogin) {
+                if (response.isFirstLogin && response.user.role === 'student') {
                     toast.success('Welcome! Please complete your profile to get started.');
                     navigate('/complete-profile');
                 } else {
@@ -104,11 +104,16 @@ export const AuthProvider = ({ children }) => {
 
                 toast.success(`Welcome back, ${response.user.firstName || 'User'}!`);
 
-                switch (response.user.role) {
-                    case 'admin': navigate('/admin/dashboard'); break;
-                    case 'instructor': navigate('/instructor/dashboard'); break;
-                    case 'student': navigate('/student/dashboard'); break;
-                    default: navigate('/');
+                if (response.isFirstLogin && response.user.role === 'student') {
+                    toast.success('Welcome! Please complete your profile to get started.');
+                    navigate('/complete-profile');
+                } else {
+                    switch (response.user.role) {
+                        case 'admin': navigate('/admin/dashboard'); break;
+                        case 'instructor': navigate('/instructor/dashboard'); break;
+                        case 'student': navigate('/student/dashboard'); break;
+                        default: navigate('/');
+                    }
                 }
 
                 return { success: true };

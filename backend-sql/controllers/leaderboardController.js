@@ -14,6 +14,15 @@ const BATCH_LB_CACHE_TTL = 60; // 60s — fresh enough for a live session
 // Get FULL batch leaderboard (NO FILTERS)
 const getBatchLeaderboard = async (req, res) => {
     try {
+        const { studentType } = req.user;
+
+        if (studentType === 'ONLINE') {
+            return res.status(403).json({
+                success: false,
+                message: 'Batch leaderboard is only available for offline students. Please use course leaderboards.'
+            });
+        }
+
         let { batchId } = req.params;
 
         // Resolve batchId if it's a name/slug

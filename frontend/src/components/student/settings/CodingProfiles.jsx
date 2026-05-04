@@ -144,6 +144,8 @@ const CodingProfiles = () => {
         </svg>
     );
 
+    const { user } = useAuth();
+
     if (initialLoading) {
         return (
             <div className="w-full space-y-8 animate-pulse">
@@ -166,27 +168,29 @@ const CodingProfiles = () => {
                 </div>
 
                 {/* DSA Profiles Section Skeleton */}
-                <div className="bg-[var(--color-bg-card)] rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-900 overflow-hidden transition-colors">
-                    <div className="px-6 py-4 border-b border-yellow-100 dark:border-yellow-900/30 bg-yellow-50/50 dark:bg-yellow-900/10">
-                        <div className="w-48 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="flex flex-col md:flex-row md:items-end gap-4 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
-                                <div className="flex-grow space-y-2">
-                                    <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                                    <div className="w-full h-11 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                {user?.studentType !== 'ONLINE' && (
+                    <div className="bg-[var(--color-bg-card)] rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-900 overflow-hidden transition-colors">
+                        <div className="px-6 py-4 border-b border-yellow-100 dark:border-yellow-900/30 bg-yellow-50/50 dark:bg-yellow-900/10">
+                            <div className="w-48 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className="flex flex-col md:flex-row md:items-end gap-4 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
+                                    <div className="flex-grow space-y-2">
+                                        <div className="w-32 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                        <div className="w-full h-11 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                    </div>
+                                    <div className="flex gap-2 mt-4 md:mt-0">
+                                        <div className="w-24 h-11 bg-gray-200 dark:bg-gray-700 rounded-lg shrink-0"></div>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2 mt-4 md:mt-0">
-                                    <div className="w-24 h-11 bg-gray-200 dark:bg-gray-700 rounded-lg shrink-0"></div>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+                        <div className="px-6 py-5 bg-gray-50 dark:bg-gray-800/30 border-t border-[var(--color-border-interactive)] flex justify-center">
+                            <div className="w-64 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                        </div>
                     </div>
-                    <div className="px-6 py-5 bg-gray-50 dark:bg-gray-800/30 border-t border-[var(--color-border-interactive)] flex justify-center">
-                        <div className="w-64 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
-                    </div>
-                </div>
+                )}
             </div>
         );
     }
@@ -259,109 +263,111 @@ const CodingProfiles = () => {
             </div>
 
             {/* DSA Profiles Section */}
-            <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 pb-2 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
-                    Coding Profiles
-                </h2>
-                <div className="p-6 space-y-6">
-                    {DSA_PLATFORMS.map((platform) => (
-                        <div key={platform.value} className="flex flex-col md:flex-row md:items-end gap-4 pb-4 border-b last:border-b-0 border-[var(--color-border-interactive)] last:pb-0">
-                            <div className="flex-grow space-y-2 relative">
-                                <div className="flex justify-between items-center mb-1">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{platform.label} username</label>
-                                    {isPlatformLinked(platform.value) && (
-                                        <span className="text-xs text-green-700 dark:text-green-400 font-medium bg-green-50 dark:bg-green-900/20 px-2.5 py-0.5 rounded-full border border-green-200 dark:border-green-900/30 flex items-center shadow-sm">
-                                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            {user?.studentType !== 'ONLINE' && (
+                <div>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 pb-2 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        Coding Profiles
+                    </h2>
+                    <div className="p-6 space-y-6">
+                        {DSA_PLATFORMS.map((platform) => (
+                            <div key={platform.value} className="flex flex-col md:flex-row md:items-end gap-4 pb-4 border-b last:border-b-0 border-[var(--color-border-interactive)] last:pb-0">
+                                <div className="flex-grow space-y-2 relative">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{platform.label} username</label>
+                                        {isPlatformLinked(platform.value) && (
+                                            <span className="text-xs text-green-700 dark:text-green-400 font-medium bg-green-50 dark:bg-green-900/20 px-2.5 py-0.5 rounded-full border border-green-200 dark:border-green-900/30 flex items-center shadow-sm">
+                                                <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Linked
+                                            </span>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={codingData[platform.value]}
+                                        onChange={(e) => setCodingData({ ...codingData, [platform.value]: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-[var(--color-bg-input)] border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all shadow-sm"
+                                        placeholder={`Enter ${platform.label} username`}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleUpdateProfile(platform.value)}
+                                        disabled={loading}
+                                        className="btn-primary px-6 whitespace-nowrap h-[44px]"
+                                    >
+                                        {loading ? (<>
+                                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Linked
-                                        </span>
+                                            ...
+                                        </>) : 'Update'}
+                                    </button>
+                                    {/* External Link Icon */}
+                                    {codingData[platform.value] && (
+                                        <a
+                                            href={getProfileUrl(platform.value, codingData[platform.value])}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn-secondary p-0 h-[44px] w-[44px] flex items-center justify-center"
+                                            title={`View ${platform.label} Profile`}
+                                        >
+                                            <ExternalLinkIcon />
+                                        </a>
                                     )}
                                 </div>
-                                <input
-                                    type="text"
-                                    value={codingData[platform.value]}
-                                    onChange={(e) => setCodingData({ ...codingData, [platform.value]: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-[var(--color-bg-input)] border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all shadow-sm"
-                                    placeholder={`Enter ${platform.label} username`}
-                                />
                             </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleUpdateProfile(platform.value)}
-                                    disabled={loading}
-                                    className="btn-primary px-6 whitespace-nowrap h-[44px]"
-                                >
-                                    {loading ? (<>
-                                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        ...
-                                    </>) : 'Update'}
-                                </button>
-                                {/* External Link Icon */}
-                                {codingData[platform.value] && (
-                                    <a
-                                        href={getProfileUrl(platform.value, codingData[platform.value])}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="btn-secondary p-0 h-[44px] w-[44px] flex items-center justify-center"
-                                        title={`View ${platform.label} Profile`}
-                                    >
-                                        <ExternalLinkIcon />
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
 
-                {/* Update DSA Score Button */}
-                <div className="px-6 py-5 flex justify-center">
-                    <button
-                        onClick={handleUpdateDSAScore}
-                        disabled={syncing || isLocked}
-                        className={`relative btn-primary py-3 px-10 rounded-xl ${(syncing || isLocked) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-0' : ''
-                            }`}
-                    >
-                        {syncing ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                <span>Syncing Scores...</span>
-                            </>
-                        ) : isLocked ? (
-                            <div className="flex flex-col items-center leading-tight">
-                                <div className="flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <span>Update Locked</span>
+                    {/* Update DSA Score Button */}
+                    <div className="px-6 py-5 flex justify-center">
+                        <button
+                            onClick={handleUpdateDSAScore}
+                            disabled={syncing || isLocked}
+                            className={`relative btn-primary py-3 px-10 rounded-xl ${(syncing || isLocked) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-0' : ''
+                                }`}
+                        >
+                            {syncing ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Syncing Scores...</span>
+                                </>
+                            ) : isLocked ? (
+                                <div className="flex flex-col items-center leading-tight">
+                                    <div className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <span>Update Locked</span>
+                                    </div>
+                                    <span className="text-xs opacity-80 font-normal">
+                                        Unlocks: {nextSyncAllowed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, {nextSyncAllowed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                    </span>
                                 </div>
-                                <span className="text-xs opacity-80 font-normal">
-                                    Unlocks: {nextSyncAllowed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, {nextSyncAllowed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                            ) : (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Update Scores</span>
+                                </>
+                            )}
+                            {/* Notification Badge Style - Show only if NOT locked and not syncing */}
+                            {!isLocked && !syncing && (
+                                <span className="absolute -top-2 -right-2 bg-amber-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-md">
+                                    {isProduction ? '1 / week' : 'Unlimited (Dev)'}
                                 </span>
-                            </div>
-                        ) : (
-                            <>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                <span>Update Scores</span>
-                            </>
-                        )}
-                        {/* Notification Badge Style - Show only if NOT locked and not syncing */}
-                        {!isLocked && !syncing && (
-                            <span className="absolute -top-2 -right-2 bg-amber-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-md">
-                                {isProduction ? '1 / week' : 'Unlimited (Dev)'}
-                            </span>
-                        )}
-                    </button>
+                            )}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

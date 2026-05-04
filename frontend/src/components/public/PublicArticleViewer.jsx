@@ -798,6 +798,43 @@ const PublicArticleViewer = ({ article }) => {
                     </button>
                   ))}
                 </div>
+
+                {/* Mark as Read Button */}
+                <div className="pt-4">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await publicArticleService.markAsRead(article.id);
+                        if (res.success) {
+                          toast.success('Article marked as read');
+                          // You might want to update local state if article is managed here
+                          if (article) article.isCompleted = true;
+                        }
+                      } catch (err) {
+                        toast.error('Failed to mark as read');
+                      }
+                    }}
+                    disabled={article.isCompleted}
+                    className={cn(
+                      "w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-medium",
+                      article.isCompleted
+                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default"
+                        : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20"
+                    )}
+                  >
+                    {article.isCompleted ? (
+                      <>
+                        <FaCheck size={14} />
+                        Completed
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen size={16} />
+                        Mark as Read
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <hr className="border-[var(--color-border-interactive)]/80 my-8" />

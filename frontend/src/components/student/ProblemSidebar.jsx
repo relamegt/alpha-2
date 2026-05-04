@@ -270,7 +270,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             // Apply activeCategory filter to subProblems
             const filteredSubProblems = subProblems.filter(p => {
                 if (activeCategory === 'all') return true;
-                if (activeCategory === 'articles') return p.type === 'material';
+                if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
                 if (activeCategory === 'videos') return p.type === 'video';
                 if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
                 if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -279,7 +279,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             });
 
             const videoGroups = filteredSubProblems.filter(p => p.type === 'video');
-            const articleGroups = filteredSubProblems.filter(p => p.type === 'material');
+            const articleGroups = filteredSubProblems.filter(p => p.type === 'material' || p.type === 'article');
             const quizGroups = filteredSubProblems.filter(p => p.type === 'quiz');
             const practiceGroups = filteredSubProblems.filter(p => p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type);
 
@@ -313,7 +313,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
 
         const filteredProblems = problems.filter(p => {
             if (activeCategory === 'all') return true;
-            if (activeCategory === 'articles') return p.type === 'material';
+            if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
             if (activeCategory === 'videos') return p.type === 'video';
             if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
             if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -333,7 +333,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     // Apply category filter
                     .filter(p => {
                         if (activeCategory === 'all') return true;
-                        if (activeCategory === 'articles') return p.type === 'material';
+                        if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
                         if (activeCategory === 'videos') return p.type === 'video';
                         if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
                         if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -910,7 +910,7 @@ const SubsectionHeader = ({ title, expanded, count, onClick }) => {
 // ── Problem Row ──────────────────────────────────────────────────────────────
 const ProblemRow = ({ problem, active, indent, onClick }) => {
     const d = DIFF_COLORS[problem.difficulty] || DIFF_COLORS.Easy;
-    const isNonCoding = problem.type === 'quiz' || problem.type === 'material';
+    const isNonCoding = problem.type === 'quiz' || problem.type === 'material' || problem.type === 'article';
     const rowRef = useRef(null);
 
     useEffect(() => {
@@ -937,7 +937,7 @@ const ProblemRow = ({ problem, active, indent, onClick }) => {
                     <CheckCircle size={14} className="text-green-500 dark:text-green-500/80 fill-green-50 dark:fill-[#064e3b]/20" />
                 ) : (
                     problem.type === 'video' ? <VideoIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
-                    problem.type === 'material' ? <FileText size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
+                    (problem.type === 'material' || problem.type === 'article') ? <FileText size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
                     problem.type === 'quiz' ? <HelpCircle size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
                     <Code2 size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} />
                 )}

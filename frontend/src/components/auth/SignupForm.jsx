@@ -189,7 +189,8 @@ const SignupForm = () => {
                                     onError={() => toast.error('Google Sign In failed')}
                                     useOneTap
                                     theme="filled_blue"
-                                    shape="circle"
+                                    shape="pill"
+                                    width="100%"
                                 />
                             </div>
 

@@ -3527,7 +3527,7 @@ const CodeEditor = () => {
                     })()
                 ) : (
                     <div className={`flex-1 overflow-x-hidden ${problem.type === 'quiz' ? 'bg-gray-50 dark:bg-[#0A0A0F] h-full flex flex-col' : 'bg-[#F1F3F4] dark:bg-[#111117] overflow-y-auto custom-scrollbar'}`}>
-                        <div className={`${problem.type === 'material' ? 'w-full' : problem.type === 'quiz' ? 'flex-1 flex flex-col p-4 sm:p-6 lg:p-8 h-full min-h-0' : 'max-w-5xl mx-auto p-4 sm:p-6 md:p-10'}`}>
+                        <div className={`${(problem.type === 'material' || problem.type === 'article') ? 'w-full' : problem.type === 'quiz' ? 'flex-1 flex flex-col p-4 sm:p-6 lg:p-8 h-full min-h-0' : 'max-w-5xl mx-auto p-4 sm:p-6 md:p-10'}`}>
                             {/* Header Section */}
                             <div className={`${problem.type === 'quiz' ? 'mb-6 pb-4 shrink-0' : 'mb-10 pb-6'} border-b border-gray-100 dark:border-gray-800 flex items-center justify-between w-full`}>
                                 <div className="flex flex-col gap-2">
@@ -3558,7 +3558,7 @@ const CodeEditor = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${problem.type === 'quiz' ? 'bg-amber-600/10 text-amber-600' : 'bg-emerald-600/10 text-emerald-600'}`}>
-                                            {problem.type === 'material' ? 'ARTICLE' : 'QUIZ'}
+                                            {(problem.type === 'material' || problem.type === 'article') ? 'ARTICLE' : 'QUIZ'}
                                         </span>
                                     </div>
                                 </div>
@@ -3566,7 +3566,7 @@ const CodeEditor = () => {
 
                             {/* Content based on problem type */}
                             <div className="w-full">
-                                {problem.type === 'material' && (
+                                {(problem.type === 'material' || problem.type === 'article') && (
                                     <div className="max-w-4xl mx-auto py-4 animate-in fade-in duration-500">
                                         <div className={`bg-[#F1F3F4] dark:bg-[#111827] rounded-3xl border border-gray-100 dark:border-gray-800 p-6 sm:p-8 transition-colors ${!isDark ? 'shadow-sm' : ''}`}>
                                             <EditorialRenderer
@@ -3580,6 +3580,25 @@ const CodeEditor = () => {
                                                 }}
                                                 hideVideo={true}
                                             />
+
+                                            {/* Mark as Read Button */}
+                                            <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                                                {problem.isSolved ? (
+                                                    <div className="flex items-center gap-2 px-6 py-3 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 font-black text-xs uppercase tracking-widest">
+                                                        <CheckCircle size={18} />
+                                                        Completed & Read
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleCompleteNonCoding(null)}
+                                                        disabled={isSubmittingNonCoding}
+                                                        className="flex items-center gap-2 px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-primary-500/20 disabled:opacity-50"
+                                                    >
+                                                        {isSubmittingNonCoding ? <Loader2 size={18} className="animate-spin" /> : <CheckSquare size={18} />}
+                                                        Mark as Read
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

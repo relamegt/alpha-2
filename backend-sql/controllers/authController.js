@@ -82,7 +82,7 @@ const login = async (req, res) => {
 
         // Generate tokens with version
         const accessToken = jwt.sign(
-            { userId: user.id.toString(), email: user.email, role: user.role, tokenVersion },
+            { userId: user.id.toString(), email: user.email, role: user.role, studentType: user.studentType || 'ONLINE', tokenVersion },
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '24h' }
         );
@@ -114,6 +114,7 @@ const login = async (req, res) => {
                 role: user.role,
                 batchId: user.batchId,
                 batchName: user.batchName,
+                studentType: user.studentType || 'ONLINE',
                 isOnline: user.isOnline || false,
                 assignedBatches: user.assignedBatches || [],
                 profile: user.profile,
@@ -156,8 +157,9 @@ const signup = async (req, res) => {
             firstName,
             lastName,
             role: role || 'student',
-            isFirstLogin: true, // Manual signup users should also complete profile if needed
-            profileCompleted: false
+            studentType: 'ONLINE',
+            isFirstLogin: false, // Online students skip profile completion flow
+            profileCompleted: true
         });
 
         res.status(201).json({
@@ -222,8 +224,9 @@ const googleLogin = async (req, res) => {
                     firstName,
                     lastName,
                     role: 'student',
-                    isFirstLogin: true, // Force profile completion to set a real username
-                    profileCompleted: false,
+                    studentType: 'ONLINE',
+                    isFirstLogin: false, // Online students skip profile completion flow
+                    profileCompleted: true,
                     profile: { profilePicture }
                 });
             }
@@ -246,7 +249,7 @@ const googleLogin = async (req, res) => {
 
         // Generate tokens
         const accessToken = jwt.sign(
-            { userId: user.id.toString(), email: user.email, role: user.role, tokenVersion },
+            { userId: user.id.toString(), email: user.email, role: user.role, studentType: user.studentType || 'ONLINE', tokenVersion },
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '24h' }
         );
@@ -273,6 +276,7 @@ const googleLogin = async (req, res) => {
                 role: user.role,
                 batchId: user.batchId,
                 batchName: user.batchName,
+                studentType: user.studentType || 'ONLINE',
                 isOnline: user.isOnline || false,
                 googleId: user.googleId,
                 profileCompleted: user.profileCompleted,
@@ -341,6 +345,17 @@ const completeFirstLoginProfile = async (req, res) => {
                 return res.status(400).json({
                     success: false,
                     message: 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+                });
+            }
+        }
+
+        // Educational fields validation for students
+        if (user.role === 'student') {
+            const { rollNumber, branch, institution, degree } = req.body;
+            if (!rollNumber || !branch || !institution || !degree) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'All educational fields (Roll Number, Branch, Institution, Degree) are required for students'
                 });
             }
         }
@@ -415,6 +430,14 @@ const completeFirstLoginProfile = async (req, res) => {
                     ...address
                 }
             },
+            education: user.role === 'student' ? {
+                rollNumber: req.body.rollNumber,
+                institution: req.body.institution,
+                degree: req.body.degree,
+                branch: req.body.branch,
+                startYear: req.body.startYear,
+                endYear: req.body.endYear
+            } : user.education,
             updatedAt: new Date()
         };
 
@@ -470,6 +493,7 @@ const refreshToken = async (req, res) => {
                 userId: user.id.toString(),
                 email: user.email,
                 role: user.role,
+                studentType: user.studentType || 'ONLINE',
                 tokenVersion: user.tokenVersion // Keep existing version
             },
             process.env.JWT_ACCESS_SECRET,
@@ -543,6 +567,7 @@ const getCurrentUser = async (req, res) => {
                 role: user.role,
                 batchId: user.batchId,
                 batchName: user.batchName,
+                studentType: user.studentType || 'ONLINE',
                 isOnline: user.isOnline || false,
                 assignedBatches: user.assignedBatches || [],
                 profile: user.profile,

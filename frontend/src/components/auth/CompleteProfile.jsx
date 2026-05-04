@@ -135,6 +135,9 @@ const CompleteProfile = () => {
                 if (userData) {
                     setFormData(prev => ({
                         ...prev,
+                        firstName: userData.firstName || prev.firstName,
+                        lastName: userData.lastName || prev.lastName,
+                        profilePicture: userData.profile?.profilePicture || prev.profilePicture,
                         institution: userData.education?.institution || batchEducation?.institution || '',
                         degree: userData.education?.degree || batchEducation?.degree || '',
                         startYear: userData.education?.startYear || batchEducation?.startYear || '',
@@ -218,9 +221,11 @@ const CompleteProfile = () => {
             newErrors.lastName = 'Last name is required';
         }
 
-        if (!formData.newPassword) {
+        const isGoogleUser = !!user?.googleId;
+
+        if (!formData.newPassword && !isGoogleUser) {
             newErrors.newPassword = 'Password is required';
-        } else {
+        } else if (formData.newPassword) {
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
             if (!passwordRegex.test(formData.newPassword)) {
                 newErrors.newPassword = 'Password must be at least 8 characters with uppercase, lowercase, number, and special character';
@@ -267,6 +272,14 @@ const CompleteProfile = () => {
             newErrors.branch = 'Branch is required';
         }
 
+        if (!formData.institution.trim()) {
+            newErrors.institution = 'Institution is required';
+        }
+
+        if (!formData.degree.trim()) {
+            newErrors.degree = 'Degree is required';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -278,6 +291,10 @@ const CompleteProfile = () => {
             isValid = validateStep1();
         } else if (step === 2) {
             isValid = validateStep2();
+            // If not a student, step 2 is the last step before submit
+            if (isValid && user?.role !== 'student') {
+                // We'll call handleSubmit directly or just let them see the "Finish" step
+            }
         }
 
         if (isValid) {
@@ -521,7 +538,7 @@ const CompleteProfile = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        New Password *
+                                        New Password {user?.googleId ? '(Optional)' : '*'}
                                     </label>
                                     <input
                                         type="password"
@@ -529,7 +546,7 @@ const CompleteProfile = () => {
                                         value={formData.newPassword}
                                         onChange={handleChange}
                                         className={`input-field ${errors.newPassword ? 'border-red-500' : ''}`}
-                                        placeholder="Enter strong password"
+                                        placeholder={user?.googleId ? "Set a password if you want" : "Enter strong password"}
                                     />
                                     {errors.newPassword && (
                                         <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>
@@ -541,7 +558,7 @@ const CompleteProfile = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Confirm Password *
+                                        Confirm Password {user?.googleId ? '(Optional)' : '*'}
                                     </label>
                                     <input
                                         type="password"
@@ -549,7 +566,7 @@ const CompleteProfile = () => {
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         className={`input-field ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                                        placeholder="Re-enter password"
+                                        placeholder={user?.googleId ? "Re-enter password" : "Re-enter password"}
                                     />
                                     {errors.confirmPassword && (
                                         <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
@@ -759,35 +776,41 @@ const CompleteProfile = () => {
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Institution (From Batch)
+                                                Institution *
                                             </label>
                                             <input
                                                 type="text"
                                                 name="institution"
                                                 value={formData.institution}
-                                                readOnly
-                                                disabled
-                                                className="input-field bg-gray-100 cursor-not-allowed"
-                                                placeholder="Auto-filled from your batch"
+                                                onChange={handleChange}
+                                                readOnly={!!formData.institution && formData.institution !== ''}
+                                                disabled={!!formData.institution && formData.institution !== ''}
+                                                className={`input-field ${formData.institution ? 'bg-gray-100 cursor-not-allowed' : ''} ${errors.institution ? 'border-red-500' : ''}`}
+                                                placeholder="Your university/college"
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">This is automatically set from your batch</p>
+                                            {errors.institution && (
+                                                <p className="text-red-500 text-xs mt-1">{errors.institution}</p>
+                                            )}
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Degree (From Batch)
+                                                    Degree *
                                                 </label>
                                                 <input
                                                     type="text"
                                                     name="degree"
                                                     value={formData.degree}
-                                                    readOnly
-                                                    disabled
-                                                    className="input-field bg-gray-100 cursor-not-allowed"
-                                                    placeholder="Auto-filled from your batch"
+                                                    onChange={handleChange}
+                                                    readOnly={!!formData.degree && formData.degree !== ''}
+                                                    disabled={!!formData.degree && formData.degree !== ''}
+                                                    className={`input-field ${formData.degree ? 'bg-gray-100 cursor-not-allowed' : ''} ${errors.degree ? 'border-red-500' : ''}`}
+                                                    placeholder="e.g. B.Tech, MCA"
                                                 />
-                                                <p className="text-xs text-gray-500 mt-1">This is automatically set from your batch</p>
+                                                {errors.degree && (
+                                                    <p className="text-red-500 text-xs mt-1">{errors.degree}</p>
+                                                )}
                                             </div>
 
                                             <div>

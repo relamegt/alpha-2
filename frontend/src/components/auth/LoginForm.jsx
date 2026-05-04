@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TypeAnimation } from 'react-type-animation';
 import { Code, Sparkles } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 
 
@@ -113,7 +114,7 @@ const CodeBlock = () => {
 };
 
 const LoginForm = () => {
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const location = useLocation();
     const [formData, setFormData] = useState({
         email: '',
@@ -176,11 +177,9 @@ const LoginForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-
         if (!validateForm()) {
             return;
         }
-
 
         setLoading(true);
         try {
@@ -189,6 +188,19 @@ const LoginForm = () => {
         } catch (error) {
             console.error('Login error:', error);
             // Error toast is already shown in login function
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            setLoading(true);
+            await googleLogin(credentialResponse.credential);
+            // AuthContext handles navigation after login
+        } catch (error) {
+            console.error('Google login error:', error);
+            toast.error('Google login failed');
         } finally {
             setLoading(false);
         }
@@ -374,6 +386,26 @@ const LoginForm = () => {
                                 )}
                             </button>
 
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm font-medium">
+                                    <span className="px-4 bg-[#F1F3F4] dark:bg-[#111117] text-gray-500">Or continue with</span>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => toast.error('Google Sign In failed')}
+                                    useOneTap
+                                    theme="filled_blue"
+                                    shape="pill"
+                                    width="100%"
+                                />
+                            </div>
+
                             {/* Security Notice */}
                             {/* <div className="mt-6 p-4 bg-orange-50/80 border border-orange-100 rounded-xl flex items-start">
                                 <svg className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -389,14 +421,16 @@ const LoginForm = () => {
                                 </div>
                             </div> */}
                         </form>
+                            {/* Signup Link */}
+                            <div className="text-center mt-6">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                    Don't have an account?{' '}
+                                    <Link to="/signup" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+                                        Sign Up
+                                    </Link>
+                                </p>
+                            </div>
                     </div>
-
-                    {/* Help Text */}
-                    {/* <div className="text-center mt-6">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                            Need help? <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Contact your administrator</a>
-                        </p>
-                    </div> */}
                 </div>
             </div>
         </div>

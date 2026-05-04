@@ -69,9 +69,9 @@ class ProgressService {
                     submission = submissionData.submission; // Should be passed if already created
                 } else if (isNonCoding) {
                     // Single latest attempt logic: upsert or update existing
-                    const existingSubmission = await tx.submission.findFirst({
+                    const existingSubmission = fkColumn ? await tx.submission.findFirst({
                         where: { studentId, [fkColumn]: contentId }
-                    });
+                    }) : null;
 
                     if (existingSubmission) {
                         submission = await tx.submission.update({
@@ -88,20 +88,19 @@ class ProgressService {
                             }
                         });
                     } else {
-                        submission = await tx.submission.create({
-                            data: {
-                                studentId,
-                                [fkColumn]: contentId,
-                                code: submissionData.code,
-                                language: submissionData.language || 'json',
-                                verdict: VERDICTS.ACCEPTED,
-                                testCasesPassed: submissionData.testCasesPassed || 0,
-                                totalTestCases: submissionData.totalTestCases || 0,
-                                points: coinsEarned,
-                                courseId,
-                                metadata: submissionData.metadata || {}
-                            }
-                        });
+                    const data = {
+                        studentId,
+                        code: submissionData.code,
+                        language: submissionData.language || 'json',
+                        verdict: VERDICTS.ACCEPTED,
+                        testCasesPassed: submissionData.testCasesPassed || 0,
+                        totalTestCases: submissionData.totalTestCases || 0,
+                        points: coinsEarned,
+                        courseId,
+                        metadata: submissionData.metadata || {}
+                    };
+                    if (fkColumn) data[fkColumn] = contentId;
+                    submission = await tx.submission.create({ data });
                     }
                 } else {
                     // Coding problems allow multiple submissions (historical record)
@@ -137,7 +136,7 @@ class ProgressService {
                     status: 'completed',
                     lastAttemptAt: new Date(),
                     courseId,
-                    [fkColumn]: contentId
+                    ...(fkColumn ? { [fkColumn]: contentId } : {})
                 },
                 create: {
                     studentId,
@@ -145,7 +144,7 @@ class ProgressService {
                     contentId,
                     status: 'completed',
                     courseId,
-                    [fkColumn]: contentId
+                    ...(fkColumn ? { [fkColumn]: contentId } : {})
                 }
             });
 
@@ -198,10 +197,11 @@ class ProgressService {
             [CONTENT_TYPES.VIDEO]:   'videoId',
             [CONTENT_TYPES.QUIZ]:    'quizId',
             [CONTENT_TYPES.ARTICLE]: 'articleId',
+            [CONTENT_TYPES.PUBLIC_ARTICLE]: null, // Public articles don't have a direct FK in Progress yet
             [CONTENT_TYPES.PRACTICAL]: 'practicalExerciseId',
             [CONTENT_TYPES.ASSIGNMENT]: 'assignmentId',
         };
-        return mapping[contentType] || 'problemId';
+        return mapping[contentType] || null;
     }
 }
 

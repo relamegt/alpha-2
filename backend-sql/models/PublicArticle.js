@@ -99,12 +99,59 @@ class PublicArticle {
         });
 
         if (article && userId) {
-            const saved = await prisma.publicArticleSave.findUnique({
-                where: {
-                    userId_articleId: { userId, articleId: article.id }
-                }
-            });
+            const [saved, progress] = await Promise.all([
+                prisma.publicArticleSave.findUnique({
+                    where: { userId_articleId: { userId, articleId: article.id } }
+                }),
+                prisma.progress.findUnique({
+                    where: {
+                        user_content_unique: {
+                            studentId: userId,
+                            contentType: 'public_article',
+                            contentId: article.id
+                        }
+                    }
+                })
+            ]);
             article.isSaved = !!saved;
+            article.isCompleted = progress?.status === 'completed';
+        }
+
+        return article;
+    }
+
+    static async findById(id, userId = null) {
+        const article = await prisma.publicArticle.findUnique({
+            where: { id },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        profileImage: true,
+                    }
+                }
+            }
+        });
+
+        if (article && userId) {
+            const [saved, progress] = await Promise.all([
+                prisma.publicArticleSave.findUnique({
+                    where: { userId_articleId: { userId, articleId: article.id } }
+                }),
+                prisma.progress.findUnique({
+                    where: {
+                        user_content_unique: {
+                            studentId: userId,
+                            contentType: 'public_article',
+                            contentId: article.id
+                        }
+                    }
+                })
+            ]);
+            article.isSaved = !!saved;
+            article.isCompleted = progress?.status === 'completed';
         }
 
         return article;

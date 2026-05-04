@@ -1,4 +1,6 @@
 const PublicArticle = require("../models/PublicArticle");
+const ProgressService = require("../services/progressService");
+const { CONTENT_TYPES } = require("../utils/constants");
 
 const getAllArticles = async (req, res) => {
   try {
@@ -83,10 +85,32 @@ const getRecentArticles = async (req, res) => {
   }
 };
 
+const markAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const article = await PublicArticle.findById(id);
+    if (!article) {
+      return res.status(404).json({ success: false, message: "Article not found" });
+    }
+
+    const result = await ProgressService.handleContentCompletion(
+      req.user.userId,
+      { ...article, type: CONTENT_TYPES.PUBLIC_ARTICLE },
+      null,
+      false // No coins for articles usually, but follow standard
+    );
+
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const deleteArticle = async (req, res) => {
   try {
-    await PublicArticle.delete(req.params.id);
-    res.json({ success: true, message: "Article deleted" });
+    const { id } = req.params;
+    await PublicArticle.delete(id);
+    res.json({ success: true, message: "Article deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -102,4 +126,5 @@ module.exports = {
   createArticle,
   updateArticle,
   deleteArticle,
+  markAsRead,
 };

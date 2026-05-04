@@ -16,16 +16,18 @@ import {
 import StatCard from './dashboard/StatCard';
 import RankScoreChart from './dashboard/RankScoreChart';
 import StreakCalendar from './dashboard/StreakCalendar';
+import MetricChart from './dashboard/MetricChart';
 
 const Dashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [selectedRange, setSelectedRange] = useState('month'); // week, month, year
     const [activeTab, setActiveTab] = useState('summary');
 
     const { data, isLoading } = useQuery({
-        queryKey: ['dashboard'],
+        queryKey: ['dashboard', selectedRange],
         queryFn: async () => {
-            const response = await profileService.getDashboardData();
+            const response = await profileService.getDashboardData(selectedRange);
             return response.dashboard;
         },
         enabled: !!user,
@@ -71,8 +73,11 @@ const Dashboard = () => {
     const {
         progress,
         leaderboardStats,
-        recentSubmissions,
-        assignedCourses = []
+        recentSubmissions = [],
+        assignedCourses = [],
+        monthlySheetProgress = [],
+        courseContests = [],
+        internalContests = []
     } = dashboardData;
 
     return (
@@ -189,7 +194,7 @@ const Dashboard = () => {
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
                                         <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Rank & Score progress</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Real-time performance metrics</p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2">
@@ -200,16 +205,22 @@ const Dashboard = () => {
                                                 <div className="w-3 h-3 bg-purple-500/20 rounded flex items-center justify-center"><div className="w-1.5 h-1.5 bg-purple-500 rounded-sm" /></div> Score: {leaderboardStats?.score || 'N/A'}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                            <CalendarIcon size={14} /> This Week <ChevronDown size={14} />
-                                        </div>
+                                        <select 
+                                            value={selectedRange}
+                                            onChange={(e) => setSelectedRange(e.target.value)}
+                                            className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 outline-none cursor-pointer hover:border-primary-500/50 transition-colors"
+                                        >
+                                            <option value="week">This Week</option>
+                                            <option value="month">This Month</option>
+                                            <option value="year">This Year</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <RankScoreChart data={progress?.chartData || []} />
                             </div>
 
                             <div className="lg:col-span-4 flex flex-col h-full">
-                                <StreakCalendar streakData={[]} />
+                                <StreakCalendar activeDates={progress?.activeDateStrings || []} />
                             </div>
                         </div>
 
@@ -219,36 +230,81 @@ const Dashboard = () => {
                                 <div className="flex items-center justify-between mb-8">
                                     <div>
                                         <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Sheets</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Monthly progress on practice sheets</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                            <CalendarIcon size={14} /> This Month <ChevronDown size={14} />
+                                            <CalendarIcon size={14} /> This Month
                                         </div>
                                         <Link to="/sheets" className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 hover:text-white transition-colors">See All</Link>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="w-16 h-16 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 mb-6">
-                                        <FileText size={32} />
+                                
+                                {monthlySheetProgress.length > 0 ? (
+                                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {monthlySheetProgress.map((sheet, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-4 bg-[var(--color-bg-primary)] rounded-2xl border border-gray-100 dark:border-gray-800">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                                                        <CheckCircle size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{sheet.sheetProblem?.title || 'Untitled Problem'}</p>
+                                                        <p className="text-[11px] text-gray-500">{new Date(sheet.completedAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded text-[10px] uppercase font-bold tracking-wider">Done</span>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <p className="text-xl text-gray-900 dark:text-white">No sheets</p>
-                                    <p className="text-sm text-gray-500 mt-2">No sheet progress in this period, or nothing enrolled yet</p>
-                                </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                                        <div className="w-16 h-16 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 mb-6">
+                                            <FileText size={32} />
+                                        </div>
+                                        <p className="text-xl text-gray-900 dark:text-white">No sheets</p>
+                                        <p className="text-sm text-gray-500 mt-2">No sheet progress in this period, or nothing enrolled yet</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
                                 <div className="mb-8">
-                                    <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Monthly Leaderboard</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
+                                    <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Active Contests</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Participate and compete with others</p>
                                 </div>
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="w-16 h-16 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 mb-6">
-                                        <Trophy size={32} />
+                                
+                                {courseContests.length > 0 || internalContests.length > 0 ? (
+                                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {[...courseContests, ...internalContests].slice(0, 5).map((contest, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-4 bg-[var(--color-bg-primary)] rounded-2xl border border-gray-100 dark:border-gray-800 group hover:border-primary-500/50 transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                                                        <Award size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{contest.title}</p>
+                                                        <p className="text-[11px] text-gray-500">{contest.duration} mins • {contest.difficulty || 'Medium'}</p>
+                                                    </div>
+                                                </div>
+                                                <Link 
+                                                    to={contest.courseId ? `/course-contest/${contest.id}` : `/contest/${contest.id}`} 
+                                                    className="p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all text-primary-500"
+                                                >
+                                                    <ArrowRight size={18} />
+                                                </Link>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <p className="text-xl text-gray-900 dark:text-white">No leaderboard data</p>
-                                    <p className="text-sm text-gray-500 mt-2">Complete activities to appear on the leaderboard</p>
-                                </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                                        <div className="w-16 h-16 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 mb-6">
+                                            <Trophy size={32} />
+                                        </div>
+                                        <p className="text-xl text-gray-900 dark:text-white">No active contests</p>
+                                        <p className="text-sm text-gray-500 mt-2">Complete activities to appear on the leaderboard</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -257,19 +313,44 @@ const Dashboard = () => {
                             <div className="flex items-center justify-between mb-8">
                                 <div>
                                     <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Recent Activities</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
+                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Your latest submissions across all courses</p>
                                 </div>
                                 <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                    <CalendarIcon size={14} /> This Month <ChevronDown size={14} />
+                                    <CalendarIcon size={14} /> This Month
                                 </div>
                             </div>
-                            <div className="flex flex-col items-center justify-center py-20 text-center">
-                                <div className="w-20 h-20 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-3xl flex items-center justify-center text-gray-400 mb-6">
-                                    <Zap size={40} />
+                            
+                            {recentSubmissions.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {recentSubmissions.map((sub, idx) => (
+                                        <div key={idx} className="p-4 bg-[var(--color-bg-primary)] rounded-2xl border border-gray-100 dark:border-gray-800 flex items-start gap-4">
+                                            <div className={`p-2 rounded-xl ${
+                                                sub.verdict === 'Accepted' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                                            }`}>
+                                                {sub.problemType === 'video' ? <Play size={18} /> : 
+                                                 sub.problemType === 'quiz' ? <CheckCircle size={18} /> : <Zap size={18} />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{sub.problemTitle}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                                                        sub.verdict === 'Accepted' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                                                    }`}>{sub.verdict}</span>
+                                                    <span className="text-[10px] text-gray-500">{new Date(sub.submittedAt).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <p className="text-xl text-gray-900 dark:text-white">No recent activities</p>
-                                <p className="text-sm text-gray-500 mt-2">Start learning to see your activity history here</p>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-20 text-center">
+                                    <div className="w-20 h-20 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-3xl flex items-center justify-center text-gray-400 mb-6">
+                                        <Zap size={40} />
+                                    </div>
+                                    <p className="text-xl text-gray-900 dark:text-white">No recent activities</p>
+                                    <p className="text-sm text-gray-500 mt-2">Start learning to see your activity history here</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -281,7 +362,7 @@ const Dashboard = () => {
                             <div className="flex items-center justify-between mb-8">
                                 <div>
                                     <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">Rank & Score progress</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
+                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Detailed performance history</p>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
@@ -292,9 +373,15 @@ const Dashboard = () => {
                                             <div className="w-3 h-3 bg-purple-500/20 rounded flex items-center justify-center"><div className="w-1.5 h-1.5 bg-purple-500 rounded-sm" /></div> Score: {leaderboardStats?.score || 'N/A'}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                        <CalendarIcon size={14} /> This Week <ChevronDown size={14} />
-                                    </div>
+                                    <select 
+                                        value={selectedRange}
+                                        onChange={(e) => setSelectedRange(e.target.value)}
+                                        className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 outline-none cursor-pointer hover:border-primary-500/50 transition-colors"
+                                    >
+                                        <option value="week">Last 7 Days</option>
+                                        <option value="month">Last 30 Days</option>
+                                        <option value="year">Last 12 Months</option>
+                                    </select>
                                 </div>
                             </div>
                             <RankScoreChart data={progress?.chartData || []} />
@@ -303,75 +390,19 @@ const Dashboard = () => {
                         {/* Specific Metrics Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[
-                                { title: 'Quizzes Passed', icon: CheckCircle },
-                                { title: 'Videos Watched', icon: Play },
-                                { title: 'Problems Solved', icon: Zap },
-                                { title: 'Articles Read', icon: FileText },
+                                { title: 'Quizzes Passed', icon: CheckCircle, data: progress?.metrics?.quizzes || [] },
+                                { title: 'Videos Watched', icon: Play, data: progress?.metrics?.videos || [] },
+                                { title: 'Problems Solved', icon: Zap, data: progress?.metrics?.problems || [] },
+                                { title: 'Articles Read', icon: FileText, data: progress?.metrics?.articles || [] }
                             ].map((m, i) => (
-                                <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div>
-                                            <h3 className="text-2xl text-gray-900 dark:text-white tracking-tight">{m.title}</h3>
-                                            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">An exciting exercise is waiting for you</p>
-                                        </div>
-                                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                            <CalendarIcon size={14} /> This Month <ChevronDown size={14} />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-center justify-center py-16 text-center opacity-40 grayscale relative overflow-hidden">
-                                        <div className="w-full h-24 flex items-end gap-2 mb-8 px-10 relative z-10">
-                                            {[30, 50, 40, 60, 45, 70, 55].map((h, idx) => (
-                                                <div key={idx} className="flex-1 bg-gray-200 dark:bg-gray-800 rounded-t-lg" style={{ height: `${h}%` }} />
-                                            ))}
-                                        </div>
-                                        <p className="text-xl text-gray-900 dark:text-white relative z-10">Nothing to show here</p>
-                                        <p className="text-sm text-gray-500 mt-2 max-w-[280px] relative z-10">There is no data to show here yet either you haven't completed any course or you haven't started any course</p>
-                                    </div>
-                                </div>
+                                <MetricChart 
+                                    key={i}
+                                    title={m.title}
+                                    data={m.data}
+                                    color={i === 0 ? '#10b981' : i === 1 ? '#3b82f6' : i === 2 ? '#f59e0b' : '#7d63f2'}
+                                    range={selectedRange}
+                                />
                             ))}
-                        </div>
-
-                        {/* Bottom Row Specific Metrics */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div>
-                                        <h3 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Recent Quiz Solved</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">An exciting exercise is waiting for you</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                        <CalendarIcon size={14} /> This Month <ChevronDown size={14} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="w-full h-24 mb-8 opacity-10 space-y-2">
-                                        <div className="h-4 bg-gray-500 rounded-full w-3/4 mx-auto" />
-                                        <div className="h-4 bg-gray-500 rounded-full w-1/2 mx-auto" />
-                                        <div className="h-4 bg-gray-500 rounded-full w-2/3 mx-auto" />
-                                    </div>
-                                    <p className="text-xl font-bold text-gray-900 dark:text-white">Nothing to show here</p>
-                                    <p className="text-sm text-gray-500 mt-2">There is no data to show here yet either you haven't completed any course or you haven't started any course</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div>
-                                        <h3 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Contest Rankings</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">An exciting exercise is waiting for you</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                        <CalendarIcon size={14} /> This Month <ChevronDown size={14} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="w-16 h-16 bg-[var(--color-bg-surface)] dark:bg-white/5 rounded-2xl flex items-center justify-center text-gray-400 mb-6">
-                                        <Award size={32} />
-                                    </div>
-                                    <p className="text-xl font-bold text-gray-900 dark:text-white">No contest rankings</p>
-                                    <p className="text-sm text-gray-500 mt-2">Participate in contests to see your rankings here</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}

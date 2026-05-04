@@ -39,6 +39,7 @@ class User {
                     skills: userData.skills || [],
                     alphaCoins: 0,
                     tokenVersion: 0,
+                    studentType: userData.studentType || 'ONLINE',
                     lastLogin: null
                 }
             });
@@ -124,6 +125,8 @@ class User {
         if (!user) return null;
 
         // Populate batch info for online students
+        user.studentType = user.studentType || 'ONLINE';
+        
         if (!user.batchId && user.userBatches && user.userBatches.length > 0) {
             user.batchId = user.userBatches[0].batchId;
             user.batch = user.userBatches[0].batch;
@@ -517,7 +520,8 @@ class User {
                         education: userData.education || {},
                         skills: userData.skills || [],
                         alphaCoins: 0,
-                        tokenVersion: 0
+                        tokenVersion: 0,
+                        studentType: userData.studentType || 'ONLINE'
                     };
                 })
             );

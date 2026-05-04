@@ -106,7 +106,7 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
 
     if (data.length === 0) {
         return (
-            <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-96 flex flex-col items-center justify-center text-center">
+            <div className="bg-white dark:bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 h-96 flex flex-col items-center justify-center text-center">
                 <div className="bg-gray-50 dark:bg-[#111117]/50 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-2xl">
                     📊
                 </div>
@@ -124,7 +124,7 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
             // For GlobalRankGraph, the payload will contain `totalScore` and `date`.
             // Let's adapt it for GlobalRankGraph's data structure.
             return (
-                <div className="bg-[#F1F3F4] dark:bg-gray-800 p-3 border border-gray-100 dark:border-gray-700 shadow-xl rounded-lg text-xs z-50 min-w-[150px]">
+                <div className="bg-white dark:bg-[var(--color-bg-card)] p-3 border border-gray-100 dark:border-gray-800 shadow-xl rounded-lg text-xs z-50 min-w-[150px]">
                     <p className="font-bold text-gray-800 dark:text-gray-100 mb-1">Overall Score</p>
                     <p className="text-gray-400 dark:text-gray-500 text-[10px] mb-2">{data.date}</p>
 
@@ -139,8 +139,8 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
     };
 
     return (
-        <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-all">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-6 font-display">Overall Score Progression</h3>
+        <div className="bg-[var(--color-bg-card)] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-all">
+            <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-6 tracking-tight">Overall Score Progression</h3>
             <div className="h-96 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
@@ -155,27 +155,32 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
                         </defs>
                         <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                            tick={{ fontSize: 10, fontWeight: 500, fill: '#9CA3AF' }}
                             axisLine={false}
                             tickLine={false}
                             minTickGap={50}
                         />
                         <YAxis
-                            tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                            tick={{ fontSize: 10, fontWeight: 500, fill: '#9CA3AF' }}
                             axisLine={false}
                             tickLine={false}
                             domain={['auto', 'auto']}
+                            allowDecimals={false}
                         />
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" className="opacity-40 dark:opacity-10" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-gray-200 dark:text-gray-800" opacity={0.5} />
                         <Tooltip
+                            cursor={{ stroke: 'currentColor', opacity: 0.1 }}
                             contentStyle={{
                                 backgroundColor: 'var(--color-bg-card)',
                                 borderRadius: '12px',
-                                border: '1px solid var(--color-border)',
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                                border: '1px solid var(--color-border-subtle)',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: 'inherit'
                             }}
                             labelStyle={{ color: 'var(--color-text-muted)', fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}
-                            itemStyle={{ color: 'var(--color-text-primary)' }}
+                            itemStyle={{ color: '#F59E0B' }}
                         />
                         <Area
                             type="monotone"

@@ -126,7 +126,7 @@ const getDashboardData = async (req, res) => {
         const verdictData = await Submission.getVerdictData(studentId);
 
         // Get recent submissions
-        const recentSubmissions = await Submission.findRecentSubmissions(studentId, 5);
+        const recentSubmissions = await Submission.findRecentSubmissions(studentId, 10);
 
         // Get language stats
         const languageStats = await Submission.getLanguageStats(studentId);
@@ -134,15 +134,44 @@ const getDashboardData = async (req, res) => {
         // Get progress (base stats from DB)
         const progress = await Progress.getStatistics(studentId);
 
+        // --- Sheets Progress Tracking ---
+        const monthlySheetProgress = await prisma.sheetProgress.findMany({
+            where: { 
+                userId: studentId, 
+                completed: true,
+                completedAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+            },
+            include: { sheetProblem: true }
+        });
+
+        // --- Contests Logic (ONLINE vs OFFLINE) ---
+        // 1. Course Contests (Available to all enrolled)
+        const courseContests = await prisma.courseContest.findMany({
+            where: {
+                OR: [
+                    { courseId: { in: assignedCourses.map(c => c.id) } },
+                    { batchId: student.batchId || 'NONE' }
+                ]
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // 2. Internal Contests (OFFLINE ONLY)
+        let internalContests = [];
+        if (student.studentType === 'OFFLINE' && student.batchId) {
+            internalContests = await prisma.contest.findMany({
+                where: { batchId: student.batchId },
+                orderBy: { startTime: 'desc' }
+            });
+        }
+
         // ── Compute current streak & max streak from heatmap (source of truth) ──
-        // These are guaranteed to match the graph since both use the same heatmap data.
         const activeDateStrings = new Set(
             Object.entries(heatmapData)
                 .filter(([, count]) => count > 0)
                 .map(([dateStr]) => dateStr)
         );
 
-        // Walk backwards from today to find current streak
         let currentStreak = 0;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -151,7 +180,6 @@ const getDashboardData = async (req, res) => {
             currentStreak++;
             checkDate.setDate(checkDate.getDate() - 1);
         }
-        // If nothing today, check if streak ran through yesterday
         if (currentStreak === 0) {
             checkDate = new Date(today);
             checkDate.setDate(checkDate.getDate() - 1);
@@ -161,7 +189,6 @@ const getDashboardData = async (req, res) => {
             }
         }
 
-        // Walk all active dates ascending to compute max streak
         const sortedDates = [...activeDateStrings]
             .map(ds => new Date(ds))
             .sort((a, b) => a - b);
@@ -180,18 +207,17 @@ const getDashboardData = async (req, res) => {
             prevDate = d;
         }
 
-        // --- Compute Chart Data (Real history for the last 8 days) ---
+        // --- Compute Chart Data & Metrics (Dynamic Range: Week, Month, Year) ---
+        const range = req.query.range || 'month';
         const chartData = [];
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        
-        // Get all accepted submissions to compute historical cumulative scores
+        const metrics = { quizzes: [], videos: [], problems: [], articles: [] };
+
         const allAcceptedSubmissions = await prisma.submission.findMany({
             where: { studentId, verdict: 'Accepted' },
             select: { createdAt: true, problemId: true, sqlProblemId: true, quizId: true },
             orderBy: { createdAt: 'asc' }
         });
 
-        // Map content to points
         const problemPoints = await prisma.problem.findMany({ select: { id: true, points: true } });
         const sqlPoints = await prisma.sqlProblem.findMany({ select: { id: true, points: true } });
         const quizPoints = await prisma.quiz.findMany({ select: { id: true, points: true } });
@@ -199,20 +225,11 @@ const getDashboardData = async (req, res) => {
         const pointsMap = new Map();
         [...problemPoints, ...sqlPoints, ...quizPoints].forEach(p => pointsMap.set(p.id, p.points || 10));
 
-        // --- Compute Detailed Metrics (Last 8 days aggregation) ---
-        const metrics = {
-            quizzes: [],
-            videos: [],
-            problems: [],
-            articles: []
-        };
-
         const progressRecords = await prisma.progress.findMany({
             where: { studentId, status: 'completed' },
             select: { contentType: true, lastAttemptAt: true }
         });
 
-        // Lazy-require Leaderboard to break the circular dependency chain
         let leaderboardStats = null;
         try {
             const LeaderboardModel = require('../models/Leaderboard');
@@ -221,50 +238,94 @@ const getDashboardData = async (req, res) => {
             console.error('[profileController] Leaderboard fetch failed:', e.message);
         }
 
-        for (let i = 7; i >= 0; i--) {
-            const date = new Date(today.getTime() - i * oneDayMs);
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = date.toLocaleString('en-US', { month: 'short' });
-            const label = `${day} ${month}`;
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
 
-            // Calculate score up to the END of this date
-            const endOfDate = new Date(date);
-            endOfDate.setHours(23, 59, 59, 999);
+        if (range === 'year') {
+            // Last 12 months aggregation
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthLabel = date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+                
+                const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 
-            let scoreAtDate = 0;
-            allAcceptedSubmissions.forEach(sub => {
-                const subDate = new Date(sub.createdAt);
-                if (subDate <= endOfDate) {
-                    const id = sub.problemId || sub.sqlProblemId || sub.quizId;
-                    scoreAtDate += pointsMap.get(id) || 10;
-                }
-            });
+                // Cumulative Score at end of month
+                let scoreAtDate = 0;
+                allAcceptedSubmissions.forEach(sub => {
+                    if (new Date(sub.createdAt) <= endOfMonth) {
+                        const id = sub.problemId || sub.sqlProblemId || sub.quizId;
+                        scoreAtDate += pointsMap.get(id) || 10;
+                    }
+                });
 
-            // For "real" data, we only show the rank for the current day (index 7)
-            const rankAtDate = (i === 0 && leaderboardStats) ? leaderboardStats.globalRank : 0;
-            
-            chartData.push({ 
-                name: label, 
-                score: scoreAtDate,
-                rank: rankAtDate
-            });
+                chartData.push({ 
+                    name: monthLabel, 
+                    score: scoreAtDate,
+                    rank: (i === 0 && leaderboardStats) ? leaderboardStats.globalRank : 0,
+                    fullDate: endOfMonth.toISOString()
+                });
 
-            // 2. Compute Specific Metrics (Daily counts)
-            const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
-            progressRecords.forEach(rec => {
-                const recDate = new Date(rec.lastAttemptAt);
-                if (recDate.toDateString() === date.toDateString()) {
-                    if (rec.contentType === 'quiz') counts.quizzes++;
-                    else if (rec.contentType === 'video') counts.videos++;
-                    else if (rec.contentType === 'problem') counts.problems++;
-                    else if (rec.contentType === 'article') counts.articles++;
-                }
-            });
+                // Monthly activity counts
+                const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
+                progressRecords.forEach(rec => {
+                    const recDate = new Date(rec.lastAttemptAt);
+                    if (recDate >= startOfMonth && recDate <= endOfMonth) {
+                        if (rec.contentType === 'quiz') counts.quizzes++;
+                        else if (rec.contentType === 'video') counts.videos++;
+                        else if (rec.contentType === 'problem') counts.problems++;
+                        else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
+                    }
+                });
 
-            metrics.quizzes.push({ name: label, count: counts.quizzes });
-            metrics.videos.push({ name: label, count: counts.videos });
-            metrics.problems.push({ name: label, count: counts.problems });
-            metrics.articles.push({ name: label, count: counts.articles });
+                metrics.quizzes.push({ name: monthLabel, count: counts.quizzes });
+                metrics.videos.push({ name: monthLabel, count: counts.videos });
+                metrics.problems.push({ name: monthLabel, count: counts.problems });
+                metrics.articles.push({ name: monthLabel, count: counts.articles });
+            }
+        } else {
+            // Daily aggregation for week/month
+            const daysToFetch = range === 'week' ? 7 : 30;
+            const oneDayMs = 24 * 60 * 60 * 1000;
+
+            for (let i = daysToFetch - 1; i >= 0; i--) {
+                const date = new Date(today.getTime() - i * oneDayMs);
+                const label = `${date.getDate().toString().padStart(2, '0')} ${date.toLocaleString('en-US', { month: 'short' })}`;
+
+                const endOfDate = new Date(date);
+                endOfDate.setHours(23, 59, 59, 999);
+
+                let scoreAtDate = 0;
+                allAcceptedSubmissions.forEach(sub => {
+                    if (new Date(sub.createdAt) <= endOfDate) {
+                        const id = sub.problemId || sub.sqlProblemId || sub.quizId;
+                        scoreAtDate += pointsMap.get(id) || 10;
+                    }
+                });
+
+                chartData.push({ 
+                    name: label, 
+                    score: scoreAtDate,
+                    rank: (i === 0 && leaderboardStats) ? leaderboardStats.globalRank : 0,
+                    fullDate: date.toISOString()
+                });
+
+                const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
+                progressRecords.forEach(rec => {
+                    const recDate = new Date(rec.lastAttemptAt);
+                    if (recDate.toDateString() === date.toDateString()) {
+                        if (rec.contentType === 'quiz') counts.quizzes++;
+                        else if (rec.contentType === 'video') counts.videos++;
+                        else if (rec.contentType === 'problem') counts.problems++;
+                        else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
+                    }
+                });
+
+                metrics.quizzes.push({ name: label, count: counts.quizzes });
+                metrics.videos.push({ name: label, count: counts.videos });
+                metrics.problems.push({ name: label, count: counts.problems });
+                metrics.articles.push({ name: label, count: counts.articles });
+            }
         }
 
         if (progress) {
@@ -272,10 +333,9 @@ const getDashboardData = async (req, res) => {
             progress.maxStreakDays = maxStreak;
             progress.chartData = chartData;
             progress.metrics = metrics;
+            progress.activeDateStrings = Array.from(activeDateStrings);
         }
-        // ────────────────────────────────────────────────────────────────────────
 
-        // Get external profile stats
         const externalStats = await ExternalProfile.getStudentExternalStats(studentId);
 
         return res.json({
@@ -298,7 +358,10 @@ const getDashboardData = async (req, res) => {
                 progress,
                 externalContestStats: externalStats,
                 leaderboardStats,
-                assignedCourses
+                assignedCourses,
+                monthlySheetProgress,
+                courseContests,
+                internalContests
             }
         });
     } catch (error) {

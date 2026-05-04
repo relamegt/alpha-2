@@ -198,19 +198,19 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             icon: Trophy,
             subItems: [
                 { label: "Internal Contests", to: "/dashboard/contests" },
-                { label: "AI Interviewer", to: "/dashboard/interview", badge: "New" },
+                user?.studentType !== 'ONLINE' && { label: "AI Interviewer", to: "/dashboard/interview", badge: "New" },
                 { label: "Quick Compiler", to: "/dashboard/compiler" },
-            ],
+            ].filter(Boolean),
         },
         {
             label: "Community",
             icon: Zap,
             subItems: [
-                { label: "Job Portal", to: "/dashboard/jobs" },
+                user?.studentType !== 'ONLINE' && { label: "Job Portal", to: "/dashboard/jobs" },
                 { label: "Interview Experiences", to: "/dashboard/interview/experience" },
                 { label: "Announcements", to: "/dashboard/announcements", badge: unreadAnnouncements.count || null },
-                { label: "Leaderboard", to: "/dashboard/leaderboard" },
-            ],
+                user?.studentType !== 'ONLINE' && { label: "Leaderboard", to: "/dashboard/leaderboard" },
+            ].filter(Boolean),
         },
         { label: "Settings", to: "/dashboard/settings", icon: SettingsIcon },
     ];

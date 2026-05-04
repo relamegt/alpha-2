@@ -36,6 +36,10 @@ const publicArticleService = {
     delete: async (id) => {
         const res = await apiClient.delete(`/public-articles/${id}`);
         return res.data;
+    },
+    markAsRead: async (id) => {
+        const res = await apiClient.post(`/public-articles/${id}/mark-as-read`);
+        return res.data;
     }
 };
 

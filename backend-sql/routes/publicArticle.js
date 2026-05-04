@@ -11,6 +11,7 @@ router.get('/:slug', optionalAuth, controller.getArticleBySlug);
 
 // Protected routes
 router.post('/:articleId/toggle-save', protect, controller.toggleSaveArticle);
+router.post('/:id/mark-as-read', protect, controller.markAsRead);
 router.get('/user/saved', protect, controller.getSavedArticles);
 
 // Admin routes

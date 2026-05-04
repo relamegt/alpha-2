@@ -99,7 +99,7 @@ const StreakCalendar = ({ activeDates = [] }) => {
             <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 flex-1 shadow-sm flex flex-col">
                 <div className="mb-8">
                     <h3 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Streak</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">An exciting exercise is waiting for you</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">Consistency is the key to mastery</p>
                 </div>
                 {renderHeader()}
                 {renderDays()}

@@ -16,6 +16,7 @@ const CONTENT_TYPES = {
     VIDEO: 'video',
     QUIZ: 'quiz',
     ARTICLE: 'article',
+    PUBLIC_ARTICLE: 'public_article',
     PRACTICAL: 'practical',
     ASSIGNMENT: 'assignment'
 };

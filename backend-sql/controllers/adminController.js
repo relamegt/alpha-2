@@ -248,6 +248,7 @@ const addUserToBatch = async (req, res) => {
             lastName: null,
             role,
             batchId,
+            studentType: 'OFFLINE',
             profile: {},
             education: educationData
         };
@@ -378,6 +379,7 @@ const bulkAddUsersToBatch = async (req, res) => {
                 _rawPassword: tempPassword, // Preserved before bulkCreate hashes it
                 role,
                 batchId,
+                studentType: 'OFFLINE',
                 education: educationData
             });
         }

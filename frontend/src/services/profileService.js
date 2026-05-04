@@ -2,9 +2,9 @@ import apiClient from './apiClient';
 
 const profileService = {
     // Dashboard & Profile
-    getDashboardData: async () => {
+    getDashboardData: async (range = 'month') => {
         try {
-            const response = await apiClient.get('/student/dashboard');
+            const response = await apiClient.get(`/student/dashboard?range=${range}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || { message: 'Failed to fetch dashboard data' };

@@ -42,57 +42,60 @@ const RankScoreChart = ({ data = [] }) => {
         };
     });
 
+    // Dynamic bar width based on number of points
+    const barSize = displayData.length > 15 ? 12 : 35;
+    const interval = displayData.length > 10 ? Math.ceil(displayData.length / 10) : 0;
+
     return (
         <div className="w-full h-[320px] mt-6">
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={displayData} margin={{ top: 10, right: 0, left: -20, bottom: 25 }}>
+                <BarChart data={displayData} margin={{ top: 10, right: 0, left: -25, bottom: 25 }}>
                     <CartesianGrid 
-                        strokeDasharray="0" 
+                        strokeDasharray="3 3" 
                         vertical={false} 
-                        stroke="#282833" 
-                        opacity={0.1}
+                        stroke="currentColor" 
+                        className="text-gray-200 dark:text-gray-800"
+                        opacity={0.5}
                     />
                     <XAxis 
                         dataKey="name" 
                         axisLine={false} 
                         tickLine={false} 
-                        tick={{ fill: '#6B7280', fontSize: 11, fontWeight: 500 }}
+                        tick={{ fill: '#9CA3AF', fontSize: 10, fontWeight: 500 }}
                         dy={15}
+                        interval={interval}
                     />
                     <YAxis 
                         axisLine={false} 
                         tickLine={false} 
-                        tick={{ fill: '#6B7280', fontSize: 11, fontWeight: 500 }}
-                        domain={[0, 6000]}
-                        ticks={[0, 1500, 3000, 4500, 6000]}
+                        tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }}
+                        domain={[0, 'auto']}
+                        allowDecimals={false}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} />
                     
-                    {/* Score Bar */}
                     <Bar 
                         dataKey="score" 
-                        radius={[8, 8, 8, 8]} 
-                        barSize={45}
+                        radius={[4, 4, 4, 4]} 
+                        barSize={barSize}
                     >
                         {displayData.map((entry, index) => (
                             <Cell 
                                 key={`cell-score-${index}`} 
-                                fill={index === 7 ? '#a78bfa' : '#a78bfa80'} // Purple matching image
+                                fill={index === displayData.length - 1 ? '#a78bfa' : '#a78bfa40'}
                             />
                         ))}
                     </Bar>
 
-                    {/* Rank Bar (Grouped/Stacked appearance) */}
                     <Bar 
                         dataKey="rank" 
-                        radius={[4, 4, 4, 4]} 
-                        barSize={35}
-                        style={{ transform: 'translateX(-40px)' }} // Shifted as in image
+                        radius={[2, 2, 2, 2]} 
+                        barSize={Math.max(barSize - 4, 4)}
                     >
                         {displayData.map((entry, index) => (
                             <Cell 
                                 key={`cell-rank-${index}`} 
-                                fill="#3b82f6" 
+                                fill={index === displayData.length - 1 ? '#3b82f6' : '#3b82f640'}
                             />
                         ))}
                     </Bar>

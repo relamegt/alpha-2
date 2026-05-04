@@ -41,6 +41,7 @@ model User {
   startYear                Int?
   tempPassword             String?
   username                 String?                    @unique
+  studentType              StudentType                @default(ONLINE)
   whatsapp                 String?
   role                     UserRole
   skills                   Json                       @default("[]")
@@ -803,6 +804,11 @@ enum Difficulty {
 }
 
 enum BatchType {
+  OFFLINE
+  ONLINE
+}
+
+enum StudentType {
   OFFLINE
   ONLINE
 }
