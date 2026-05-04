@@ -190,7 +190,7 @@ const ContestManager = () => {
                                 <div className="text-center py-16 bg-[#F1F3F4] dark:bg-[#181820] rounded-2xl border border-gray-100 dark:border-gray-800 border-dashed transition-colors">
                                     <Trophy size={48} className="mx-auto text-gray-200 dark:text-gray-800 mb-4" />
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No contests found</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 mt-1">
+                                    <p className="page-header-desc">
                                         {filter !== 'all' ? `No ${filter} contests found.` : 'Get started by creating a new contest.'}
                                     </p>
                                     {filter === 'all' && (
@@ -278,21 +278,21 @@ const ContestManager = () => {
                                                 <div className="p-4 bg-gray-50 dark:bg-[#1c1c26] border-t border-[var(--color-border-interactive)] flex gap-3 transition-colors">
                                                     <button
                                                         onClick={() => handleEditContest(contest)}
-                                                        className="flex-1 py-2 px-3 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e] hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
+                                                        className="btn-secondary flex-1 py-2 px-3 flex items-center justify-center gap-2"
                                                     >
                                                         <Edit size={14} />
                                                         Edit
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteContest(contest._id)}
-                                                        className="p-2 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900 transition-all flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
+                                                        className="btn-secondary p-2 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900 transition-all flex items-center justify-center"
                                                         title="Delete Contest"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
                                                     <Link
                                                         to={`/contests/${contest.slug || contest._id}/leaderboard`}
-                                                        className="flex-1 py-2 px-3 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e] hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
+                                                        className="btn-secondary flex-1 py-2 px-3 flex items-center justify-center gap-2"
                                                     >
                                                         <Trophy size={14} className={isActive ? "text-yellow-500" : "text-gray-400 dark:text-gray-600"} />
                                                         Leaderboard
@@ -300,7 +300,7 @@ const ContestManager = () => {
                                                     {!contest.batchId && (
                                                         <button
                                                             onClick={(e) => handleCopyLink(e, contest)}
-                                                            className="p-2 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
+                                                            className="btn-primary p-2 flex items-center justify-center"
                                                             title="Copy Global Contest Link"
                                                         >
                                                             <Copy size={16} />

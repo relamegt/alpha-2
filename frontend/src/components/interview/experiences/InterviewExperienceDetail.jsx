@@ -72,7 +72,7 @@ const InterviewExperienceDetail = () => {
           <h2 className="text-lg font-bold mb-4">Experience Not Found</h2>
           <button 
             onClick={() => navigate('/dashboard/interview/experience')} 
-            className="bg-primary-600 text-white px-5 py-2 rounded-lg font-bold text-xs shadow-sm hover:bg-primary-700 transition-all"
+            className="btn-primary !px-4 !py-1.5 !text-xs"
           >
             Back to Feed
           </button>
@@ -273,9 +273,7 @@ const InterviewExperienceDetail = () => {
                     </div>
                     <button 
                         onClick={() => navigate('/dashboard/interview/experience')}
-                        className={`w-full mt-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
-                            isDark ? 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                        }`}
+                        className="btn-secondary !px-4 !py-1.5 !text-xs w-full mt-6"
                     >
                         <ArrowRight size={14} className="rotate-180" /> Back to Feed
                     </button>

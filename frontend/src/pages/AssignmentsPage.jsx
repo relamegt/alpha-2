@@ -51,13 +51,13 @@ export default function AssignmentsPage() {
 
   return (
     <div className="pb-16 text-gray-900 dark:text-white">
-      <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Practical Assignments</h1>
-        <p className="text-gray-500 dark:text-slate-400 text-sm font-medium leading-relaxed max-w-4xl">Hands-on projects to master your development skills.</p>
+      <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
+        <h1 className="page-header-title">Practical Assignments</h1>
+        <p className="page-header-desc">Hands-on projects to master your development skills.</p>
       </header>
 
       {/* Tabs & Search Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+      <div className="page-tabs-container">
         <div className="flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max">
           {['All Assignments', 'Continue Working', 'Completed'].map(t => (
             <button
@@ -145,7 +145,7 @@ export default function AssignmentsPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center text-xs font-bold text-gray-900 dark:text-white hover:text-primary-500 transition-colors">
+                      <div className="btn-secondary py-1.5 px-4 text-xs">
                         Start Activity
                         <svg className="w-4 h-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />

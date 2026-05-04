@@ -149,7 +149,7 @@ const ExperienceSubmissionWizard = () => {
                     placeholder="Eg., Google"
                     value={formData.companyName}
                     onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-primary-500/50 transition-all"
+                    className="w-full bg-[var(--color-bg-input)] border border-gray-300 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-primary-500/50 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -159,7 +159,7 @@ const ExperienceSubmissionWizard = () => {
                     placeholder="Eg., SDE-1"
                     value={formData.jobPosition}
                     onChange={(e) => setFormData({...formData, jobPosition: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-primary-500/50 transition-all"
+                    className="w-full bg-[var(--color-bg-input)] border border-gray-300 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-primary-500/50 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -368,14 +368,14 @@ const ExperienceSubmissionWizard = () => {
           <div className="flex justify-between items-center mt-10 pt-6 border-t border-gray-50 dark:border-gray-800/50">
             <button 
               onClick={step === 1 ? () => navigate(-1) : prevStep}
-              className="text-[10px] font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-widest transition-colors"
+              className="btn-secondary !px-4 !py-1.5 !text-xs"
             >
               {step === 1 ? 'Cancel' : 'Back'}
             </button>
             <button 
               onClick={step === 3 ? handleSubmit : nextStep}
               disabled={isSubmitting}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-95 flex items-center gap-2"
+              className="btn-primary !px-4 !py-1.5 !text-xs"
             >
               {step === 3 ? 'Publish Journey' : 'Continue'} <ChevronRight size={14} />
             </button>

@@ -231,7 +231,7 @@ const CodingProfiles = () => {
                                 <button
                                     onClick={() => handleUpdateProfile(platform.value)}
                                     disabled={loading}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-6 rounded-lg transition-all shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap h-[44px]"
+                                    className="btn-primary h-[44px] px-6 whitespace-nowrap"
                                 >
                                     {loading ? (<>
                                         <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -246,7 +246,7 @@ const CodingProfiles = () => {
                                         href={getProfileUrl(platform.value, codingData[platform.value])}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="bg-[var(--color-bg-surface)] hover:bg-gray-50 dark:hover:bg-[#23232e] text-blue-600 dark:text-blue-400 border border-gray-100 dark:border-gray-800 p-2.5 rounded-lg transition-all shadow-sm hover:shadow h-[44px] w-[44px] flex items-center justify-center"
+                                        className="btn-secondary p-0 h-[44px] w-[44px] flex items-center justify-center"
                                         title={`View ${platform.label} Profile`}
                                     >
                                         <ExternalLinkIcon />
@@ -293,7 +293,7 @@ const CodingProfiles = () => {
                                 <button
                                     onClick={() => handleUpdateProfile(platform.value)}
                                     disabled={loading}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-6 rounded-lg transition-all shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap h-[44px]"
+                                    className="btn-primary px-6 whitespace-nowrap h-[44px]"
                                 >
                                     {loading ? (<>
                                         <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -309,7 +309,7 @@ const CodingProfiles = () => {
                                         href={getProfileUrl(platform.value, codingData[platform.value])}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="bg-[#F1F3F4] dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e] text-blue-600 dark:text-blue-400 border border-gray-100 dark:border-gray-800 p-2.5 rounded-lg transition-all shadow-sm hover:shadow h-[44px] w-[44px] flex items-center justify-center group"
+                                        className="btn-secondary p-0 h-[44px] w-[44px] flex items-center justify-center"
                                         title={`View ${platform.label} Profile`}
                                     >
                                         <ExternalLinkIcon />
@@ -325,7 +325,7 @@ const CodingProfiles = () => {
                     <button
                         onClick={handleUpdateDSAScore}
                         disabled={syncing || isLocked}
-                        className={`relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-10 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center space-x-3 ${(syncing || isLocked) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-0' : ''
+                        className={`relative btn-primary py-3 px-10 rounded-xl ${(syncing || isLocked) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-0' : ''
                             }`}
                     >
                         {syncing ? (
@@ -367,11 +367,3 @@ const CodingProfiles = () => {
 };
 
 export default CodingProfiles;
-
-
-
-
-
-
-
-

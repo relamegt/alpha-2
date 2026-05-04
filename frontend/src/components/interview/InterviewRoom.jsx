@@ -246,9 +246,8 @@ export default function InterviewRoom({ session, user, onEnd }) {
     }
 
     return (
-        <div className="h-full w-full bg-[var(--color-bg-primary)] flex flex-col overflow-hidden">
-            <div className="flex-1 flex flex-col p-4 lg:p-6 pb-12 overflow-hidden">
-                <div className="flex-1 flex flex-col bg-[var(--color-bg-primary)] rounded-2xl border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+        <div className="h-full w-full bg-[var(--color-bg-primary)] flex flex-col overflow-hidden p-4 lg:p-6">
+            <div className="flex-1 flex flex-col bg-[var(--color-bg-card)] rounded-2xl border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-500 relative">
                     {/* Minimal Sub-header for Status */}
                     <div className="h-14 flex-shrink-0 bg-[var(--color-bg-card)] border-b border-gray-100 dark:border-white/5 flex items-center justify-between px-6 z-10">
                 <div className="flex items-center gap-4">
@@ -394,7 +393,7 @@ export default function InterviewRoom({ session, user, onEnd }) {
                         <button
                             onClick={handleEnd}
                             disabled={ending}
-                            className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-red-600/10 flex items-center gap-2"
+                            className="btn-primary !bg-red-600 hover:!bg-red-700 !shadow-red-600/10 !px-4 !py-1.5 !text-xs"
                         >
                             {ending ? <Loader2 className="w-4 h-4 animate-spin" /> : <PhoneOff size={16} />}
                             End Session
@@ -425,9 +424,9 @@ export default function InterviewRoom({ session, user, onEnd }) {
                                     <h3 className="font-bold text-[11px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Session Transcript</h3>
                                 </div>
 
-                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-hide flex flex-col">
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 flex flex-col scroll-smooth">
                                     {transcript.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-30">
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-3 opacity-30">
                                             <div className="w-10 h-10 rounded-full border border-dashed border-gray-400 flex items-center justify-center">
                                                 <Mic size={16} className="text-gray-400" />
                                             </div>
@@ -518,7 +517,6 @@ export default function InterviewRoom({ session, user, onEnd }) {
                     </div>
                 </div>
             )}
-                </div>
             </div>
         </div>
     );

@@ -88,8 +88,8 @@ const CourseOverview = () => {
     if (!course) {
         return (
             <div className="min-h-screen bg-[var(--color-bg-primary)] p-8">
-                <button onClick={() => navigate('/dashboard/courses')} className="flex items-center gap-2 text-primary-600 font-bold mb-8">
-                    <ArrowLeft size={20} /> Back to Courses
+                <button onClick={() => navigate('/dashboard/courses')} className="btn-secondary flex items-center gap-2 mb-8 w-max">
+                    <ArrowLeft size={16} /> Back to Courses
                 </button>
                 <div className="bg-[var(--color-bg-card)] rounded-2xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Course Not Found</h2>
@@ -255,13 +255,13 @@ const CourseOverview = () => {
                                                     const cSlug = course.slug || course._id;
                                                     window.open(`/workspace/${cSlug}`, '_blank', 'noopener,noreferrer');
                                                 }}
-                                                className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-500 hover:to-primary-700 text-white text-[13px] rounded-xl transition-all shadow-sm active:scale-[0.98] border border-primary-500/20 flex items-center justify-center gap-2"
+                                                className="w-full btn-primary"
                                             >
                                                 Continue Learning
                                             </button>
                                             <button 
                                                 onClick={() => setShowRatingModal(true)}
-                                                className="w-full py-2.5 bg-transparent text-gray-900 dark:text-white text-[13px] border border-[var(--color-border-interactive)] rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                                                className="w-full btn-secondary"
                                             >
                                                 <Star size={14} className="text-gray-400" />
                                                 Add a Review
@@ -270,7 +270,7 @@ const CourseOverview = () => {
                                     ) : (
                                         <button 
                                             onClick={() => alert("Please contact your instructor to enroll.")}
-                                            className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-500 hover:to-primary-700 text-white text-[13px] rounded-xl transition-all shadow-sm active:scale-[0.98] border border-primary-500/20 flex items-center justify-center"
+                                            className="w-full btn-primary"
                                         >
                                             Request Enrollment
                                         </button>
@@ -301,13 +301,13 @@ const CourseOverview = () => {
                         <div className="flex gap-4">
                             <button 
                                 onClick={() => setShowRatingModal(false)}
-                                className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-[13px] rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                className="flex-1 btn-secondary"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleRateCourse}
-                                className="flex-1 py-2.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-500 hover:to-primary-700 text-white text-[13px] rounded-xl transition-all shadow-lg shadow-primary-600/20 active:scale-[0.98]"
+                                className="flex-1 btn-primary"
                             >
                                 Submit
                             </button>

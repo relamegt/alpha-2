@@ -44,10 +44,10 @@ const SectionView = ({
     <div className="mb-4">
       {/* Section Header - Clean & Modern */}
       <div 
-        className={`relative group cursor-pointer transition-all duration-300 rounded-xl border
+        className={`relative group cursor-pointer transition-all duration-300 rounded-xl border bg-[var(--color-bg-card)]
           ${isExpanded 
-            ? 'rounded-b-none border-b-0 border-primary-500/10' 
-            : 'border-[var(--color-border-interactive)] bg-white dark:bg-[var(--color-bg-card)] hover:border-gray-200 dark:hover:border-gray-700'
+            ? 'rounded-b-none border-b-0 border-gray-200 dark:border-white/10' 
+            : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
           }
         `}
         onClick={() => setIsExpanded(!isExpanded)}
@@ -93,8 +93,8 @@ const SectionView = ({
 
       {/* Section Content */}
       {isExpanded && (
-        <div className="bg-white dark:bg-[var(--color-bg-card)] border border-t-0 border-primary-500/10 rounded-b-xl shadow-sm overflow-hidden animate-in slide-in-from-top-1 duration-200">
-          <div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+        <div className="bg-gray-50 dark:bg-[#000000] border border-t-0 border-gray-200 dark:border-white/10 rounded-b-xl shadow-inner overflow-hidden animate-in slide-in-from-top-1 duration-200">
+          <div className="p-4 space-y-3">
             {section.subsections && section.subsections.length > 0 ? (
               section.subsections.map((sub, sIdx) => (
                  <SubsectionView 

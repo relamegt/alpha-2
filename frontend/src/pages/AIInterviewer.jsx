@@ -37,19 +37,19 @@ export default function AIInterviewer() {
     if (!user) return null;
 
     return (
-        <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden animate-in fade-in duration-500">
+        <div className="animate-in fade-in duration-500">
             <div className={cn(
-                "w-full flex-1 flex flex-col min-h-0 overflow-hidden",
-                screen === 'interview' ? "max-w-none px-0" : "p-8 space-y-8 bg-[var(--color-bg-primary)]"
+                "w-full flex-1 flex flex-col min-h-0",
+                screen === 'interview' ? "max-w-none px-0" : ""
             )}>
                 {/* HEADER SECTION - Standardized to match Jobs/Sheets */}
                 {screen !== 'interview' && (
-                    <header className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-8">
+                    <header className="page-header-container shrink-0">
                         <div className="space-y-1">
-                            <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                            <h1 className="page-header-title">
                                 AI Interviewer
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                            <p className="page-header-desc">
                                 Voice-first mock interviews powered by the Gemini engine.
                             </p>
                         </div>
@@ -57,7 +57,7 @@ export default function AIInterviewer() {
                 )}
 
                 {!geminiKey && (
-                    <div className="shrink-0">
+                    <div className="shrink-0 mt-2">
                         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-[10px] text-amber-600 flex items-center gap-2 font-semibold uppercase tracking-wider">
                             <AlertCircle size={14} />
                             <span>System Warning: API Key Missing</span>
@@ -68,7 +68,7 @@ export default function AIInterviewer() {
                 {/* CONTENT AREA */}
                 <div className={cn(
                     "flex-1 flex flex-col min-h-0 relative",
-                    screen === 'interview' ? "overflow-hidden" : "overflow-y-auto"
+                    screen === 'interview' ? "overflow-hidden" : ""
                 )}>
                     {screen === 'dashboard' && (
                         <InterviewPulseDashboard

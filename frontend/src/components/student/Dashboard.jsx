@@ -77,17 +77,16 @@ const Dashboard = () => {
 
     return (
         <div className="transition-colors font-sans">
-            <div className="space-y-10">
                 
                 {/* Header Section */}
-                <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <h1 className="text-3xl tracking-tight mb-2 text-gray-900 dark:text-white">Dashboard</h1>
-                    <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed max-w-4xl">
+                <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
+                    <h1 className="page-header-title">Dashboard</h1>
+                    <p className="page-header-desc">
                         Welcome back, {user?.firstName || 'Student'}! Track your progress and master your skills.
                     </p>
                 </header>
 
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+                <div className="page-tabs-container">
                     <div className="flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max shadow-sm">
                         {[
                             { id: 'summary', label: 'Summary' },
@@ -184,8 +183,6 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* Courses Section Removed */}
-
                         {/* Chart & Streak Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                             <div className="lg:col-span-8 bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
@@ -204,9 +201,7 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400">
-                                            <CalendarIcon size={14} />
-                                            This Week
-                                            <ChevronDown size={14} />
+                                            <CalendarIcon size={14} /> This Week <ChevronDown size={14} />
                                         </div>
                                     </div>
                                 </div>
@@ -388,22 +383,13 @@ const Dashboard = () => {
                         </div>
                         <h2 className="text-2xl text-gray-900 dark:text-white tracking-tight">Your Bookmarks</h2>
                         <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-md mx-auto">Save interesting problems, articles, and discussions to review them later. You haven't bookmarked anything yet.</p>
-                        <button className="mt-10 px-8 py-3 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-600/20">
+                        <button className="btn-primary mt-10 px-8 py-3">
                             Explore Content
                         </button>
                     </div>
                 )}
-            </div>
         </div>
     );
 };
 
 export default Dashboard;
-
-
-
-
-
-
-
-

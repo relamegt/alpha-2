@@ -159,13 +159,13 @@ const SheetList = ({ onSheetSelect }) => {
         <div className="space-y-8">
                 
                 {/* HEADER */}
-                <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-semibold text-gray-900 dark:text-white leading-tight mb-2">
+                            <h1 className="page-header-title">
                                 Practice Sheets
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                            <p className="page-header-desc">
                                 Curated lists of problems to help you build your programming skills
                             </p>
                         </div>

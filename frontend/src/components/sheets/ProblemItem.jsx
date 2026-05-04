@@ -62,7 +62,7 @@ const ProblemItem = ({
         border-b border-gray-50/50 dark:border-white/[0.01]
         ${isCompleted
           ? 'bg-emerald-500/[0.03]'
-          : 'hover:bg-gray-50/50 dark:hover:bg-white/[0.01]'
+          : 'hover:bg-gray-50/50 dark:hover:bg-white/[0.02]'
         }
       `}>
 

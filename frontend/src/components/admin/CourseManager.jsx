@@ -573,13 +573,13 @@ const CourseManager = () => {
                                     setActiveCourseId(null);
                                     invalidateAll();
                                 }}
-                                className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300"
+                                className="btn-secondary p-2 rounded-full text-gray-600 dark:text-gray-300"
                             >
                                 <ArrowLeft size={20} />
                             </button>
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{activeCourse.title}</h1>
-                                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage sections, subsections, and problems</p>
+                                <p className="page-header-desc">Manage sections, subsections, and problems</p>
                             </div>
                         </div>
                     ) : (
@@ -587,7 +587,7 @@ const CourseManager = () => {
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                                 Course Management
                             </h1>
-                            <p className="text-gray-500 dark:text-gray-400 mt-1">Organize learning content into courses, sections, and subsections.</p>
+                            <p className="page-header-desc">Organize learning content into courses, sections, and subsections.</p>
                         </>
                     )}
                 </div>
@@ -723,7 +723,7 @@ const CourseManager = () => {
                                                         setSelectedSectionId(section._id);
                                                         setShowCreateSubsectionModal(true);
                                                     }}
-                                                    className="text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                                                    className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"
                                                 >
                                                     <Plus size={14} />
                                                     Add Subsection
@@ -784,7 +784,7 @@ const CourseManager = () => {
                                                                             setSelectedSubsectionId(sub._id);
                                                                             setShowAddProblemModal(true);
                                                                         }}
-                                                                        className="text-[10px] font-bold text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-primary-100 dark:border-primary-800/30"
+                                                                        className="btn-secondary text-[10px] px-2.5 py-1 flex items-center gap-1"
                                                                     >
                                                                         <Plus size={12} />
                                                                         Add Problem
@@ -796,28 +796,27 @@ const CourseManager = () => {
                                                                             setSelectedSubsectionId(sub._id);
                                                                             setShowAddContestModal(true);
                                                                         }}
-                                                                        className="text-[10px] font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-amber-100 dark:border-amber-800/30"
+                                                                        className="btn-secondary text-[10px] px-2.5 py-1 flex items-center gap-1"
                                                                     >
                                                                         <Plus size={12} />
                                                                         Add Contest
                                                                     </button>
                                                                     <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1"></div>
                                                                     <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
+                                                                        onClick={() => {
                                                                             setSelectedSectionId(section._id);
                                                                             setSelectedSubsectionId(sub._id);
                                                                             setSubsectionTitle(sub.title);
                                                                             setShowEditSubsectionModal(true);
                                                                         }}
-                                                                        className="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 p-1 rounded-lg transition-colors"
+                                                                        className="btn-secondary p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 border-transparent hover:border-blue-200 dark:hover:border-blue-800"
                                                                         title="Edit Subsection"
                                                                     >
                                                                         <Edit3 size={14} />
                                                                     </button>
                                                                     <button
                                                                         onClick={(e) => handleDeleteSubsection(activeCourse._id, section._id, sub._id, e)}
-                                                                        className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 p-1 rounded-lg transition-colors"
+                                                                        className="btn-secondary p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 border-transparent hover:border-red-200 dark:hover:border-red-800"
                                                                         title="Delete Subsection"
                                                                     >
                                                                         <Trash2 size={14} />
@@ -835,7 +834,7 @@ const CourseManager = () => {
                                                                                     <span className="text-xs font-medium text-red-700">{selectedToRemove.length} problem(s) selected</span>
                                                                                     <button
                                                                                         onClick={() => handleRemoveProblem(activeCourse._id, section._id, sub._id, selectedToRemove)}
-                                                                                        className="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded shadow-sm transition-colors"
+                                                                                        className="btn-primary bg-red-600 hover:bg-red-700 text-white text-[10px] px-2.5 py-1"
                                                                                     >
                                                                                         Remove Selected
                                                                                     </button>
@@ -870,7 +869,7 @@ const CourseManager = () => {
                                                                                             </div>
                                                                                             <button
                                                                                                 onClick={() => handleRemoveProblem(activeCourse._id, section._id, sub._id, pid)}
-                                                                                                className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
+                                                                                                className="btn-secondary p-1 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 border-transparent hover:border-red-200 dark:hover:border-red-800 opacity-0 group-hover:opacity-100"
                                                                                                 title="Remove from subsection"
                                                                                             >
                                                                                                 <Trash2 size={12} />
@@ -915,7 +914,7 @@ const CourseManager = () => {
                                                                                                 </div>
                                                                                                 <button 
                                                                                                     onClick={() => handleRemoveContest(contestId)} 
-                                                                                                    className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all opacity-0 group-hover/item:opacity-100 mr-2"
+                                                                                                    className="btn-secondary p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 border-transparent hover:border-red-200 dark:hover:border-red-800 opacity-0 group-hover/item:opacity-100 mr-2"
                                                                                                     title="Remove from course"
                                                                                                 >
                                                                                                     <Trash2 size={16} />
@@ -947,7 +946,7 @@ const CourseManager = () => {
                                                                                             <div className="flex items-center gap-1 mr-2">
                                                                                                 <button
                                                                                                     onClick={() => handleRemoveContest(contestId)}
-                                                                                                    className="p-2 opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                                                                                    className="btn-secondary p-2 opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-600 dark:hover:text-red-400 border-transparent hover:border-red-200 dark:hover:border-red-800"
                                                                                                     title="Remove from course"
                                                                                                 >
                                                                                                     <Trash2 size={16} />
@@ -1415,16 +1414,16 @@ const CourseManager = () => {
                         </div>
 
                         {/* Mode Switcher Tabs */}
-                        <div className="flex border-b border-gray-100 dark:border-gray-800 mb-6 shrink-0">
+                        <div className="flex border-b border-[var(--color-border-interactive)] mb-6 shrink-0">
                             <button
                                 onClick={() => setContestAddMode('existing')}
-                                className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${contestAddMode === 'existing' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${contestAddMode === 'existing' ? 'border-[var(--color-accent)] text-[var(--color-accent)]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                             >
                                 Existing Contests
                             </button>
                             <button
                                 onClick={() => setContestAddMode('create')}
-                                className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${contestAddMode === 'create' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${contestAddMode === 'create' ? 'border-[var(--color-accent)] text-[var(--color-accent)]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                             >
                                 Create New Quiz/Contest
                             </button>
@@ -1494,7 +1493,7 @@ const CourseManager = () => {
                                         <button
                                             type="button"
                                             onClick={handleAddContest}
-                                            className="btn-primary bg-amber-600 hover:bg-amber-700 border-amber-700"
+                                            className="btn-primary"
                                             disabled={selectedContestId.length === 0 || isSubmitting}
                                         >
                                             {isSubmitting ? 'Adding...' : 'Add Selected'}

@@ -65,17 +65,17 @@ const SettingsLayout = () => {
         <div className="animate-fade-in">
             <div className="w-full">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">Account</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your account information, preferences, and notification settings.</p>
+                <div className="flex items-center justify-between mb-3">
+                    <div className="page-header-container">
+                        <h1 className="page-header-title">Account</h1>
+                        <p className="page-header-desc">Manage your account information, preferences, and notification settings.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <button className="btn-secondary py-2 px-4">
                             Cancel
                         </button>
                         {/* Note: The Save button is usually handled by individual forms, but we show it here for aesthetic consistency with the screenshot */}
-                        <button className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary-600/20 transition-all active:scale-95">
+                        <button className="btn-primary py-2 px-6">
                             <Save size={16} />
                             Save Changes
                         </button>

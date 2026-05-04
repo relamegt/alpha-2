@@ -449,7 +449,7 @@ const Compiler = () => {
                   <button
                     onClick={handleRun}
                     disabled={isRunning}
-                    className="flex items-center gap-2 px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-xs transition-all shadow-lg shadow-primary-600/20 active:scale-95 disabled:opacity-50 group"
+                    className="btn-primary px-5 py-2 group"
                   >
                     {isRunning ? <RotateCcw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 fill-current group-hover:scale-110 transition-transform" />}
                     <span>{isRunning ? 'Running...' : 'Run'}</span>
@@ -690,7 +690,7 @@ const Compiler = () => {
             <div className="p-6 bg-gray-50 dark:bg-white/5">
               <button 
                 onClick={() => setShowSettings(false)}
-                className="w-full py-3.5 bg-gray-900 dark:bg-primary-500 text-white rounded-xl font-bold shadow-xl transition-all active:scale-95 hover:brightness-110"
+                className="w-full btn-primary py-3.5"
               >
                 Apply Changes
               </button>

@@ -63,7 +63,7 @@ export default function AssignmentCreator() {
     <div className="assignment-creator">
       <div className="creator-header">
         <h1>Create New Assignment</h1>
-        <button className="btn-cancel" onClick={() => navigate('/admin/assignments')}>Cancel</button>
+        <button className="btn-secondary px-6" onClick={() => navigate('/admin/assignments')}>Cancel</button>
       </div>
 
       <form onSubmit={handleSubmit} className="creator-form">
@@ -140,7 +140,7 @@ export default function AssignmentCreator() {
               <input type="text" placeholder="Filename (e.g. src/App.js)" value={newTest.filename} onChange={e => setNewTest({...newTest, filename: e.target.value})} />
             )}
             <input type="text" placeholder="Expected Value / Search String" value={newTest.expected || newTest.contains} onChange={e => setNewTest({...newTest, expected: e.target.value, contains: e.target.value})} />
-            <button type="button" onClick={addTest}>Add Test</button>
+            <button type="button" onClick={addTest} className="btn-primary py-2 text-sm">Add Test</button>
           </div>
 
           <div className="test-list">
@@ -153,7 +153,7 @@ export default function AssignmentCreator() {
           </div>
         </div>
 
-        <button type="submit" className="btn-submit" disabled={loading}>
+        <button type="submit" className="btn-primary w-full py-4 text-lg" disabled={loading}>
           {loading ? 'Saving...' : '🚀 Create Assignment & Sync to GitHub'}
         </button>
       </form>

@@ -234,7 +234,7 @@ const UserManagement = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">User Management</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Manage students, instructors, and system administrators.</p>
+                    <p className="page-header-desc">Manage students, instructors, and system administrators.</p>
                 </div>
 
                 {/* View Toggle */}
@@ -285,7 +285,7 @@ const UserManagement = () => {
                                         setShowAddUserModal(true);
                                         fetchAvailableInstructors();
                                     }}
-                                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
+                                    className="btn-primary flex items-center gap-2 text-sm"
                                 >
                                     <UserPlus size={18} />
                                     Add User
@@ -295,14 +295,14 @@ const UserManagement = () => {
                                         setUploadMode('bulk');
                                         setShowBulkUploadModal(true);
                                     }}
-                                    className="px-4 py-2.5 bg-[#F1F3F4] dark:bg-gray-800 border border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium rounded-xl transition-all shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
+                                    className="btn-secondary flex items-center gap-2 text-sm"
                                 >
                                     <Upload size={18} />
                                     Bulk Upload
                                 </button>
                                 <button
                                     onClick={downloadSampleCSV}
-                                    className="p-2.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-xl transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                                    className="btn-secondary p-2.5"
                                     title="Download Sample CSV"
                                 >
                                     <Download size={20} />
@@ -442,7 +442,7 @@ const UserManagement = () => {
                         </div>
                         <button
                             onClick={() => setShowAddAdminModal(true)}
-                            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
+                            className="btn-primary flex items-center gap-2 text-sm"
                         >
                             <UserPlus size={18} />
                             Create New Admin

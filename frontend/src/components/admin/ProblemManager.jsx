@@ -492,13 +492,13 @@ const ProblemManager = () => {
         <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in pb-24">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl text-white shadow-sm">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                        <div className="p-2 bg-[var(--color-accent)] rounded-xl text-white shadow-lg shadow-[var(--color-accent)]/20">
                             <Code size={28} />
                         </div>
                         Problem Management
                     </h1>
-                    <p className="text-gray-500 mt-2 ml-1">Create, edit, and manage coding problems.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 font-medium">Create, edit, and manage coding problems.</p>
                 </div>
             </div>
 
@@ -528,17 +528,17 @@ const ProblemManager = () => {
 
                 <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     {selectedProblems.length > 0 && (
-                        <button onClick={handleBulkDelete} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                        <button onClick={handleBulkDelete} className="btn-secondary text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border-red-200 dark:border-red-800">
                             <Trash2 size={18} /> Delete Selected ({selectedProblems.length})
                         </button>
                     )}
                     <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
                         <Plus size={18} /> Create Problem
                     </button>
-                    <button onClick={() => setShowBulkModal(true)} className="bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e] hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-2">
+                    <button onClick={() => setShowBulkModal(true)} className="btn-secondary flex items-center gap-2 px-4 py-2.5">
                         <Upload size={18} /> Bulk Upload
                     </button>
-                    <button onClick={downloadSampleJSON} className="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-gray-50 dark:bg-[#111117] hover:bg-gray-100 dark:hover:bg-[#23232e] rounded-xl transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700" title="Download Sample JSON">
+                    <button onClick={downloadSampleJSON} className="btn-secondary p-2.5" title="Download Sample JSON">
                         <Download size={20} />
                     </button>
                 </div>
@@ -1210,26 +1210,14 @@ Bob | 6000`}
                                 <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
                                     <button
                                         onClick={() => setShowSolutionModal(false)}
-                                        style={{ padding: '9px 18px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', color: '#23232e', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
+                                        className="btn-secondary"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleSaveSolution}
                                         disabled={savingSolution}
-                                        style={{
-                                            padding: '9px 20px', borderRadius: '10px', border: 'none',
-                                            background: savingSolution ? '#a78bfa' : 'linear-gradient(135deg,#7c3aed,#6d28d9)',
-                                            color: '#fff', fontSize: '13px', fontWeight: 700,
-                                            cursor: savingSolution ? 'not-allowed' : 'pointer',
-                                            display: 'flex', alignItems: 'center', gap: '8px',
-                                            boxShadow: '0 4px 14px rgba(124,58,237,0.35)',
-                                            transition: 'all 0.15s'
-                                        }}
-                                        onMouseEnter={e => { if (!savingSolution) { e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.5)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-                                        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(124,58,237,0.35)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                                        className="btn-primary flex items-center gap-2 px-6"
                                     >
                                         {savingSolution ? (
                                             <>
@@ -1240,7 +1228,7 @@ Bob | 6000`}
                                                 Saving...
                                             </>
                                         ) : (
-                                            <><CheckCircle size={15} /> Save {solutionLang === 'cpp' ? 'C++' : solutionLang === 'javascript' ? 'JS' : solutionLang.toUpperCase()} Solution</>
+                                            <><CheckCircle size={15} /> Save Solution</>
                                         )}
                                     </button>
                                 </div>

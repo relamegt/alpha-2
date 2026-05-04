@@ -229,7 +229,7 @@ const Stage1 = ({ aiResult, onNext }) => {
 
             <button
                 onClick={onNext}
-                className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3.5 font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-violet-900/30"
+                className="w-full btn-primary py-3.5"
             >
                 See detailed bug diagnosis <ChevronRight size={16} />
             </button>
@@ -261,7 +261,7 @@ const Stage2 = ({ aiResult, onNext, onNobugs }) => (
                 <OptimizationList items={aiResult.optimizations} />
                 <button
                     onClick={onNobugs}
-                    className="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3.5 font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full btn-primary py-3.5"
                 >
                     View optimized solution →
                 </button>
@@ -293,7 +293,7 @@ const Stage2 = ({ aiResult, onNext, onNobugs }) => (
                 ))}
                 <button
                     onClick={onNext}
-                    className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3.5 font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-violet-900/30"
+                    className="w-full btn-primary py-3.5"
                 >
                     Walk me through the fixes <ChevronRight size={16} />
                 </button>
@@ -341,7 +341,7 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
         {fixIndex < aiResult.bugs.length - 1 ? (
             <button
                 onClick={() => setFixIndex(p => p + 1)}
-                className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-xl py-3.5 font-bold text-sm transition-all"
+                className="w-full btn-secondary py-3.5"
             >
                 Next issue <ChevronRight size={16} />
             </button>
@@ -355,7 +355,7 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
                 </div>
                 <button
                     onClick={onShowSolution}
-                    className="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3.5 font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-violet-900/30"
+                    className="w-full btn-primary py-3.5"
                 >
                     View full optimized solution →
                 </button>
@@ -446,7 +446,7 @@ const Stage4 = ({ aiResult, onReset, isCodingType }) => {
                 </p>
                 <button
                     onClick={onReset}
-                    className="flex items-center gap-2 text-violet-400 hover:text-violet-300 text-sm font-bold transition-all py-2 px-4 rounded-xl hover:bg-violet-500/10"
+                    className="btn-secondary py-2 px-4"
                 >
                     <RotateCcw size={15} /> Ask another question
                 </button>
@@ -522,7 +522,7 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-[60] bg-violet-600 hover:bg-violet-500 text-white rounded-full px-5 py-3 flex items-center gap-2 shadow-xl shadow-violet-500/25 transition-all hover:scale-105 active:scale-95 font-bold text-sm"
+                className="fixed bottom-6 right-6 z-[60] btn-primary px-5 py-3 rounded-full flex items-center gap-2"
             >
                 <Sparkles size={16} />
                 AI Tutor
@@ -621,7 +621,7 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                                 <button
                                     onClick={handleAsk}
                                     disabled={!userQuestion.trim()}
-                                    className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl py-3.5 font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-violet-900/25"
+                                    className="w-full btn-primary py-3.5"
                                 >
                                     <Zap size={16} className="fill-current" />
                                     {labels.analyzeBtn}
@@ -715,13 +715,13 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                             <div className="flex flex-col gap-2.5">
                                 <button
                                     onClick={handleShowSolution}
-                                    className="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 font-bold text-sm transition-all"
+                                    className="w-full btn-primary py-3"
                                 >
                                     Yes, show solution
                                 </button>
                                 <button
                                     onClick={() => setShowSolutionModal(false)}
-                                    className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-xl py-3 font-bold text-sm transition-all"
+                                    className="w-full btn-secondary py-3"
                                 >
                                     Let me try first
                                 </button>

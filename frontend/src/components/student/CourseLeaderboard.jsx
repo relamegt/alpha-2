@@ -82,14 +82,14 @@ const CourseLeaderboard = () => {
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => navigate(-1)}
-                            className="p-2.5 rounded-xl bg-[#F1F3F4] dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group shadow-sm"
+                            className="btn-secondary !p-2.5"
                         >
                             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                         <div>
                             <div className="flex items-center gap-3 mb-1">
                                 <Trophy className="w-6 h-6 text-yellow-500" />
-                                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{courseName} Leaderboard</h1>
+                                <h1 className="page-header-title">{courseName} Leaderboard</h1>
                             </div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Track your progress and compete with your peers in this course.</p>
                         </div>
@@ -99,14 +99,14 @@ const CourseLeaderboard = () => {
                         <button 
                             onClick={fetchLeaderboard}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-[#F1F3F4] dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all shadow-sm"
+                            className="btn-secondary flex items-center gap-2"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             <span className="text-sm font-medium">Refresh</span>
                         </button>
                         <button 
                             onClick={handleExportCSV}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all shadow-md shadow-primary-500/10"
+                            className="btn-primary flex items-center gap-2"
                         >
                             <Download className="w-4 h-4" />
                             <span className="text-sm font-medium">Export CSV</span>

@@ -88,13 +88,13 @@ export default function InterviewPulseDashboard({ onStart, onViewSession }) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-center sm:justify-end">
                     <button
-                        className="bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 flex items-center gap-2 group shadow-sm transition-all active:scale-[0.98] border border-primary-500/20"
+                        className="btn-primary group whitespace-nowrap"
                         onClick={onStart}
                     >
                         <Plus size={14} className="text-white/80" />
-                        <span className="text-[10px] font-semibold tracking-widest uppercase">New Simulation</span>
+                        <span>New Interview</span>
                         <ArrowRight size={12} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                     </button>
                 </div>
@@ -118,7 +118,7 @@ export default function InterviewPulseDashboard({ onStart, onViewSession }) {
                             </div>
                             <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Silence in the Feed</h4>
                             <p className="text-[10px] text-gray-400 mt-2 font-medium">Your interview history will appear here once you complete a session.</p>
-                            <button onClick={onStart} className="mt-8 text-xs font-bold text-primary-600 uppercase tracking-wider hover:tracking-widest transition-all">Launch First Session</button>
+                            <button onClick={onStart} className="mt-8 btn-primary mx-auto">Launch First Session</button>
                         </div>
                     ) : (
                         sessions.map((s, idx) => (

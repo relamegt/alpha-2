@@ -1663,7 +1663,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                         </p>
                         <button
                             onClick={() => navigate(`${basePath}/contests`)}
-                            className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition font-medium text-sm"
+                            className="btn-secondary px-6 py-2.5"
                         >
                             Back to Contests
                         </button>
@@ -1827,14 +1827,10 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                         <button
                             onClick={() => setShowFinishModal(true)}
                             disabled={finishing || timeRemaining <= 0}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all text-xs font-bold shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="btn-primary flex items-center gap-2 px-4 py-1.5 text-xs"
                         >
-                            {(finishing || timeRemaining <= 0) ? (
-                                <>
-                                    <Loader2 size={13} className="animate-spin" />
-                                    Submitting...
-                                </>
-                            ) : 'Finish Contest'}
+                            <CheckCircle size={14} />
+                            <span>Finish Contest</span>
                         </button>
                     )}
                     {(isPractice || isSolo) && (
@@ -2264,15 +2260,23 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg p-0.5 transition-colors">
-                                    <button onClick={handleRun} disabled={running || isProblemLocked || (contestSubmitted && !isPractice)}
-                                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-[10px] font-bold text-gray-700 dark:text-gray-300 rounded-md hover:bg-white dark:hover:bg-[#23232e] hover:shadow-sm transition-all disabled:opacity-50" title="Run Code">
-                                        {running ? <Loader2 size={12} className="animate-spin" /> : <Play size={10} className="fill-current" />}
-                                        <span className="hidden xs:inline-block sm:inline-block">Run</span>
+                                    <button
+                                        onClick={handleRun}
+                                        disabled={running || isProblemLocked}
+                                        className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-[10px]"
+                                        title="Run Code (Ctrl+Enter)"
+                                    >
+                                        {running ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+                                        <span>Run</span>
                                     </button>
-                                    <button onClick={handleSubmit} disabled={submitting || isProblemLocked || (contestSubmitted && !isPractice)}
-                                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px] font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-md shadow-sm transition-all disabled:opacity-50" title={isPractice ? 'Verify Code' : 'Submit Code'}>
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={submitting || isProblemLocked || (contestSubmitted && !isPractice)}
+                                        className="btn-primary flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px]"
+                                        title={isPractice ? 'Verify Code' : 'Submit Code'}
+                                    >
                                         {submitting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                                        <span className="hidden xs:inline-block sm:inline-block">{isPractice ? 'Verify' : 'Submit'}</span>
+                                        <span>{isPractice ? 'Verify' : 'Submit'}</span>
                                     </button>
                                 </div>
                             </div>

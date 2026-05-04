@@ -68,7 +68,7 @@ export default function AssignmentManager() {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="btn-create" onClick={() => navigate('/admin/assignments/new')}>
+          <button className="btn-primary" onClick={() => navigate('/admin/assignments/new')}>
             <Plus size={18} /> New Assignment
           </button>
         </div>
@@ -117,13 +117,13 @@ export default function AssignmentManager() {
                 </td>
                 <td className="actions-td">
                   <div className="action-row">
-                    <button className="icon-btn view" onClick={() => window.open(`/assignments/${a.id}`, '_blank')} title="Student View">
+                    <button className="btn-secondary p-2 hover:text-blue-500 border-transparent" onClick={() => window.open(`/assignments/${a.id}`, '_blank')} title="Student View">
                       <Eye size={16} />
                     </button>
-                    <button className="icon-btn build" onClick={() => navigate(`/admin/assignments/build/${a.id}`)} title="Open IDE Builder">
+                    <button className="btn-secondary p-2 hover:text-primary-500 border-transparent" onClick={() => navigate(`/admin/assignments/build/${a.id}`)} title="Open IDE Builder">
                       <Layers size={16} />
                     </button>
-                    <button className="icon-btn delete" onClick={() => handleDelete(a.id)} title="Delete">
+                    <button className="btn-secondary p-2 hover:text-red-500 border-transparent" onClick={() => handleDelete(a.id)} title="Delete">
                       <Trash2 size={16} />
                     </button>
                   </div>

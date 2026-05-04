@@ -214,7 +214,7 @@ const SubmissionModal = ({ sub, onClose }) => {
                 <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#111117] flex justify-end shrink-0 transition-colors">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-[#23232e] hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                        className="btn-secondary"
                     >
                         Close
                     </button>

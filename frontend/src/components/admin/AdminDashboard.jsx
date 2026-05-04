@@ -59,7 +59,7 @@ const AdminDashboard = () => {
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                         Dashboard
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="page-header-desc">
                         Welcome back, Admin. Here's what's happening today.
                     </p>
                 </div>

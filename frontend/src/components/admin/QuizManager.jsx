@@ -191,10 +191,10 @@ const QuizManager = () => {
                                             quizQuestions: q.quizQuestions || []
                                         }); 
                                         setShowEditModal(true); 
-                                    }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                    }} className="btn-secondary p-1.5 text-blue-600 border-transparent hover:border-blue-200">
                                         <Edit2 size={16} />
                                     </button>
-                                    <button onClick={() => handleDelete(q._id, q.title)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
+                                    <button onClick={() => handleDelete(q._id, q.title)} className="btn-secondary p-1.5 text-red-600 border-transparent hover:border-red-200">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -265,8 +265,8 @@ const QuizManager = () => {
                             </div>
 
                             <div className="flex justify-end gap-3 pt-8 border-t border-[var(--color-border-interactive)]">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="px-6 py-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-200 dark:shadow-none transition-all font-bold flex items-center gap-2">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary px-6">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary px-10">
                                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create Quiz' : 'Save Changes')}
                                 </button>
                             </div>

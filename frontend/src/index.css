@@ -52,7 +52,7 @@
 
         /* Tab Variables */
         --color-tab-container-bg: var(--color-bg-card);
-        --color-tab-bg-active: rgba(125, 99, 242, 0.2);
+        --color-tab-bg-active: rgba(174, 161, 237, 0.2);
         --color-tab-text-active: #FFFFFF;
         --color-tab-text-inactive: #8a8a96;
         --color-tab-ring-active: rgba(125, 99, 242, 0.3);
@@ -91,32 +91,31 @@
 
     /* Buttons */
     .btn-primary {
-        @apply bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-primary-500/20 hover:bg-primary-700 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-300;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        @apply flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-400 border border-primary-500/20 shadow-sm shadow-primary-500/20 transition-all active:scale-[0.98];
     }
 
-    .dark .btn-primary {
-        @apply bg-primary-600 shadow-none;
-    }
-
-    .dark .btn-primary:hover {
-        @apply bg-primary-500 shadow-none;
+    .btn-primary:hover {
+        @apply from-primary-500 to-primary-700 shadow-md shadow-primary-500/30;
     }
 
     .btn-secondary {
-        @apply bg-white text-gray-700 border border-gray-200 px-6 py-2.5 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200;
+        @apply flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-medium border border-[var(--color-border-interactive)] transition-all;
+        background-color: transparent;
+        color: #6B7280;
+    }
+
+    .btn-secondary:hover {
+        background-color: #F9FAFB;
+        color: #111827;
     }
 
     .dark .btn-secondary {
-        background-color: var(--color-bg-surface);
-        color: var(--color-text-secondary);
-        border-color: var(--color-border);
+        color: #9CA3AF;
     }
 
     .dark .btn-secondary:hover {
-        background-color: var(--color-bg-hover);
-        color: var(--color-text-primary);
-        border-color: var(--color-border-light);
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #FFFFFF;
     }
 
     .btn-danger {
@@ -336,6 +335,22 @@
     }
 
     /* Typography */
+    .page-header-container {
+        @apply mb-3;
+    }
+
+    .page-tabs-container {
+        @apply flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-4;
+    }
+
+    .page-header-title {
+        @apply text-2xl font-semibold text-gray-900 dark:text-white tracking-tight;
+    }
+
+    .page-header-desc {
+        @apply text-gray-500 dark:text-gray-400 mt-1;
+    }
+
     .gradient-text {
         @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600;
     }

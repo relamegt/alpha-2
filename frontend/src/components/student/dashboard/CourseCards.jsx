@@ -108,9 +108,9 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
 
                                 {/* Linear Progress Bar */}
                                 <div className="space-y-1.5">
-                                    <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden shadow-inner">
+                                    <div className="w-full bg-gray-200 dark:bg-gray-800/80 rounded-full h-2 overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                         <div 
-                                            className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-1000 ease-out"
+                                            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(99,102,241,0.4)]"
                                             style={{ width: `${progress.percent}%` }}
                                         />
                                     </div>
@@ -154,7 +154,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                                 e.preventDefault();
                                                 navigate(`/dashboard/courses/${course._id}/leaderboard`);
                                             }}
-                                            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--color-border-interactive)] text-[13px] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                                            className="w-full btn-secondary"
                                         >
                                             <BarChart3 size={14} />
                                             Analytics
@@ -167,14 +167,14 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                                 const cSlug = course.slug || course._id;
                                                 window.open(`/workspace/${cSlug}`, '_blank', 'noopener,noreferrer');
                                             }}
-                                            className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-500 hover:to-primary-700 text-white text-[13px] transition-all shadow-sm active:scale-[0.98] border border-primary-500/20"
+                                            className="w-full btn-primary"
                                         >
                                             Continue
                                         </button>
                                     ) : (
                                         <Link 
                                             to={`/dashboard/courses/${course.slug || course._id}`}
-                                            className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-500 hover:to-primary-700 text-white text-[13px] transition-all shadow-sm active:scale-[0.98] border border-primary-500/20"
+                                            className="w-full btn-primary"
                                         >
                                             Preview
                                         </Link>

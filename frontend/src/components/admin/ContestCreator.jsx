@@ -321,7 +321,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                 <div>
                     <button
                         onClick={onBack}
-                        className="flex items-center text-gray-500 hover:text-gray-700 mb-2 transition-colors"
+                        className="btn-secondary py-1.5 px-4 mb-2"
                     >
                         <ArrowLeft size={16} className="mr-1" /> Back to Contests
                     </button>
@@ -559,7 +559,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                             <button
                                 type="button"
                                 onClick={() => setShowProblemModal(true)}
-                                className="btn-secondary flex items-center gap-2 px-4 py-2 rounded-xl"
+                                className="btn-secondary px-4 py-2"
                             >
                                 <Plus size={16} />
                                 Create New Problem
@@ -694,7 +694,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="btn-primary shadow-xl dark:shadow-none md:shadow-lg md:dark:shadow-none md:min-w-[200px] flex items-center justify-center gap-2 py-3 rounded-xl text-base font-semibold transition-all"
+                            className="btn-primary md:min-w-[200px] py-3 text-base"
                         >
                             {loading ? (
                                 <>
@@ -803,7 +803,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                         <button
                                             type="button"
                                             onClick={addConstraint}
-                                            className="text-primary-600 text-sm font-medium hover:underline flex items-center gap-1"
+                                            className="btn-secondary py-1 text-xs px-3 border-dashed"
                                         >
                                             <Plus size={14} /> Add Constraint
                                         </button>

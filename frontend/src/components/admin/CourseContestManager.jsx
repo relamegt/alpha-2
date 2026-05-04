@@ -76,7 +76,7 @@ const CourseContestManager = () => {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors gap-4">
                             <div className="flex-1">
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Course Contests</h1>
-                                <p className="text-gray-500 dark:text-gray-400 mt-1">Standalone contests for specific course subsections.</p>
+                                <p className="page-header-desc">Standalone contests for specific course subsections.</p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                                 <div className="relative w-full sm:w-64">

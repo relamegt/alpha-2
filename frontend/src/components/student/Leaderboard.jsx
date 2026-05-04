@@ -987,7 +987,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setViewMode(viewMode === 'summary' ? 'detailed' : 'summary')}
-                                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-all ${viewMode === 'detailed' ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] border-[var(--color-tab-ring-active)]' : 'bg-[var(--color-tab-container-bg)] text-[var(--color-tab-text-inactive)] border-[var(--color-border-interactive)] hover:bg-gray-50 dark:hover:bg-[var(--color-bg-card)]'}`}
+                                        className={`btn-secondary flex items-center gap-2 ${viewMode === 'detailed' ? '!bg-[var(--color-tab-bg-active)] !text-[var(--color-tab-text-active)] !border-[var(--color-tab-ring-active)]' : ''}`}
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l4 4a1 1 0 01.586 1.414V19a2 2 0 01-2 2z" />
@@ -997,7 +997,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
 
                                     <button
                                         onClick={handleRefreshPractice}
-                                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-[var(--color-bg-card)] transition-all"
+                                        className="btn-secondary !p-2"
                                         title="Refresh Data"
                                         disabled={practiceLoading}
                                     >
@@ -1028,7 +1028,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                             {(searchQuery || filters.branch || filters.section) && (
                                 <button
                                     onClick={handleResetFilters}
-                                    className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors whitespace-nowrap"
+                                    className="btn-secondary !text-red-500 !border-red-500/20 hover:!bg-red-500/5"
                                 >
                                     Clear Filters
                                 </button>
@@ -1492,7 +1492,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                             </h2>
                                             <button
                                                 onClick={handleRefreshExternal}
-                                                className="btn-secondary flex items-center space-x-2"
+                                                className="btn-secondary"
                                                 disabled={externalLoading}
                                             >
                                                 <svg className={`w-4 h-4 ${externalLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1659,7 +1659,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                         <div className="flex gap-4 items-center">
                                             <button
                                                 onClick={downloadInternalCSV}
-                                                className="text-sm bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-3 py-1.5 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 font-medium transition-colors border border-primary-100 dark:border-primary-800"
+                                                className="btn-secondary"
                                             >
                                                 Download Report
                                             </button>
@@ -1700,9 +1700,9 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                     <button
                                                         key={size}
                                                         onClick={() => { setInternalPageSize(size); setInternalPage(1); }}
-                                                        className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors ${internalPageSize === size
-                                                            ? 'bg-purple-600 text-white border-purple-600'
-                                                            : 'bg-white dark:bg-[#111117] text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:border-purple-400 hover:text-purple-600'
+                                                        className={`btn-secondary !px-2.5 !py-1 !text-xs ${internalPageSize === size
+                                                            ? '!bg-primary-600 !text-white !border-primary-600'
+                                                            : ''
                                                             }`}
                                                     >
                                                         {size}
@@ -1713,7 +1713,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                 <button
                                                     onClick={() => setInternalPage(p => Math.max(1, p - 1))}
                                                     disabled={internalPage === 1}
-                                                    className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                                                    className="btn-secondary !px-3 !py-1"
                                                 >
                                                     ← Prev
                                                 </button>
@@ -1724,7 +1724,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                 <button
                                                     onClick={() => setInternalPage(p => Math.min(internalTotalPages, p + 1))}
                                                     disabled={internalPage === internalTotalPages}
-                                                    className="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                                                    className="btn-secondary !px-3 !py-1"
                                                 >
                                                     Next →
                                                 </button>

@@ -2285,12 +2285,11 @@ const CodeEditor = () => {
                                             <Settings size={16} />
                                         </button>
 
-
                                         <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg p-0.5 transition-colors">
                                             <button
                                                 onClick={handleRun}
                                                 disabled={isExecuting}
-                                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-[10px] font-bold text-gray-700 dark:text-gray-300 rounded-md hover:bg-white dark:hover:bg-[#23232e] hover:shadow-sm transition-all disabled:opacity-50"
+                                                className="btn-secondary flex items-center gap-1 px-2 sm:px-3 py-1.5 text-[10px] ml-0"
                                                 title="Run Sample Cases"
                                             >
                                                 {running ? <Loader2 size={12} className="animate-spin" /> : <Play size={10} className="fill-current" />}
@@ -2299,7 +2298,7 @@ const CodeEditor = () => {
                                             <button
                                                 onClick={handleSubmit}
                                                 disabled={isExecuting}
-                                                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px] font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-md shadow-sm transition-all disabled:opacity-50"
+                                                className="btn-primary flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px]"
                                                 title="Submit Code"
                                             >
                                                 {submitting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}

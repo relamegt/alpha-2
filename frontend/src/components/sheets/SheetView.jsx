@@ -159,22 +159,22 @@ const SheetView = () => {
   const status = getStatusConfig();
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-6">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Header Section */}
-      <header className="shrink-0 p-1">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+      <header className="page-header-container shrink-0">
+        <h1 className="page-header-title">
           {sheet.name}
         </h1>
         {sheet.description && (
-          <p className="text-gray-500 dark:text-slate-400 text-sm font-medium leading-relaxed max-w-4xl">
+          <p className="page-header-desc">
             {sheet.description}
           </p>
         )}
       </header>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 shrink-0">
+      <div className="page-tabs-container shrink-0">
         {/* Tabs - Match MyCourses style */}
-        <div className="flex items-center p-1 bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-full w-max">
+        <div className="flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max shadow-sm">
           {[
             { id: 'all', label: 'All Questions' },
             { id: 'revision', label: 'Saved Questions' },
@@ -184,7 +184,7 @@ const SheetView = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === tab.id 
-                  ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white shadow-md ring-1 ring-black/5 dark:ring-0' 
+                  ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]' 
                   : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'}`}
             >
               {tab.label}
@@ -201,7 +201,7 @@ const SheetView = () => {
               placeholder="Search questions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 focus:bg-white dark:focus:bg-[var(--color-bg-card)] focus:ring-2 focus:ring-gray-200 dark:focus:ring-primary-500/10 shadow-inner dark:shadow-none"
+              className="w-full pl-11 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all bg-[var(--color-bg-input)] border border-transparent dark:border-gray-800 text-gray-800 dark:text-gray-200 focus:bg-white dark:focus:bg-[var(--color-bg-card)] focus:ring-2 focus:ring-primary-500/20 shadow-sm"
             />
           </div>
         </div>

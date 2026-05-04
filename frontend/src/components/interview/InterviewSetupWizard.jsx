@@ -20,8 +20,8 @@ import { AI_VOICES } from '../../lib/interviewGemini';
 import { createInterviewSession, parseResumePdf } from '../../services/interviewSessionService';
 
 const STEPS = [
-    { id: 'context', title: 'Context', description: 'What are you aiming for?' },
-    { id: 'assets', title: 'Assets', description: 'Resume & job details' },
+    { id: 'company', title: 'Company', description: 'What are you aiming for?' },
+    { id: 'Input', title: 'Input', description: 'Resume & job details' },
     { id: 'mode', title: 'Mode', description: 'Simulation setup' },
 ];
 
@@ -207,7 +207,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -5 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-6 pb-6"
+                            className="bg-[var(--color-bg-card)] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-10 shadow-sm space-y-8 min-h-[400px]"
                         >
                             {error && (
                                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 text-[10px] flex items-center gap-2 font-bold uppercase tracking-widest">
@@ -219,22 +219,22 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                             {currentStep === 0 && (
                                 <div className="space-y-6">
                                     <div className="space-y-1">
-                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Professional Context</h2>
+                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Target Company Context</h2>
                                         <p className="text-sm text-gray-500 font-medium">Define your target company for behavioral research.</p>
                                     </div>
                                     
-                                    <div className="bg-[var(--color-bg-card)] p-5 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-5">
-                                        <div className="space-y-1.5">
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Target Company</label>
                                             <input
                                                 type="text"
                                                 value={companyName}
                                                 onChange={(e) => setCompanyName(e.target.value)}
                                                 placeholder="e.g. Google, Microsoft"
-                                                className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2.5 focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-sm font-semibold"
+                                                className="w-full bg-[var(--color-bg-input)] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2.5 focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-sm font-semibold text-gray-900 dark:text-white"
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Official Website</label>
                                             <div className="relative">
                                                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -243,7 +243,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                                     value={website}
                                                     onChange={(e) => setWebsite(e.target.value)}
                                                     placeholder="https://company.com"
-                                                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2.5 pl-10 focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-sm font-semibold"
+                                                    className="w-full bg-[var(--color-bg-input)] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2.5 pl-10 focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-sm font-semibold text-gray-900 dark:text-white"
                                                 />
                                             </div>
                                         </div>
@@ -254,12 +254,12 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                             {currentStep === 1 && (
                                 <div className="space-y-6">
                                     <div className="space-y-1">
-                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Knowledge Assets</h2>
+                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Input Assets</h2>
                                         <p className="text-sm text-gray-500 font-medium">Sync your background with the AI engine.</p>
                                     </div>
 
                                     <div className="space-y-5">
-                                        <div className="bg-[var(--color-bg-card)] p-8 rounded-xl border-2 border-dashed border-[var(--color-border-interactive)] hover:border-primary-500/30 transition-all cursor-pointer relative group flex flex-col items-center justify-center text-center">
+                                        <div className="bg-[var(--color-bg-card)] p-8 rounded-xl border-2 border-dashed border-gray-300 dark:border-white/10 hover:border-primary-500/50 transition-all cursor-pointer relative group flex flex-col items-center justify-center text-center">
                                             <input type="file" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                             <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/10 flex items-center justify-center mb-3">
                                                 <Upload size={18} className="text-primary-600" />
@@ -268,13 +268,13 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                             <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-1 font-bold">PDF / TXT</div>
                                         </div>
 
-                                        <div className="bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-2">
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Job Description</label>
                                             <textarea
                                                 value={jobDescription}
                                                 onChange={(e) => setJobDescription(e.target.value)}
                                                 placeholder="Paste the job description..."
-                                                className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg p-3 min-h-[140px] focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-xs font-medium leading-relaxed scrollbar-hide"
+                                                className="w-full bg-[var(--color-bg-input)] border border-gray-300 dark:border-white/10 rounded-lg p-3 min-h-[140px] focus:ring-1 focus:ring-primary-500/50 outline-none transition-all text-xs font-medium leading-relaxed scrollbar-hide text-gray-900 dark:text-white"
                                             />
                                         </div>
                                     </div>
@@ -301,7 +301,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                                              'px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all',
                                                              interviewType === type
                                                                  ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
-                                                                 : 'border-[var(--color-border-interactive)] bg-white dark:bg-[var(--color-bg-card)] text-gray-500'
+                                                                 : 'border-gray-300 dark:border-white/10 bg-white dark:bg-[var(--color-bg-card)] text-gray-500 hover:border-primary-500/30'
                                                          )}
                                                      >
                                                          {type}
@@ -322,7 +322,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                                              'px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all',
                                                              difficulty === diff
                                                                  ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
-                                                                 : 'border-[var(--color-border-interactive)] bg-white dark:bg-[var(--color-bg-card)] text-gray-500'
+                                                                 : 'border-gray-300 dark:border-white/10 bg-white dark:bg-[var(--color-bg-card)] text-gray-500 hover:border-primary-500/30'
                                                          )}
                                                      >
                                                          {diff}
@@ -332,7 +332,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                          </div>
                                      </div>
 
-                                     <div className="bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between">
+                                     <div className="p-4 rounded-xl border border-gray-300 dark:border-white/10 flex items-center justify-between">
                                          <div className="flex items-center gap-2">
                                              <Clock size={14} className="text-primary-500" />
                                              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Duration</span>
@@ -345,7 +345,7 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                                  step="5"
                                                  value={duration}
                                                  onChange={(e) => setDuration(parseInt(e.target.value, 10))}
-                                                 className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full appearance-none cursor-pointer accent-primary-600"
+                                                 className="w-full h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full cursor-pointer accent-primary-600"
                                              />
                                              <span className="text-xs font-bold whitespace-nowrap text-gray-900 dark:text-white">{duration} mins</span>
                                          </div>
@@ -362,24 +362,24 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                                                         className={cn(
                                                             'w-full flex flex-col items-center gap-2 p-3 rounded-xl border transition-all text-center',
                                                             voiceName === v.id
-                                                                ? 'border-primary-600 bg-primary-600/5'
-                                                                : 'border-[var(--color-border-interactive)] bg-[var(--color-bg-card)]'
+                                                                ? 'border-primary-600 bg-primary-600/10'
+                                                                : 'border-gray-300 dark:border-white/10 bg-[var(--color-bg-card)] hover:border-primary-500/30'
                                                         )}
                                                     >
-                                                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--color-bg-surface)] dark:bg-gray-900">
-                                                            <Mic size={14} className={voiceName === v.id ? 'text-primary-600' : 'text-gray-400'} />
-                                                        </div>
+                                                        <div className="mb-10" />
                                                         <span className={cn('text-[10px] font-bold uppercase tracking-wider', voiceName === v.id ? 'text-primary-600' : 'text-gray-500')}>{v.name}</span>
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={(e) => handlePreviewVoice(e, v.id)}
                                                         className={cn(
-                                                            "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100",
-                                                            playingVoice === v.id ? "opacity-100 bg-primary-600 text-white animate-pulse" : "bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-gray-200"
+                                                            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-8px] w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg z-20",
+                                                            playingVoice === v.id 
+                                                               ? "bg-primary-600 text-white animate-pulse" 
+                                                               : "bg-white dark:bg-gray-800 text-primary-600 border border-gray-100 dark:border-gray-700 hover:scale-110 active:scale-95"
                                                         )}
                                                     >
-                                                        {playingVoice === v.id ? <Pause size={10} /> : <Play size={10} />}
+                                                        {playingVoice === v.id ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
                                                     </button>
                                                 </div>
                                              ))}
@@ -391,13 +391,13 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                     </AnimatePresence>
                 </div>
 
-                <footer className="shrink-0 pt-6 border-t border-[var(--color-border-interactive)]">
+                <footer className="shrink-0 pt-6">
                     <div className="flex items-center justify-end gap-3 w-full">
                         <button
                             type="button"
                             disabled={currentStep === 0}
                             onClick={() => setCurrentStep(currentStep - 1)}
-                            className="px-6 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-widest border border-transparent transition-all disabled:opacity-0"
+                            className="btn-secondary !px-4 !py-1.5 !text-xs disabled:opacity-0 whitespace-nowrap"
                         >
                             Back
                         </button>
@@ -405,9 +405,9 @@ export default function InterviewSetupWizard({ onComplete, onBack }) {
                             type="button"
                             onClick={handleNext}
                             disabled={loading}
-                            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="btn-primary !px-4 !py-1.5 !text-xs disabled:opacity-50 whitespace-nowrap"
                         >
-                            {loading ? <Loader2 size={14} className="animate-spin" /> : currentStep === STEPS.length - 1 ? 'Start Engine' : 'Continue'}
+                            {loading ? <Loader2 size={14} className="animate-spin" /> : currentStep === STEPS.length - 1 ? 'Start Interview' : 'Continue'}
                             {!loading && <ArrowRight size={12} />}
                         </button>
                     </div>

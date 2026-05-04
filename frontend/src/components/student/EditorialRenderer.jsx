@@ -443,7 +443,7 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                 <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wide">Admin: Editorial Settings</span>
                 {!editMode && (
                     <button onClick={() => { setDraftEditorialLink(editorialLink); setDraftVideoUrl(videoUrl); setEditMode(true); }}
-                        className="text-xs px-3 py-1 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
+                        className="btn-secondary text-xs px-3 py-1">
                         Edit Links
                     </button>
                 )}
@@ -464,10 +464,10 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                     </div>
                     <div className="flex gap-2">
                         <button onClick={handleAdminSave} disabled={saving}
-                            className="px-4 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-50 transition">
+                            className="btn-primary px-4 py-1.5 text-xs">
                             {saving ? 'Saving…' : 'Save'}
                         </button>
-                        <button onClick={() => setEditMode(false)} className="px-4 py-1.5 bg-gray-100 dark:bg-[#111117] text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                        <button onClick={() => setEditMode(false)} className="btn-secondary px-4 py-1.5 text-xs">
                             Cancel
                         </button>
                     </div>
@@ -523,7 +523,7 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                     <button
                         onClick={handleUnlock}
                         disabled={unlocking}
-                        className={`w-full flex items-center justify-center gap-2 py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 ${!isDark ? 'shadow-md' : ''}`}
+                        className="btn-primary w-full flex items-center justify-center gap-2 py-3 px-6 font-bold"
                     >
                         {unlocking ? <FaSpinner className="animate-spin" /> : 'Yes, Reveal Editorial'}
                     </button>

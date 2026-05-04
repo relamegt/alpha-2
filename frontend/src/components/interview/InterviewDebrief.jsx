@@ -63,7 +63,7 @@ export default function InterviewDebrief({ session, onBack }) {
                 <button
                     type="button"
                     onClick={onBack}
-                    className="bg-primary-600 text-white px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                    className="btn-primary !px-4 !py-1.5 !text-xs"
                 >
                     Return to Feed
                 </button>
@@ -93,10 +93,10 @@ export default function InterviewDebrief({ session, onBack }) {
                     <button
                         type="button"
                         onClick={onBack}
-                        className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all px-2 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5"
+                        className="btn-secondary !px-4 !py-1.5 !text-xs"
                     >
-                        <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
-                        Exit
+                        <ArrowLeft size={12} />
+                        Exit Report
                     </button>
                 </div>
             </header>

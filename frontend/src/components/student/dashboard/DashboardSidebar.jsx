@@ -87,11 +87,11 @@ const SidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, badge, isDi
                     onClick={handleClick}
                     className={`w-full flex items-center justify-between px-5 py-2.5 rounded-xl transition-all duration-200 group relative ${isSubItemActive
                         ? 'bg-primary-50/50 dark:bg-primary-500/10 text-gray-900 dark:text-white ring-1 ring-primary-100 dark:ring-primary-500/20'
-                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-primary-500/15 hover:text-gray-900 dark:hover:text-white dark:hover:ring-1 dark:hover:ring-primary-500/30 transition-all duration-200'
                         }`}
                 >
                     <div className={`flex items-center ${isCollapsed ? 'gap-0' : 'gap-3'}`}>
-                        <div className={`shrink-0 transition-colors ${isSubItemActive ? 'text-primary-600 dark:text-primary-400' : 'group-hover:text-gray-700 dark:group-hover:text-gray-200'}`}>
+                        <div className={`shrink-0 transition-colors ${isSubItemActive ? 'text-primary-600 dark:text-primary-400' : 'group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}>
                             <Icon size={20} strokeWidth={isSubItemActive ? 2.2 : 1.8} />
                         </div>
                         {!isCollapsed && (
@@ -111,11 +111,11 @@ const SidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, badge, isDi
                     onClick={() => isCollapsed && onExpand && onExpand()}
                     className={`flex items-center justify-between px-5 py-2.5 rounded-xl transition-all duration-200 group relative ${isActive
                         ? 'bg-primary-50/50 dark:bg-primary-500/10 text-gray-900 dark:text-white ring-1 ring-primary-100 dark:ring-primary-500/20'
-                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-primary-500/15 hover:text-gray-900 dark:hover:text-white dark:hover:ring-1 dark:hover:ring-primary-500/30 transition-all duration-200'
                         }`}
                 >
                     <div className={`flex items-center ${isCollapsed ? 'gap-0' : 'gap-3'}`}>
-                        <div className={`shrink-0 transition-colors ${isActive ? 'text-primary-600 dark:text-primary-400' : 'group-hover:text-gray-700 dark:group-hover:text-gray-200'}`}>
+                        <div className={`shrink-0 transition-colors ${isActive ? 'text-primary-600 dark:text-primary-400' : 'group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}>
                             <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
                         </div>
                         {!isCollapsed && (
@@ -139,7 +139,7 @@ const SidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, badge, isDi
                             to={item.to}
                             className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13.5px] font-medium transition-all ${location.pathname === item.to
                                 ? 'text-primary-600 dark:text-primary-400'
-                                : 'text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50/50 dark:hover:bg-primary-500/15 transition-all'
                                 }`}
                         >
                             <span>{item.label}</span>
@@ -280,7 +280,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className={`flex items-center w-full px-5 py-2.5 rounded-xl text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200 group ${isCollapsed ? 'gap-0 justify-center' : 'gap-3'}`}
+                    className={`flex items-center w-full px-5 py-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-primary-500/20 transition-all duration-200 group ${isCollapsed ? 'gap-0 justify-center' : 'gap-3'}`}
                 >
                     <div className="shrink-0 group-hover:text-primary-600">
                         {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -324,21 +324,21 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                             <div className="p-2 space-y-1">
                                 <Link
                                     to={`/dashboard/profile/${user.username || user.id}`}
-                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <User size={18} />
                                     <span className="font-medium">View Profile</span>
                                 </Link>
                                 <Link
                                     to="/dashboard/settings"
-                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <SettingsIcon size={18} />
                                     <span className="font-medium">Account Settings</span>
                                 </Link>
                                 <Link
                                     to="/dashboard/announcements"
-                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <BellIcon size={18} />
                                     <span className="font-medium">Notifications</span>

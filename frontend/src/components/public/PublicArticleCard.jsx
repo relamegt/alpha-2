@@ -99,7 +99,7 @@ const PublicArticleCard = ({ article, onToggleSave }) => {
 
                     <Link 
                         to={`/dashboard/articles/${article.slug}`}
-                        className="flex items-center text-xs font-semibold px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-all shadow-sm shadow-primary-500/20"
+                        className="btn-primary py-2 px-4 text-xs"
                     >
                         Read Article
                         <svg className="w-4 h-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

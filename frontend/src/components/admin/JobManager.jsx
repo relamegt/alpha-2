@@ -128,7 +128,7 @@ const JobManager = () => {
                 </div>
                 <button 
                     onClick={openCreate}
-                    className="bg-primary-600 text-white px-8 py-3 rounded-2xl flex items-center gap-2 font-black shadow-xl shadow-primary-600/30 hover:scale-105 active:scale-95 transition-all"
+                    className="btn-primary px-8 py-3 rounded-2xl flex items-center gap-2"
                 >
                     <Plus className="w-6 h-6" />
                     Post New Job
@@ -157,10 +157,10 @@ const JobManager = () => {
                                     <Building2 className="w-6 h-6" />
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => openEdit(job)} className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition-all">
+                                    <button onClick={() => openEdit(job)} className="btn-secondary p-2 text-gray-400 hover:text-primary-500 border-transparent hover:border-primary-200">
                                         <Edit2 className="w-4 h-4" />
                                     </button>
-                                    <button onClick={() => deleteMutation.mutate(job.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all">
+                                    <button onClick={() => deleteMutation.mutate(job.id)} className="btn-secondary p-2 text-gray-400 hover:text-red-500 border-transparent hover:border-red-200">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -286,10 +286,10 @@ const JobManager = () => {
                             </div>
 
                             <div className="flex justify-end gap-4 pt-6 col-span-1 md:col-span-2 border-t border-[var(--color-border-interactive)]">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-8 py-3 font-bold text-gray-500 hover:text-gray-700 transition-colors">Discard</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary px-8">Discard</button>
                                 <button 
                                     type="submit"
-                                    className="bg-primary-600 text-white px-10 py-3 rounded-2xl font-black shadow-xl shadow-primary-600/30 active:scale-95 transition-all text-sm italic uppercase"
+                                    className="btn-primary px-10 py-3"
                                 >
                                     {editingJob ? 'Update Posting' : 'Broadcast Opportunity'}
                                 </button>

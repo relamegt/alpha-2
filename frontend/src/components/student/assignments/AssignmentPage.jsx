@@ -69,7 +69,7 @@ export default function AssignmentPage() {
       <div className="flex-1 flex items-center justify-center p-12 text-center">
         <div>
           <Info size={48} className="text-primary-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Assignment Not Found</h1>
+          <h1 className="page-header-title">Assignment Not Found</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">The workspace you are looking for might have been moved or deleted.</p>
           <Link to="/dashboard/assignments" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-600/20">Return to Assignments</Link>
         </div>
@@ -109,7 +109,7 @@ export default function AssignmentPage() {
                 </span>
               )}
             </div>
-            <h1 className="text-3xl font-semibold text-gray-900 dark:text-white leading-tight tracking-tight">{assignment.title}</h1>
+            <h1 className="page-header-title">{assignment.title}</h1>
           </div>
         </div>
       </header>

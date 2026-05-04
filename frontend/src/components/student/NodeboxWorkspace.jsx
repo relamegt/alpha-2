@@ -391,7 +391,7 @@ const NodeboxWorkspace = ({ exercise, courseId, onSubmissionComplete }) => {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting || isBooting}
-                        className="flex items-center gap-1.5 px-3 h-6 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white rounded text-[10px] font-bold transition-all shadow-lg shadow-primary-900/20"
+                        className="btn-primary flex items-center gap-1.5 px-3 h-6 text-[10px]"
                     >
                         {isSubmitting
                             ? <Loader2 size={10} className="animate-spin" />
@@ -547,11 +547,3 @@ const NodeboxWorkspace = ({ exercise, courseId, onSubmissionComplete }) => {
 };
 
 export default NodeboxWorkspace;
-
-
-
-
-
-
-
-

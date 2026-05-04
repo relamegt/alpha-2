@@ -108,7 +108,7 @@ const AnnouncementManager = () => {
             <div className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-xl shadow-primary-500/5">
                 <div>
                     <h1 className="text-4xl font-black dark:text-white tracking-tight flex items-center gap-4">
-                        <div className="p-3 bg-primary-600 rounded-2xl text-white">
+                        <div className="p-3 bg-[var(--color-accent)] rounded-2xl text-white shadow-lg shadow-[var(--color-accent)]/20">
                             <Megaphone className="w-8 h-8" />
                         </div>
                         Announcements
@@ -117,7 +117,7 @@ const AnnouncementManager = () => {
                 </div>
                 <button 
                     onClick={openCreate}
-                    className="bg-primary-600 text-white px-8 py-3 rounded-2xl flex items-center gap-2 font-black shadow-xl shadow-primary-600/30 hover:scale-105 active:scale-95 transition-all"
+                    className="btn-primary px-8 py-3 rounded-2xl flex items-center gap-2"
                 >
                     <Plus className="w-6 h-6" />
                     New Blast
@@ -133,7 +133,7 @@ const AnnouncementManager = () => {
                     placeholder="Search announcements..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-4 border-none rounded-2xl bg-white dark:bg-[var(--color-bg-card)] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 shadow-sm transition-all"
+                    className="block w-full pl-12 pr-4 py-4 border border-[var(--color-border-interactive)] rounded-2xl bg-white dark:bg-[var(--color-bg-card)] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-[var(--color-accent)]/30 shadow-sm transition-all"
                 />
             </div>
 
@@ -157,10 +157,10 @@ const AnnouncementManager = () => {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => openEdit(announcement)} className="p-3 text-gray-400 hover:text-primary-500 hover:bg-white dark:hover:bg-gray-800 rounded-2xl transition-all shadow-sm">
+                            <button onClick={() => openEdit(announcement)} className="btn-secondary p-3 text-gray-400 hover:text-primary-500 border-transparent hover:border-primary-200">
                                 <Edit2 className="w-5 h-5" />
                             </button>
-                            <button onClick={() => deleteMutation.mutate(announcement.id)} className="p-3 text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-800 rounded-2xl transition-all shadow-sm">
+                            <button onClick={() => deleteMutation.mutate(announcement.id)} className="btn-secondary p-3 text-gray-400 hover:text-red-500 border-transparent hover:border-red-200">
                                 <Trash2 className="w-5 h-5" />
                             </button>
                         </div>
@@ -233,10 +233,10 @@ const AnnouncementManager = () => {
                             </div>
 
                             <div className="flex justify-end gap-4 pt-6 border-t border-[var(--color-border-interactive)]">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-8 py-3 font-bold text-gray-500 hover:text-gray-700 transition-colors">Discard</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary px-8">Discard</button>
                                 <button 
                                     type="submit"
-                                    className="bg-primary-600 text-white px-10 py-3 rounded-2xl font-black shadow-xl shadow-primary-600/30 active:scale-95 transition-all text-sm italic uppercase"
+                                    className="btn-primary px-10 py-3"
                                 >
                                     {editingAnnouncement ? 'Update Broadcast' : 'Fire Announcement'}
                                 </button>

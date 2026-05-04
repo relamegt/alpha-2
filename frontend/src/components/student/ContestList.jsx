@@ -48,7 +48,7 @@ const ContestList = () => {
             <div className="min-h-screen bg-[var(--color-bg-primary)] pb-20 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
                     {/* Header Skeleton */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-6 animate-pulse">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-pulse">
                         <div>
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
@@ -97,18 +97,18 @@ const ContestList = () => {
 
     return (
         <div className="transition-colors">
-            <div className="space-y-12">
+            <div>
 
                 {/* Header Section */}
-                <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <h1 className="text-3xl font-bold tracking-tight mb-2 text-gray-900 dark:text-white">Internal Contests</h1>
-                    <p className="text-gray-500 dark:text-slate-400 text-sm font-medium leading-relaxed max-w-4xl">
+                <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
+                    <h1 className="page-header-title">Internal Contests</h1>
+                    <p className="page-header-desc">
                         Compete with your batchmates, test your knowledge, and climb the leaderboard. Master your skills through competition.
                     </p>
                 </header>
 
                 {/* Tabs & Search */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+                <div className="page-tabs-container">
                     <div className="flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max shadow-sm">
                         {[
                             { id: 'all', label: 'All Contests' },
@@ -279,7 +279,7 @@ const ContestCard = ({ contest, status }) => {
                         {!isSubmitted ? (
                             <Link
                                 to={`/contests/${contest.slug || contest._id}`}
-                                className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-100 dark:shadow-none hover:shadow-blue-200 dark:hover:shadow-none transition-all py-3 gap-2 text-sm transform hover:-translate-y-0.5"
+                                className="btn-primary flex w-full items-center justify-center py-3 gap-2 text-sm transform hover:-translate-y-0.5"
                             >
                                 Enter Contest <ArrowRight size={16} />
                             </Link>
@@ -287,7 +287,7 @@ const ContestCard = ({ contest, status }) => {
                             <Link
                                 to={`/contests/${contest.slug || contest._id}/leaderboard`}
                                 target="_blank"
-                                className="flex w-full items-center justify-center rounded-xl border border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all py-2.5 text-sm font-medium gap-2"
+                                className="btn-secondary flex w-full items-center justify-center py-2.5 text-sm gap-2"
                             >
                                 View Live Leaderboard
                             </Link>

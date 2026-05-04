@@ -25,14 +25,14 @@ const Jobs = () => {
     if (isLoading) return <div className="flex-1 flex items-center justify-center p-12"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div></div>;
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 space-y-6 animate-in fade-in duration-500">
+        <div className="flex-1 flex flex-col min-h-0 animate-in fade-in duration-500">
             {/* Properly Sized Header */}
-            <div className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-8">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">
+            <div className="page-tabs-container shrink-0">
+                <div className="page-header-container space-y-1">
+                    <h1 className="page-header-title">
                         Job Portal
                     </h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                    <p className="page-header-desc">
                         Identify and deploy into elite technical roles within the network.
                     </p>
                 </div>
@@ -52,7 +52,7 @@ const Jobs = () => {
             </div>
 
             {/* Dashboard Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0 mb-4">
                 {[
                     { label: 'Active Listings', value: filteredJobs?.length || 0, icon: <Layout className="w-4 h-4" /> },
                     {

@@ -232,7 +232,7 @@ const SecureImage = ({ src, alt, className, style, onLoad, ...props }) => {
   if (isLoading) {
     return (
       <div className={cn("flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800 w-full min-h-[200px]", className)}>
-        <FaSpinner className="animate-spin h-6 w-6 text-indigo-600"/>
+        <FaSpinner className="animate-spin h-6 w-6 text-[var(--color-accent)]"/>
       </div>
     );
   }
@@ -264,7 +264,7 @@ const SecureImage = ({ src, alt, className, style, onLoad, ...props }) => {
         src={imageSrc}
         alt={alt || "Secure Content"}
         className={cn(
-          "rounded-xl border-[2px] dark:border-[3.2px] border-[#6257e3] shadow-lg shadow-[#6961b5]/20 w-full h-auto pointer-events-none select-none", 
+          "rounded-xl border-[2px] dark:border-[3.2px] border-[var(--color-accent)] shadow-lg shadow-[var(--color-accent)]/20 w-full h-auto pointer-events-none select-none", 
           className
         )}
         style={{
@@ -492,7 +492,7 @@ const CodeBlockViewer = React.memo(({
                 className={cn(
                   "py-2 text-xs font-medium border-b-2 transition-colors",
                   currentLang === lang
-                    ? "border-indigo-500 text-zinc-100"
+                    ? "border-[var(--color-accent)] text-zinc-100"
                     : "border-transparent text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 disabled:cursor-default"
                 )}
               >
@@ -615,7 +615,7 @@ const MarkdownComponents = {
     <SecureImage 
       src={src} 
       alt={alt || "Editorial Image"} 
-      className="max-w-full my-6 mx-auto block rounded-xl shadow-lg border-2 border-indigo-100" 
+      className="max-w-full my-6 mx-auto block rounded-xl shadow-lg border-2 border-[var(--color-border-interactive)]" 
       {...props}
     />
   ),
@@ -641,7 +641,7 @@ const MarkdownComponents = {
       href={href} 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+      className="text-[var(--color-accent)] hover:underline font-medium"
     >
       {children}
     </a>
@@ -658,7 +658,7 @@ const MarkdownComponents = {
 
     if (isInline) {
       return (
-        <code className="bg-[#f1f5f9] text-[#4f46e5] px-1.5 py-0.5 rounded text-[14px] font-mono font-bold border border-[#e2e8f0]">
+        <code className="bg-[#f1f5f9] dark:bg-zinc-800 text-[var(--color-accent)] px-1.5 py-0.5 rounded text-[14px] font-mono font-bold border border-[var(--color-border-interactive)]">
           {content}
         </code>
       );

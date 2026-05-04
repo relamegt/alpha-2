@@ -36,20 +36,20 @@ const Announcements = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 space-y-6 animate-in fade-in duration-500">
+        <div className="flex-1 flex flex-col min-h-0 animate-in fade-in duration-500">
                 {/* Properly Sized Header */}
-                <div className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-8">
-                    <div className="space-y-1">
-                        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                <div className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="page-header-container space-y-1">
+                        <h1 className="page-header-title">
                             Announcements
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        <p className="page-header-desc">
                             Stay updated with important system notifications and campus alerts.
                         </p>
                     </div>
                     <button 
                         onClick={() => markAsReadMutation.mutate()} 
-                        className="bg-[var(--color-bg-card)] hover:bg-primary-600 text-gray-500 dark:text-gray-400 hover:text-white px-5 py-2 rounded-lg border border-gray-100 dark:border-gray-800 transition-all text-[13px] flex items-center gap-2 shadow-sm"
+                        className="btn-secondary h-10 flex items-center gap-2"
                     >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         Acknowledge All
@@ -112,11 +112,3 @@ const Announcements = () => {
 };
 
 export default Announcements;
-
-
-
-
-
-
-
-

@@ -117,13 +117,15 @@ const ArticleManager = () => {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-[32px] border border-[var(--color-border-interactive)] shadow-xl shadow-[var(--color-accent)]/5">
                 <div>
-                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2">
-                        <FileText className="text-teal-500" />
+                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
+                        <div className="p-2 bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded-xl">
+                            <FileText size={24} />
+                        </div>
                         Article Manager
                     </h1>
-                    <p className="text-sm text-gray-500">Manage reading materials and documentation</p>
+                    <p className="text-sm text-gray-500 mt-1">Manage reading materials and documentation</p>
                 </div>
                 <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
                     <Plus size={18} />
@@ -131,15 +133,15 @@ const ArticleManager = () => {
                 </button>
             </div>
 
-            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-[var(--color-border-interactive)]">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
                         placeholder="Search articles..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-transparent dark:bg-[#1c1c26] focus:ring-2 focus:ring-[var(--color-accent)]/30 outline-none transition-all"
                     />
                 </div>
             </div>
@@ -163,10 +165,10 @@ const ArticleManager = () => {
                                             article: a.article || { content: '' }
                                         }); 
                                         setShowEditModal(true); 
-                                    }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                    }} className="btn-secondary p-1.5 text-blue-600 border-transparent hover:border-blue-200">
                                         <Edit2 size={16} />
                                     </button>
-                                    <button onClick={() => handleDelete(a._id, a.title)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
+                                    <button onClick={() => handleDelete(a._id, a.title)} className="btn-secondary p-1.5 text-red-600 border-transparent hover:border-red-200">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -221,9 +223,9 @@ const ArticleManager = () => {
                                 <label className="text-sm font-semibold">Article Content (Optional - Markdown)</label>
                                 <textarea rows={12} value={formData.article?.content || ''} onChange={e => setFormData({...formData, article: { content: e.target.value }})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-sans leading-relaxed resize-none" placeholder="Optional: Write fallback markdown here..." />
                             </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-interactive)] mt-4">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="px-6 py-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="px-10 py-2.5 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-200 dark:shadow-none transition-all font-bold flex items-center gap-2">
+                             <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-interactive)] mt-4">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary px-6">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary px-10">
                                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create Article' : 'Save Changes')}
                                 </button>
                             </div>

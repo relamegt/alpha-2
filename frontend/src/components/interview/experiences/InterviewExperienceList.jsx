@@ -63,22 +63,21 @@ const InterviewExperienceList = () => {
   };
 
   return (
-    <div className={`flex-1 overflow-y-auto p-4 md:p-10 scrollbar-hide transition-colors bg-[var(--color-bg-primary)] ${isDark ? 'text-white' : 'text-gray-900'}`}>
-      <div className="w-full max-w-[1600px] mx-auto">
+    <div className="transition-colors">
         {/* HEADER SECTION - Minimalist */}
-        <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+        <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-semibold leading-tight mb-2">
+                    <h1 className="page-header-title">
                         Interview Experiences
                     </h1>
-                    <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className="page-header-desc">
                         Learn from the journeys of others and prepare for your dream company.
                     </p>
                 </div>
                 <button
                     onClick={() => navigate('/dashboard/interview/experience/submit')}
-                    className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 active:scale-95 transition-all text-sm flex items-center gap-2 shadow-sm shadow-primary-600/10"
+                    className="btn-primary"
                 >
                     <Plus className="w-4 h-4" />
                     Share Experience
@@ -87,8 +86,8 @@ const InterviewExperienceList = () => {
         </header>
 
         {/* SEARCH & COMPANIES BAR */}
-        <div className="space-y-8 mb-12">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="space-y-4 mb-4">
+            <div className="page-tabs-container">
                 <div className="relative w-full sm:w-80 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors" size={18} />
                     <input
@@ -260,10 +259,10 @@ const InterviewExperienceList = () => {
                     <button
                         key={i}
                         onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className={`w-9 h-9 rounded-lg font-semibold text-xs transition-all ${
+                        className={`w-9 h-9 rounded-lg font-semibold text-xs transition-all flex items-center justify-center ${
                             page === i + 1 
                                 ? 'bg-primary-600 text-white' 
-                                : isDark ? 'bg-[var(--color-bg-card)] text-gray-500 border border-gray-800' : 'bg-white text-gray-500 border border-gray-200'
+                                : 'btn-secondary !px-0 !py-0'
                         }`}
                     >
                         {i + 1}
@@ -271,7 +270,6 @@ const InterviewExperienceList = () => {
                 ))}
             </div>
         )}
-      </div>
     </div>
   );
 };

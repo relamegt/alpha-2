@@ -55,26 +55,60 @@ class Sheet {
     // Try UUID first if it looks like one, otherwise try slug
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sheetIdOrSlug);
     
-    return await prisma.sheet.findFirst({
-      where: isUuid 
-        ? { OR: [{ id: sheetIdOrSlug }, { slug: sheetIdOrSlug }] }
-        : { slug: sheetIdOrSlug },
-      include: {
-        sections: {
-          orderBy: { order: 'asc' },
-          include: {
-            subsections: {
-              orderBy: { order: 'asc' },
-              include: {
-                problems: {
-                    orderBy: { createdAt: 'asc' }
+    try {
+      return await prisma.sheet.findFirst({
+        where: isUuid 
+          ? { OR: [{ id: sheetIdOrSlug }, { slug: sheetIdOrSlug }] }
+          : { slug: sheetIdOrSlug },
+        include: {
+          sections: {
+            orderBy: { order: 'asc' },
+            include: {
+              subsections: {
+                orderBy: { order: 'asc' },
+                include: {
+                  problems: {
+                      orderBy: { createdAt: 'asc' }
+                  }
                 }
               }
             }
           }
         }
+      });
+    } catch (error) {
+      // If error is about missing slug column, fallback to ID only
+      if (error.message.includes('slug') || error.code === 'P2022') {
+        console.warn("Slug column missing in sheets table, falling back to ID-only search");
+        if (!isUuid) return null; // Can't search by slug if column is missing
+
+        return await prisma.sheet.findFirst({
+          where: { id: sheetIdOrSlug },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: true,
+            sections: {
+              orderBy: { order: 'asc' },
+              include: {
+                subsections: {
+                  orderBy: { order: 'asc' },
+                  include: {
+                    problems: {
+                        orderBy: { createdAt: 'asc' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
       }
-    });
+      throw error;
+    }
   }
 
   // Create sheet
@@ -83,22 +117,64 @@ class Sheet {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
-    return await prisma.sheet.create({
-      data: {
-        name: data.name,
-        slug: slug,
-        description: data.description || "",
-        createdBy: data.createdBy
+    try {
+      return await prisma.sheet.create({
+        data: {
+          name: data.name,
+          slug: slug,
+          description: data.description || "",
+          createdBy: data.createdBy
+        }
+      });
+    } catch (error) {
+      if (error.message.includes('slug') || error.code === 'P2022') {
+        console.warn("Slug column missing in sheets table, creating without slug");
+        return await prisma.sheet.create({
+          data: {
+            name: data.name,
+            description: data.description || "",
+            createdBy: data.createdBy
+          },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: true
+          }
+        });
       }
-    });
+      throw error;
+    }
   }
 
   // Update sheet
   static async update(id, data) {
-    return await prisma.sheet.update({
-      where: { id },
-      data
-    });
+    try {
+      return await prisma.sheet.update({
+        where: { id },
+        data
+      });
+    } catch (error) {
+      if ((error.message.includes('slug') || error.code === 'P2022') && data.slug) {
+        console.warn("Slug column missing in sheets table, updating without slug");
+        const { slug, ...updateData } = data;
+        return await prisma.sheet.update({
+          where: { id },
+          data: updateData,
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: true
+          }
+        });
+      }
+      throw error;
+    }
   }
 
   // Delete sheet

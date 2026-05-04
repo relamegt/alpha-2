@@ -41,7 +41,6 @@ const DashboardLayout = () => {
     // Pages that should occupy the full space without padding
     const isFullWidthPage = location.pathname.includes('/compiler') ||
         location.pathname.includes('/workspace') ||
-        location.pathname.includes('/interview') ||
         location.pathname.includes('/dashboard/articles/') ||
         location.pathname.includes('/interview/experience/');
 
@@ -201,7 +200,7 @@ const DashboardLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className={`flex-1 ${isFullWidthPage ? '' : 'p-8'}`}>
+                <main className={`flex-1 ${isFullWidthPage ? '' : 'pt-2 pl-4 pr-8 pb-6'}`}>
                     <Outlet />
                 </main>
             </div>

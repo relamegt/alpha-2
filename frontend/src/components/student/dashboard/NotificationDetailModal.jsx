@@ -95,7 +95,7 @@ const NotificationDetailModal = ({ notification, onClose }) => {
                                     href={link.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-full flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary-600/20 transition-all active:scale-95"
+                                    className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-[10px] uppercase tracking-widest active:scale-95"
                                 >
                                     <ExternalLink size={14} />
                                     {link.label || 'View Details'}
@@ -133,11 +133,3 @@ const NotificationDetailModal = ({ notification, onClose }) => {
 };
 
 export default NotificationDetailModal;
-
-
-
-
-
-
-
-

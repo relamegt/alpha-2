@@ -264,7 +264,7 @@ const CustomWorkspaceManager = ({ exercise, hiddenTests, isSubmitting, onRunEval
                     <button
                         onClick={handleRunEvaluation}
                         disabled={isSubmitting}
-                        className="flex items-center gap-1.5 px-3 h-6 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white rounded text-[10px] font-bold transition-all"
+                        className="btn-primary flex items-center gap-1.5 px-3 h-6 text-[10px]"
                     >
                         {isSubmitting ? <Loader2 size={10} className="animate-spin" /> : <Beaker size={12} />}
                         Run Evaluation
@@ -497,11 +497,3 @@ const SandpackWorkspace = ({ exercise, courseId, onSubmissionComplete }) => {
 };
 
 export default SandpackWorkspace;
-
-
-
-
-
-
-
-

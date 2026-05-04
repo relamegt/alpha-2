@@ -38,10 +38,10 @@ const SubsectionView = ({
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden bg-white dark:bg-[#0f0f0f] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
       <div 
-        className={`w-full py-3 px-6 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-all duration-200 border-b border-gray-50 dark:border-white/[0.02]
-          ${isExpanded ? 'bg-gray-50/50 dark:bg-white/[0.01]' : 'hover:bg-gray-50 dark:hover:bg-white/[0.01]'}
+        className={`w-full py-3 px-6 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-all duration-200
+          ${isExpanded ? 'bg-gray-50 dark:bg-white/[0.03] border-b border-gray-200 dark:border-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/[0.02]'}
         `}
         onClick={() => setIsExpanded(!isExpanded)}
       >

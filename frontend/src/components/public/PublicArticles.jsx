@@ -77,13 +77,13 @@ const PublicArticles = () => {
     return (
         <div className={`pb-16 text-gray-900 dark:text-white`}>
             {/* Header */}
-            <header className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-                <h1 className="text-3xl font-normal tracking-tight mb-2 text-gray-900 dark:text-white">Technical Articles</h1>
-                <p className="text-gray-500 dark:text-slate-400 text-sm font-normal leading-relaxed max-w-4xl">Explore our collection of technical guides and tutorials.</p>
+            <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
+                <h1 className="page-header-title">Technical Articles</h1>
+                <p className="page-header-desc">Explore our collection of technical guides and tutorials.</p>
             </header>
 
             {/* Tabs & Search */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+            <div className="page-tabs-container">
                 <div className="flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max">
                     {['All Articles', 'Continue Reading', 'Saved'].map(tab => (
                         <button
