@@ -94,8 +94,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const corsOptions = {
     origin: (origin, callback) => {
         const allowed = [
-            process.env.FRONTEND_URL || 'http://localhost:3000',
-            'http://localhost:5173', // Vite default
+            process.env.FRONTEND_URL
         ];
         if (process.env.ALLOWED_ORIGINS) {
             allowed.push(...process.env.ALLOWED_ORIGINS.split(','));
