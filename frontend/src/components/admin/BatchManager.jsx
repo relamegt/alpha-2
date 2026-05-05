@@ -302,6 +302,7 @@ const BatchManager = () => {
             {/* Create Batch Modal */}
             {showCreateModal && (
                 <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
+                    <div className="modal-content max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-lg">
@@ -560,12 +561,12 @@ const BatchManager = () => {
                         </form>
                         </div>
                     </div>
-                </div>
             )}
 
             {/* Edit Batch Modal */}
             {showEditModal && selectedBatch && (
                 <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
+                    <div className="modal-content max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
@@ -818,7 +819,6 @@ const BatchManager = () => {
                         </form>
                         </div>
                     </div>
-                </div>
             )}
 
             {/* Extend Expiry Modal */}

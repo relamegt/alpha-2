@@ -2,19 +2,19 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../services/queryKeys';
 import announcementService from '../../services/announcementService';
-import { 
-  Plus, 
-  Trash2, 
-  Edit2, 
-  Bell,
-  X,
-  Type,
-  Layout,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Megaphone,
-  Search
+import {
+    Plus,
+    Trash2,
+    Edit2,
+    Bell,
+    X,
+    Type,
+    Layout,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    Megaphone,
+    Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -45,7 +45,7 @@ const AnnouncementManager = () => {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({id, data}) => announcementService.updateAnnouncement(id, data),
+        mutationFn: ({ id, data }) => announcementService.updateAnnouncement(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.announcements.all() });
             setShowModal(false);
@@ -87,7 +87,7 @@ const AnnouncementManager = () => {
         setShowModal(true);
     };
 
-    const filteredAnnouncements = announcements?.filter(a => 
+    const filteredAnnouncements = announcements?.filter(a =>
         a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -111,7 +111,7 @@ const AnnouncementManager = () => {
                         <h1 className="page-header-title">Announcements</h1>
                         <p className="page-header-desc">Keep your students updated with the latest news, alerts, and platform updates.</p>
                     </div>
-                    <button 
+                    <button
                         onClick={openCreate}
                         className="btn-primary flex items-center justify-center gap-2"
                     >
@@ -195,76 +195,77 @@ const AnnouncementManager = () => {
 
                         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
                             <div className="modal-body space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Announcement Title</label>
-                                <input 
-                                    type="text" 
-                                    required
-                                    placeholder="Enter subject..."
-                                    className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Type / Priority</label>
-                                <div className="grid grid-cols-4 gap-3">
-                                    {['INFO', 'SUCCESS', 'WARNING', 'IMPORTANT'].map(t => (
-                                        <button
-                                            key={t}
-                                            type="button"
-                                            onClick={() => setFormData({...formData, type: t})}
-                                            className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${formData.type === t ? 'border-primary-500 bg-primary-500 text-white' : 'border-gray-50 dark:border-gray-800 text-gray-400'}`}
-                                        >
-                                            {t}
-                                        </button>
-                                    ))}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Announcement Title</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Enter subject..."
+                                        className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Core Content (Broadcast Message)</label>
-                                <textarea 
-                                    rows={5}
-                                    required
-                                    placeholder="What do you want to tell your students?..."
-                                    className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
-                                    value={formData.content}
-                                    onChange={(e) => setFormData({...formData, content: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-white/[0.02] rounded-2xl">
-                                <div>
-                                    <h5 className="text-sm font-bold dark:text-white">Global Broadcast</h5>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Visible to all registered students</p>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Type / Priority</label>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {['INFO', 'SUCCESS', 'WARNING', 'IMPORTANT'].map(t => (
+                                            <button
+                                                key={t}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, type: t })}
+                                                className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${formData.type === t ? 'border-primary-500 bg-primary-500 text-white' : 'border-gray-50 dark:border-gray-800 text-gray-400'}`}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                <input 
-                                    type="checkbox" 
-                                    checked={formData.isGlobal}
-                                    onChange={(e) => setFormData({...formData, isGlobal: e.target.checked})}
-                                    className="w-6 h-6 rounded-lg text-primary-600 focus:ring-primary-500"
-                                />
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Core Content (Broadcast Message)</label>
+                                    <textarea
+                                        rows={5}
+                                        required
+                                        placeholder="What do you want to tell your students?..."
+                                        className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
+                                        value={formData.content}
+                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-white/[0.02] rounded-2xl">
+                                    <div>
+                                        <h5 className="text-sm font-bold dark:text-white">Global Broadcast</h5>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Visible to all registered students</p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isGlobal}
+                                        onChange={(e) => setFormData({ ...formData, isGlobal: e.target.checked })}
+                                        className="w-6 h-6 rounded-lg text-primary-600 focus:ring-primary-500"
+                                    />
+                                </div>
                             </div>
 
                             <div className="modal-footer">
-                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Discard</button>
-                                <button 
-                                    type="submit"
-                                    className="btn-primary"
-                                    disabled={createMutation.isLoading || updateMutation.isLoading}
-                                >
-                                    {editingAnnouncement ? 'Update Broadcast' : 'Fire Announcement'}
-                                </button>
-                            </div>
+                                    <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Discard</button>
+                                    <button
+                                        type="submit"
+                                        className="btn-primary"
+                                        disabled={createMutation.isLoading || updateMutation.isLoading}
+                                    >
+                                        {editingAnnouncement ? 'Update Broadcast' : 'Fire Announcement'}
+                                    </button>
+                                </div>
                         </form>
                     </div>
                 </div>
             )}
-            </div>
-        );
-    };
+        </div>
+    );
+};
 
 
 

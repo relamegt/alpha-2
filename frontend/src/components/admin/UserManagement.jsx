@@ -673,7 +673,6 @@ const UserManagement = () => {
                         </form>
                         </div>
                     </div>
-                </div>
             )}
 
             {/* Bulk Upload Modal */}
@@ -775,7 +774,6 @@ const UserManagement = () => {
                         </form>
                         </div>
                     </div>
-                </div>
             )}
         </div>
     );
