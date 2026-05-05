@@ -5,8 +5,32 @@ const { verifyToken } = require('../middleware/auth');
 const multer = require('multer');
 
 // Helper to handle Multer upload and its errors
-const uploadHandler = (multerMiddleware) => (req, res, next) => {
-    multerMiddleware(req, res, (err) => {
+const uploadHandler = (multerMiddleware) => async (req, res, next) => {
+    try {
+        await new Promise((resolve, reject) => {
+            multerMiddleware(req, res, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        // Success
+        res.json({
+            success: true,
+            message: 'File uploaded successfully',
+            data: {
+                url: req.file.path,
+                publicId: req.file.filename
+            }
+        });
+    } catch (err) {
         if (err instanceof multer.MulterError) {
             return res.status(400).json({
                 success: false,
@@ -19,24 +43,7 @@ const uploadHandler = (multerMiddleware) => (req, res, next) => {
                 message: err.message || 'File upload failed'
             });
         }
-        
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: 'No file uploaded'
-            });
-        }
-        
-        // Success
-        res.json({
-            success: true,
-            message: 'File uploaded successfully',
-            data: {
-                url: req.file.path,
-                publicId: req.file.filename
-            }
-        });
-    });
+    }
 };
 
 // --- ROUTES ---

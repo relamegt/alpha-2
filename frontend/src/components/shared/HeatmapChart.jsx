@@ -27,20 +27,32 @@ const HeatmapChart = ({ data, streakDays = 0, maxStreakDays = 0 }) => {
         return { days: allDays, weeks: totalWeeks };
     }, []);
 
+    const normalizeDate = (date) => {
+        const d = new Date(date);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    const normalizedData = useMemo(() => {
+        const result = {};
+        Object.entries(data || {}).forEach(([key, val]) => {
+            result[normalizeDate(key)] = val;
+        });
+        return result;
+    }, [data]);
+
     const getColorClass = (count) => {
-        if (!count) return 'bg-gray-100 dark:bg-gray-800';
-        if (count >= 10) return 'bg-green-700 dark:bg-green-600';
-        if (count >= 5) return 'bg-green-500 dark:bg-green-500';
+        if (!count) return 'bg-gray-100 dark:bg-gray-800/40';
+        if (count >= 10) return 'bg-green-600 dark:bg-green-500';
+        if (count >= 5) return 'bg-green-500 dark:bg-green-600/80';
         if (count >= 3) return 'bg-green-400 dark:bg-green-400/80';
         if (count >= 1) return 'bg-green-300 dark:bg-green-400/40';
-        return 'bg-gray-100 dark:bg-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800/40';
     };
 
     const monthLabels = useMemo(() => {
         const months = [];
         let currentMonth = -1;
         days.forEach((date, i) => {
-            // Only add label for the first week of the month
             if (date.getMonth() !== currentMonth && i % 7 === 0) {
                 months.push({
                     name: date.toLocaleString('default', { month: 'short' }),
@@ -80,10 +92,10 @@ const HeatmapChart = ({ data, streakDays = 0, maxStreakDays = 0 }) => {
             </div>
 
             {/* Heatmap Grid */}
-            <div className="overflow-x-auto pb-2">
+            <div className="overflow-x-auto pb-2 scrollbar-hide">
                 <div className="min-w-[700px]">
                     {/* Month Labels */}
-                    <div className="flex mb-2 text-xs text-gray-400 dark:text-gray-500 relative h-4">
+                    <div className="flex mb-2 text-[10px] text-gray-400 dark:text-gray-500 relative h-4">
                         {monthLabels.map((month, idx) => (
                             <span
                                 key={idx}
@@ -97,8 +109,8 @@ const HeatmapChart = ({ data, streakDays = 0, maxStreakDays = 0 }) => {
 
                     <div className="grid grid-rows-7 grid-flow-col gap-[3px]">
                         {days.map((date, index) => {
-                            const dateStr = date.toDateString();
-                            const count = data[dateStr] || 0;
+                            const dateKey = normalizeDate(date);
+                            const count = normalizedData[dateKey] || 0;
                             return (
                                 <div
                                     key={index}

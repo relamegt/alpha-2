@@ -57,7 +57,9 @@ import PublicArticleDetail from './components/public/PublicArticleDetail';
 
 // Admin Components
 import AdminDashboard from './components/admin/AdminDashboard';
+import AdminLayout from './components/admin/AdminLayout';
 import BatchManager from './components/admin/BatchManager';
+
 import UserManagement from './components/admin/UserManagement';
 import ProblemManager from './components/admin/ProblemManager';
 import CourseManager from './components/admin/CourseManager';
@@ -74,6 +76,7 @@ import EditorialCreator from './components/admin/EditorialCreator';
 // Instructor Components
 import ProfileReset from './components/instructor/ProfileReset';
 import InstructorDashboard from './components/instructor/InstructorDashboard';
+import InstructorLayout from './components/instructor/InstructorLayout';
 
 // Student Components
 import Dashboard from './components/student/Dashboard';
@@ -102,6 +105,7 @@ import AssignmentManager from './components/admin/AssignmentManager';
 import AssignmentCreator from './components/admin/AssignmentCreator';
 import MultiFileAssignmentBuilder from './components/admin/MultiFileAssignmentBuilder';
 import DashboardLayout from './components/student/dashboard/DashboardLayout';
+import AdminSettingsLayout from './components/admin/AdminSettingsLayout';
 import InterviewExperienceList from './components/interview/experiences/InterviewExperienceList';
 import ExperienceSubmissionWizard from './components/interview/experiences/ExperienceSubmissionWizard';
 import InterviewExperienceDetail from './components/interview/experiences/InterviewExperienceDetail';
@@ -263,7 +267,42 @@ function App() {
                             <Route path="/catalog" element={<Navigate to="/dashboard/catalog" replace />} />
                             <Route path="/articles" element={<Navigate to="/dashboard/articles" replace />} />
 
-                                                         {/* Legacy Redirects to Dashboard */}
+                             {/* Admin Routes - Priority matching */}
+                             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} hideNavbar={true}><AdminLayout /></ProtectedRoute>}>
+                                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                                 <Route path="dashboard" element={<AdminDashboard />} />
+                                 <Route path="compiler" element={<Compiler />} />
+                                 <Route path="articles" element={<ArticleManager />} />
+                                 <Route path="public-articles-view" element={<PublicArticles />} />
+                                 <Route path="batches" element={<BatchManager />} />
+                                 <Route path="users" element={<UserManagement />} />
+                                 <Route path="problems" element={<ProblemManager />} />
+                                 <Route path="sql-problems" element={<SqlProblemManager />} />
+                                 <Route path="videos" element={<VideoManager />} />
+                                 <Route path="quizzes" element={<QuizManager />} />
+                                 <Route path="assignments" element={<AssignmentManager />} />
+                                 <Route path="assignments/new" element={<MultiFileAssignmentBuilder />} />
+                                 <Route path="assignments/build/:id" element={<MultiFileAssignmentBuilder />} />
+                                 <Route path="sheets" element={<SheetManagement />} />
+                                 <Route path="private-articles" element={<ArticleManager />} />
+                                 <Route path="public-articles" element={<PublicArticleManager />} />
+                                 <Route path="contests" element={<ContestManager />} />
+                                 <Route path="course-contests" element={<CourseContestManager />} />
+                                 <Route path="courses" element={<CourseManager />} />
+                                 <Route path="reports" element={<ReportGenerator />} />
+                                 <Route path="editorial-creator" element={<EditorialCreator />} />
+                                 <Route path="jobs" element={<JobManager />} />
+                                 <Route path="announcements" element={<AnnouncementManager />} />
+                                 <Route path="interview" element={<AIInterviewer />} />
+                                 <Route path="interview-experience" element={<InterviewExperienceList />} />
+                                 <Route path="interview-experience/submit" element={<ExperienceSubmissionWizard />} />
+                                 <Route path="leaderboard" element={<Leaderboard />} />
+                                 <Route path="settings" element={<AdminSettingsLayout />} />
+                                 <Route path="settings/personal" element={<AdminSettingsLayout />} />
+                                 <Route path="settings/security" element={<AdminSettingsLayout />} />
+                             </Route>
+
+                             {/* Legacy Redirects to Dashboard */}
                              <Route path="/compiler" element={<Navigate to="/dashboard/compiler" replace />} />
                              <Route path="/interview" element={<Navigate to="/dashboard/interview" replace />} />
                              <Route path="/sheets" element={<Navigate to="/dashboard/sheets" replace />} />
@@ -278,31 +317,19 @@ function App() {
                              <Route path="/workspace/:courseId" element={<WorkspaceRedirect />} />
                              <Route path="/workspace/:courseId/:subId" element={<WorkspaceRedirect />} />
                              <Route path="/workspace/:courseId/:subId/:problemId" element={<WorkspaceRedirect />} />
-
-                             {/* Admin Routes */}
-                            <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-                            <Route path="/admin/batches" element={<ProtectedRoute allowedRoles={['admin']}><BatchManager /></ProtectedRoute>} />
-                            <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
-                            <Route path="/admin/problems" element={<ProtectedRoute allowedRoles={['admin']}><ProblemManager /></ProtectedRoute>} />
-                            <Route path="/admin/sql-problems" element={<ProtectedRoute allowedRoles={['admin']}><SqlProblemManager /></ProtectedRoute>} />
-                            <Route path="/admin/videos" element={<ProtectedRoute allowedRoles={['admin']}><VideoManager /></ProtectedRoute>} />
-                            <Route path="/admin/quizzes" element={<ProtectedRoute allowedRoles={['admin']}><QuizManager /></ProtectedRoute>} />
-                             <Route path="/admin/assignments" element={<ProtectedRoute allowedRoles={['admin']}><AssignmentManager /></ProtectedRoute>} />
-                             <Route path="/admin/assignments/new" element={<ProtectedRoute allowedRoles={['admin']}><MultiFileAssignmentBuilder /></ProtectedRoute>} />
-                             <Route path="/admin/assignments/build/:id" element={<ProtectedRoute allowedRoles={['admin']}><MultiFileAssignmentBuilder /></ProtectedRoute>} />
-                            <Route path="/admin/private-articles" element={<ProtectedRoute allowedRoles={['admin']}><ArticleManager /></ProtectedRoute>} />
-                            <Route path="/admin/public-articles" element={<ProtectedRoute allowedRoles={['admin']}><PublicArticleManager /></ProtectedRoute>} />
-                            <Route path="/admin/contests" element={<ProtectedRoute allowedRoles={['admin']}><ContestManager /></ProtectedRoute>} />
-                            <Route path="/admin/course-contests" element={<ProtectedRoute allowedRoles={['admin']}><CourseContestManager /></ProtectedRoute>} />
-                             <Route path="/admin/courses" element={<ProtectedRoute allowedRoles={['admin']}><CourseManager /></ProtectedRoute>} />
-                             <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin', 'instructor']}><ReportGenerator /></ProtectedRoute>} />
  
                              {/* Instructor Routes */}
-                             <Route path="/instructor/dashboard" element={<ProtectedRoute allowedRoles={['instructor']}><InstructorDashboard /></ProtectedRoute>} />
-                             <Route path="/instructor/contests" element={<ProtectedRoute allowedRoles={['instructor']}><ContestManager /></ProtectedRoute>} />
-                             <Route path="/instructor/course-contests" element={<ProtectedRoute allowedRoles={['instructor']}><CourseContestManager /></ProtectedRoute>} />
-                             <Route path="/instructor/reports" element={<ProtectedRoute allowedRoles={['instructor']}><ReportGenerator /></ProtectedRoute>} />
-                             <Route path="/instructor/reset-profile" element={<ProtectedRoute allowedRoles={['instructor']}><ProfileReset /></ProtectedRoute>} />
+                             <Route path="/instructor" element={<ProtectedRoute allowedRoles={['instructor']} hideNavbar={true}><InstructorLayout /></ProtectedRoute>}>
+                                 <Route index element={<Navigate to="/instructor/dashboard" replace />} />
+                                 <Route path="dashboard" element={<InstructorDashboard />} />
+                                 <Route path="courses" element={<MyCourses />} />
+                                 <Route path="contests" element={<ContestManager />} />
+                                 <Route path="course-contests" element={<CourseContestManager />} />
+                                 <Route path="reports" element={<ReportGenerator />} />
+                                 <Route path="reset-profile" element={<ProfileReset />} />
+                                 <Route path="settings/personal" element={<div className="p-6 max-w-5xl mx-auto"><div className="bg-[var(--color-bg-card)] rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm"><PersonalDetails /></div></div>} />
+                                 <Route path="settings/security" element={<div className="p-6 max-w-5xl mx-auto"><div className="bg-[var(--color-bg-card)] rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm"><SecuritySettings /></div></div>} />
+                             </Route>
  
                              {/* Student Dashboard Layout (New) */}
                              <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['student', 'instructor', 'admin']} hideNavbar={true}><DashboardLayout /></ProtectedRoute>}>
@@ -368,17 +395,6 @@ function App() {
                             <Route path="/announcements" element={<Navigate to="/dashboard/announcements" replace />} />
                             <Route path="/compiler" element={<Navigate to="/dashboard/compiler" replace />} />
                             <Route path="/interview" element={<Navigate to="/dashboard/interview" replace />} />
-
-                            <Route path="/admin/sheets" element={<ProtectedRoute allowedRoles={['admin']}><SheetManagement /></ProtectedRoute>} />
-                            <Route path="/admin/editorial-creator" element={<ProtectedRoute allowedRoles={['admin']}><EditorialCreator /></ProtectedRoute>} />
-                            <Route path="/admin/jobs" element={<ProtectedRoute allowedRoles={['admin']}><JobManager /></ProtectedRoute>} />
-                            <Route path="/admin/announcements" element={<ProtectedRoute allowedRoles={['admin']}><AnnouncementManager /></ProtectedRoute>} />
-                            
-                            <Route path="/admin/settings/personal" element={<ProtectedRoute allowedRoles={['admin']}><PersonalDetails /></ProtectedRoute>} />
-                            <Route path="/admin/settings/security" element={<ProtectedRoute allowedRoles={['admin']}><SecuritySettings /></ProtectedRoute>} />
-                            
-                            <Route path="/instructor/settings/personal" element={<ProtectedRoute allowedRoles={['instructor']}><PersonalDetails /></ProtectedRoute>} />
-                            <Route path="/instructor/settings/security" element={<ProtectedRoute allowedRoles={['instructor']}><SecuritySettings /></ProtectedRoute>} />
 
                             {/* Fallbacks */}
                             <Route path="/" element={<Navigate to="/login" replace />} />

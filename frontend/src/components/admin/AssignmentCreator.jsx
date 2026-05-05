@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
+import CustomDropdown from '../shared/CustomDropdown';
+import { Layers, Zap, Code, FileText, CheckCircle2 } from 'lucide-react';
 import './AssignmentCreator.css';
 
 export default function AssignmentCreator() {
@@ -77,18 +79,34 @@ export default function AssignmentCreator() {
             placeholder="Description" required 
             value={form.description} onChange={e => setForm({...form, description: e.target.value})}
           />
-          <div className="grid-2">
-            <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
-              <option value="HTML_CSS_JS">Inline (HTML/CSS/JS)</option>
-              <option value="REACT">Local IDE (React)</option>
-              <option value="NODE">Local IDE (Node.js)</option>
-              <option value="FULLSTACK">Local IDE (Fullstack)</option>
-            </select>
-            <select value={form.difficulty} onChange={e => setForm({...form, difficulty: e.target.value})}>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
+          <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="dropdown-container">
+              <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Assignment Type</label>
+              <CustomDropdown
+                options={[
+                  { value: 'HTML_CSS_JS', label: 'Inline (HTML/CSS/JS)' },
+                  { value: 'REACT', label: 'Local IDE (React)' },
+                  { value: 'NODE', label: 'Local IDE (Node.js)' },
+                  { value: 'FULLSTACK', label: 'Local IDE (Fullstack)' }
+                ]}
+                value={form.type}
+                onChange={(val) => setForm({...form, type: val})}
+                icon={Layers}
+              />
+            </div>
+            <div className="dropdown-container">
+              <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Difficulty Level</label>
+              <CustomDropdown
+                options={[
+                  { value: 'beginner', label: 'Beginner' },
+                  { value: 'intermediate', label: 'Intermediate' },
+                  { value: 'advanced', label: 'Advanced' }
+                ]}
+                value={form.difficulty}
+                onChange={(val) => setForm({...form, difficulty: val})}
+                icon={Zap}
+              />
+            </div>
           </div>
         </div>
 
@@ -119,21 +137,22 @@ export default function AssignmentCreator() {
           <h3>Automated Test Cases</h3>
           <div className="test-builder">
             <input type="text" placeholder="Test Name" value={newTest.name} onChange={e => setNewTest({...newTest, name: e.target.value})} />
-            <select value={newTest.type} onChange={e => setNewTest({...newTest, type: e.target.value})}>
-              {form.type === 'HTML_CSS_JS' ? (
-                <>
-                  <option value="element_exists">Element Exists</option>
-                  <option value="element_text">Element Text Match</option>
-                  <option value="css_property">CSS Property Check</option>
-                </>
-              ) : (
-                <>
-                  <option value="file_exists">File Exists</option>
-                  <option value="file_contains">File Contains String</option>
-                  <option value="package_installed">Package Installed</option>
-                </>
-              )}
-            </select>
+            <div className="flex-1">
+              <CustomDropdown
+                options={form.type === 'HTML_CSS_JS' ? [
+                  { value: 'element_exists', label: 'Element Exists' },
+                  { value: 'element_text', label: 'Element Text Match' },
+                  { value: 'css_property', label: 'CSS Property Check' }
+                ] : [
+                  { value: 'file_exists', label: 'File Exists' },
+                  { value: 'file_contains', label: 'File Contains String' },
+                  { value: 'package_installed', label: 'Package Installed' }
+                ]}
+                value={newTest.type}
+                onChange={(val) => setNewTest({...newTest, type: val})}
+                placeholder="Select Test Type"
+              />
+            </div>
             {newTest.type === 'element_exists' || newTest.type === 'element_text' || newTest.type === 'css_property' ? (
               <input type="text" placeholder="CSS Selector" value={newTest.selector} onChange={e => setNewTest({...newTest, selector: e.target.value})} />
             ) : (

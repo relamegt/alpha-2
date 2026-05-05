@@ -49,9 +49,6 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
         proctoringEnabled: true,
         tabSwitchLimit: 3,
         maxViolations: 5,
-        isSolo: false,
-        duration: 60, // minutes
-        maxAttempts: 1, // Default to 1
     });
 
     const [newProblems, setNewProblems] = useState([]);
@@ -113,13 +110,13 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         return (p._id || p.id || '').toString();
                     }
                     return p ? p.toString() : '';
-                }).filter(id => /^[0-9a-fA-F]{24}$/.test(id)), // keep only valid ObjectId strings
+                }).filter(id => id && (
+                    /^[0-9a-fA-F]{24}$/.test(id) || // ObjectId (Legacy)
+                    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id) // UUID (SQL)
+                )), 
                 proctoringEnabled: initialData.proctoringEnabled !== undefined ? initialData.proctoringEnabled : true,
-                tabSwitchLimit: initialData.tabSwitchLimit || 3,
-                maxViolations: initialData.maxViolations || 5,
-                isSolo: initialData.isSolo || false,
-                duration: initialData.duration || 60,
-                maxAttempts: initialData.maxAttempts || 1,
+                tabSwitchLimit: initialData.tabSwitchLimit !== undefined ? initialData.tabSwitchLimit : 3,
+                maxViolations: initialData.maxViolations !== undefined ? initialData.maxViolations : 5,
             });
             // We cannot easily restore "newProblems" as they are now "existing" in the DB, 
             // but for a simple edit, we rely on existingProblemIds.
@@ -207,7 +204,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                 ...formData,
                 startTime: toISOWithLocalTZ(formData.startTime),
                 endTime: toISOWithLocalTZ(formData.endTime),
-                batchId: (formData.batchId === 'global' || formData.isSolo) ? null : formData.batchId,
+                batchId: formData.batchId === 'global' ? null : formData.batchId,
                 problems: [...formData.existingProblemIds, ...newProblems]
             };
 
@@ -231,9 +228,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                     proctoringEnabled: true,
                     tabSwitchLimit: 3,
                     maxViolations: 5,
-                    isSolo: false,
-                    duration: 60,
-                    maxAttempts: 1,
+                    maxViolations: 5,
                 });
                 setNewProblems([]);
                 setSearchQuery('');
@@ -316,26 +311,25 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
     const removeTestCase = (idx) => setCurrentProblem({ ...currentProblem, testCases: currentProblem.testCases.filter((_, i) => i !== idx) });
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-8 animate-fade-in pb-24 bg-gray-50 dark:bg-[#111117] min-h-screen transition-colors">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <button
-                        onClick={onBack}
-                        className="btn-secondary py-1.5 px-4 mb-2"
-                    >
-                        <ArrowLeft size={16} className="mr-1" /> Back to Contests
-                    </button>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-purple-400 to-primary-600 rounded-xl text-white shadow-sm">
-                            <Trophy size={28} />
-                        </div>
-                        {initialData ? 'Edit Contest' : 'Create Contest'}
-                    </h1>
-                    <p className="text-gray-500 mt-2 ml-1">
-                        {initialData ? 'Update contest details and problems.' : 'Set up a new coding challenge for your students.'}
-                    </p>
+        <div className="space-y-8 animate-fade-in transition-colors">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <button
+                            onClick={onBack}
+                            className="flex items-center text-gray-500 hover:text-primary-600 mb-2 transition-colors text-sm font-medium"
+                        >
+                            <ArrowLeft size={16} className="mr-1" /> Back to Contests
+                        </button>
+                        <h1 className="page-header-title">
+                            {initialData ? 'Edit Contest' : 'Create Contest'}
+                        </h1>
+                        <p className="page-header-desc">
+                            {initialData ? 'Update contest details and problems.' : 'Set up a new coding challenge for your students.'}
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </header>
 
             <div className="glass-panel p-6 md:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm transition-colors">
                 <form onSubmit={handleCreateContest} className="space-y-8">
@@ -360,18 +354,16 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                     />
                                 </div>
 
-                                {!formData.isSolo && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target Batch <span className="text-red-500">*</span></label>
-                                        <CustomDropdown
-                                            options={batchOptions}
-                                            value={formData.batchId}
-                                            onChange={(val) => setFormData({ ...formData, batchId: val })}
-                                            placeholder="Select a Batch"
-                                            icon={Layers}
-                                        />
-                                    </div>
-                                )}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target Batch <span className="text-red-500">*</span></label>
+                                    <CustomDropdown
+                                        options={batchOptions}
+                                        value={formData.batchId}
+                                        onChange={(val) => setFormData({ ...formData, batchId: val })}
+                                        placeholder="Select a Batch"
+                                        icon={Layers}
+                                    />
+                                </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
@@ -393,96 +385,35 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
 
                             <div className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {!formData.isSolo ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Start Time <span className="text-red-500">*</span></label>
-                                                <div className="relative">
-                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formData.startTime}
-                                                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                                                        className="input-field w-full pl-9"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">End Time <span className="text-red-500">*</span></label>
-                                                <div className="relative">
-                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formData.endTime}
-                                                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                                                        className="input-field w-full pl-9"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Contest Duration (Minutes) <span className="text-red-500">*</span></label>
-                                            <div className="relative">
-                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                                <input
-                                                    type="number"
-                                                    value={formData.duration}
-                                                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                                                    className="input-field w-full pl-9"
-                                                    placeholder="e.g. 60"
-                                                    min="1"
-                                                    required
-                                                />
-                                            </div>
-                                            <p className="text-xs text-gray-500 mt-2">Personal timer will start when the user begins the contest within the course.</p>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Start Time <span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                            <input
+                                                type="datetime-local"
+                                                value={formData.startTime}
+                                                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                                                className="input-field w-full pl-9"
+                                                required
+                                            />
                                         </div>
-                                    )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">End Time <span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                            <input
+                                                type="datetime-local"
+                                                value={formData.endTime}
+                                                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                                                className="input-field w-full pl-9"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Solo Mode Toggle */}
-                                <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-xl p-4 border border-amber-100 dark:border-amber-800/30 space-y-4 transition-colors mb-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
-                                                <Trophy size={18} />
-                                            </div>
-                                            <div>
-                                                <span className="font-semibold text-gray-900 dark:text-gray-100 block">Solo Contest (Course Mode)</span>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Individual attempt, no global leaderboard.</p>
-                                            </div>
-                                        </div>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.isSolo}
-                                                onChange={(e) => setFormData({ ...formData, isSolo: e.target.checked })}
-                                                className="sr-only peer"
-                                            />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                                        </label>
-                                    </div>
-                                    {formData.isSolo && (
-                                        <div className="pt-3 border-t border-amber-100 dark:border-amber-800/30 animate-fade-in-up">
-                                            <label className="block text-xs font-medium text-amber-700 dark:text-amber-400 mb-1.5 uppercase tracking-wider">Maximum Attempts</label>
-                                            <div className="relative">
-                                                <Layers className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500/50 w-4 h-4" />
-                                                <input
-                                                    type="number"
-                                                    value={formData.maxAttempts}
-                                                    onChange={(e) => setFormData({ ...formData, maxAttempts: parseInt(e.target.value) || 1 })}
-                                                    className="input-field w-full pl-9 py-2 dark:bg-[#111117] dark:border-amber-900/30 font-bold"
-                                                    min="1"
-                                                    placeholder="e.g. 5"
-                                                    required
-                                                />
-                                            </div>
-                                            <p className="text-[10px] text-amber-500/80 mt-1.5">Students can reattempt the contest until this limit is reached.</p>
-                                        </div>
-                                    )}
-                                </div>
+
 
                                 {/* Proctoring Settings */}
                                 <div className="bg-gray-50/50 dark:bg-gray-800/20 rounded-xl p-4 border border-gray-100 dark:border-gray-800 space-y-4 transition-colors">
@@ -508,16 +439,16 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                     </div>
 
                                     {formData.proctoringEnabled && (
-                                        <div className="pt-3 border-t border-[var(--color-border-interactive)] grid grid-cols-2 gap-4 animate-fade-in-up">
+                                        <div className="pt-3 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-4 animate-fade-in-up">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tab Switch Limit</label>
                                                 <input
                                                     type="number"
                                                     value={formData.tabSwitchLimit}
-                                                    onChange={(e) => setFormData({ ...formData, tabSwitchLimit: parseInt(e.target.value) })}
-                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100 disabled:opacity-50"
+                                                    onChange={(e) => setFormData({ ...formData, tabSwitchLimit: parseInt(e.target.value) || 0 })}
+                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100 placeholder:text-gray-500"
                                                     min="0"
-                                                    disabled={!formData.isSolo}
+                                                    placeholder="e.g. 3"
                                                 />
                                             </div>
                                             <div>
@@ -525,10 +456,10 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                                 <input
                                                     type="number"
                                                     value={formData.maxViolations}
-                                                    onChange={(e) => setFormData({ ...formData, maxViolations: parseInt(e.target.value) })}
-                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-white disabled:opacity-50"
+                                                    onChange={(e) => setFormData({ ...formData, maxViolations: parseInt(e.target.value) || 1 })}
+                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-white placeholder:text-gray-500"
                                                     min="1"
-                                                    disabled={!formData.isSolo}
+                                                    placeholder="e.g. 5"
                                                 />
                                             </div>
                                             <div className="col-span-2 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
@@ -559,7 +490,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                             <button
                                 type="button"
                                 onClick={() => setShowProblemModal(true)}
-                                className="btn-secondary px-4 py-2"
+                                className="btn-secondary flex items-center gap-2 px-4 py-2 rounded-xl"
                             >
                                 <Plus size={16} />
                                 Create New Problem
@@ -575,7 +506,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                 </h4>
                                 <div className="space-y-2">
                                     {newProblems.map((p, idx) => (
-                                        <div key={`new-problem-${idx}`} className="flex justify-between items-center bg-[#F1F3F4] dark:bg-[#111117] p-3 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">
+                                        <div key={`new-problem-${idx}`} className="flex justify-between items-center bg-white dark:bg-[#111117] p-3 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">
                                             <div>
                                                 <span className="font-semibold text-gray-800">{p.title}</span>
                                                 <div className="flex items-center space-x-2 mt-1">
@@ -610,7 +541,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                     placeholder="Search existing problems..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/20 focus:border-purple-400 dark:focus:border-purple-500 transition-all shadow-sm dark:text-white"
+                                    className="w-full bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/20 focus:border-purple-400 dark:focus:border-purple-500 transition-all shadow-sm dark:text-white"
                                 />
                             </div>
                             <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
@@ -628,8 +559,8 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         </div>
 
                         {/* Existing Problems List */}
-                        <div className="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-[#F1F3F4] dark:bg-[#111117]">
-                            <div className="bg-gray-50/50 dark:bg-[#111117]/50 px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[#111117]">
+                            <div className="bg-gray-50/50 dark:bg-[#111117]/50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                 <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Available Problems</span>
                                 <span className="text-xs font-medium text-gray-400">
                                     Selected: {formData.existingProblemIds.length + newProblems.length}
@@ -654,10 +585,10 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                                     onClick={() => toggleExistingProblem(problemId)}
                                                     className={`flex items-center p-3 rounded-xl transition-all cursor-pointer border ${isSelected
                                                         ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700 shadow-sm'
-                                                        : 'bg-[#F1F3F4] dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e] border-transparent hover:border-gray-100 dark:hover:border-gray-700'
+                                                        : 'bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e] border-transparent hover:border-gray-100 dark:hover:border-gray-700'
                                                         }`}
                                                 >
-                                                    <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center transition-colors ${isSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-300 dark:border-gray-700 bg-[#F1F3F4] dark:bg-[#111117]'}`}>
+                                                    <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center transition-colors ${isSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111117]'}`}>
                                                         {isSelected && <CheckSquare size={12} className="text-white" />}
                                                     </div>
 
@@ -694,7 +625,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="btn-primary md:min-w-[200px] py-3 text-base"
+                            className="btn-primary shadow-xl dark:shadow-none md:shadow-lg md:dark:shadow-none md:min-w-[200px] flex items-center justify-center gap-2 py-3 rounded-xl text-base font-semibold transition-all"
                         >
                             {loading ? (
                                 <>
@@ -739,7 +670,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                 </button>
                             </div>
 
-                            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto bg-[#F1F3F4] dark:bg-[#111117] transition-colors">
+                            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto bg-white dark:bg-[#111117] transition-colors">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Problem Title <span className="text-red-500">*</span></label>
@@ -803,7 +734,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                         <button
                                             type="button"
                                             onClick={addConstraint}
-                                            className="btn-secondary py-1 text-xs px-3 border-dashed"
+                                            className="text-primary-600 text-sm font-medium hover:underline flex items-center gap-1"
                                         >
                                             <Plus size={14} /> Add Constraint
                                         </button>
@@ -814,7 +745,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                 <div className="space-y-4">
                                     <label className="block text-sm font-bold text-gray-800 dark:text-gray-200">Examples</label>
                                     {currentProblem.examples.map((ex, idx) => (
-                                        <div key={`example-${idx}`} className="bg-[#F1F3F4] dark:bg-[#111117] p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm relative group transition-colors">
+                                        <div key={`example-${idx}`} className="bg-white dark:bg-[#111117] p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative group transition-colors">
                                             <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     type="button"
@@ -923,7 +854,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="px-6 py-4 bg-gray-50 dark:bg-[#111117]/80 border-t border-[var(--color-border-interactive)] flex justify-end gap-3 rounded-b-2xl transition-colors">
+                            <div className="px-6 py-4 bg-gray-50 dark:bg-[#111117]/80 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 rounded-b-2xl transition-colors">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -951,11 +882,3 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
 };
 
 export default ContestCreator;
-
-
-
-
-
-
-
-

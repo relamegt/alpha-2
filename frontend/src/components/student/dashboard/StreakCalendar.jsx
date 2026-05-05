@@ -78,8 +78,8 @@ const StreakCalendar = ({ activeDates = [] }) => {
                             className={`
                                 aspect-square flex items-center justify-center text-[12px] font-semibold rounded-xl transition-all relative
                                 ${!isCurrentMonth ? 'text-gray-300 dark:text-[#2a2a35]' : 'text-gray-700 dark:text-gray-300'}
-                                ${isActive ? '!bg-primary-500/20 !border !border-primary-500/50 !text-white' : ''}
-                                ${isTodayDate && !isActive ? 'border border-primary-500/50 !text-white bg-primary-500/5' : ''}
+                                ${isActive ? 'bg-primary-500/20 border border-primary-500/50 text-primary-700 dark:text-white font-bold' : ''}
+                                ${isTodayDate && !isActive ? 'border border-primary-500/50 text-primary-600 dark:text-white bg-primary-500/5' : ''}
                                 hover:bg-gray-50 dark:hover:bg-white/5 cursor-default
                             `}
                         >

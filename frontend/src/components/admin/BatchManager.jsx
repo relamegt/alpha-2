@@ -3,7 +3,8 @@ import adminService from '../../services/adminService';
 import courseService from '../../services/courseService';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, BarChart2, Clock, Users, Calendar, BookOpen, GraduationCap, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, BarChart2, Clock, Users, Calendar, BookOpen, GraduationCap, X, Layers } from 'lucide-react';
+import CustomDropdown from '../shared/CustomDropdown';
 
 const BatchManager = () => {
     const queryClient = useQueryClient();
@@ -186,122 +187,114 @@ const BatchManager = () => {
         }
     };
 
-    if (batchesLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="spinner"></div>
-            </div>
-        );
-    }
-
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Batch Management</h1>
-                    <p className="page-header-desc">Manage student batches, academic calendars, and statistics.</p>
+        <div className="admin-page-wrapper">
+            <header className="page-header-container">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">Batch Management</h1>
+                        <p className="page-header-desc">Create and manage student batches and their properties</p>
+                    </div>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="btn-primary flex items-center justify-center gap-2"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Create Batch
+                    </button>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="btn-primary flex items-center gap-2"
-                >
-                    <Plus size={18} />
-                    Create Batch
-                </button>
-            </div>
+            </header>
 
             {/* Batches Table */}
-            <div className="glass-panel overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-gray-50/50 dark:bg-[#111117]/40 text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4">Batch Name</th>
-                                <th className="px-6 py-4">Duration</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Students</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {batches.map((batch) => (
-                                <tr key={batch._id} className="hover:bg-gray-50/50 dark:hover:bg-[#23232e]/30 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="font-semibold text-gray-900 dark:text-gray-100">{batch.name}</span>
-                                            {batch.description && <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{batch.description}</span>}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <Calendar size={14} className="text-gray-400 dark:text-gray-500" />
-                                            <span>{new Date(batch.startDate).toLocaleDateString()}</span>
-                                            <span className="text-gray-400 dark:text-gray-600">→</span>
-                                            <span>{new Date(batch.endDate).toLocaleDateString()}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${batch.status === 'active'
-                                                ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800'
-                                                : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800'
-                                                }`}
+            <div className="table-wrapper">
+                <table className="admin-custom-table">
+                    <thead>
+                        <tr>
+                            <th>Batch Name</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Students</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {batches.map((batch) => (
+                            <tr key={batch._id}>
+                                <td className="title-td">
+                                    <div className="title-group">
+                                        <span className="main-title">{batch.name}</span>
+                                        {batch.description && <span className="sub-description">{batch.description.slice(0, 60)}...</span>}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <span>{new Date(batch.startDate).toLocaleDateString()}</span>
+                                        <span className="text-gray-400">→</span>
+                                        <span>{new Date(batch.endDate).toLocaleDateString()}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span
+                                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${batch.status === 'active'
+                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                            }`}
+                                    >
+                                        {batch.status === 'active' ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
+                                        <Users size={14} className="text-gray-400" />
+                                        {batch.studentCount || 0}
+                                    </div>
+                                </td>
+                                <td className="actions-td">
+                                    <div className="action-row">
+                                        <button
+                                            onClick={() => handleViewStats(batch)}
+                                            className="icon-btn build"
+                                            title="View Statistics"
                                         >
-                                            <span className={`w-1.5 h-1.5 rounded-full ${batch.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                            {batch.status === 'active' ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
-                                            <Users size={14} className="text-gray-400 dark:text-gray-500" />
-                                            {batch.studentCount || 0}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2 text-gray-400 dark:text-gray-500">
-                                            <button
-                                                onClick={() => handleViewStats(batch)}
-                                                className="p-2 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors tooltip-trigger"
-                                                title="View Statistics"
-                                            >
-                                                <BarChart2 size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleEditClick(batch)}
-                                                className="p-2 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors tooltip-trigger"
-                                                title="Edit Batch"
-                                            >
-                                                <Edit2 size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedBatch(batch);
-                                                    setShowExtendModal(true);
-                                                }}
-                                                className="p-2 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors tooltip-trigger"
-                                                title="Extend Expiry"
-                                            >
-                                                <Clock size={18} />
-                                            </button>
-                                            <div className="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                                            <button
-                                                onClick={() => handleDeleteBatch(batch._id, batch.name)}
-                                                className="p-2 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors tooltip-trigger"
-                                                title="Delete Batch"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                            <BarChart2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleEditClick(batch)}
+                                            className="icon-btn build"
+                                            title="Edit Batch"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedBatch(batch);
+                                                setShowExtendModal(true);
+                                            }}
+                                            className="icon-btn build"
+                                            title="Extend Expiry"
+                                        >
+                                            <Clock size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteBatch(batch._id, batch.name)}
+                                            className="icon-btn delete"
+                                            title="Delete Batch"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
                 {batches.length === 0 && (
-                    <div className="p-12 text-center text-gray-400">
-                        <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                        <p>No batches found. Create one to get started.</p>
+                    <div className="empty-state-container">
+                        <div className="empty-state-icon">
+                            <Layers size={32} />
+                        </div>
+                        <p className="empty-state-text">No batches found</p>
+                        <p className="empty-state-subtext">Create your first batch to start managing users.</p>
                     </div>
                 )}
             </div>
@@ -309,23 +302,23 @@ const BatchManager = () => {
             {/* Create Batch Modal */}
             {showCreateModal && (
                 <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
-                    <div className="modal-content max-w-4xl max-h-[90vh] overflow-y-auto p-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#111117]/40 rounded-t-2xl">
+                        <div className="modal-header">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-lg">
                                     <GraduationCap size={20} />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Create New Batch</h2>
+                                <h2 className="modal-title">Create New Batch</h2>
                             </div>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-[#23232e] rounded-lg transition-colors"
+                                className="modal-close"
                             >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6">
-                            <form onSubmit={handleCreateBatch} className="space-y-6">
+
+                        <form onSubmit={handleCreateBatch} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="modal-body space-y-6">
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -337,7 +330,7 @@ const BatchManager = () => {
                                             onChange={(e) =>
                                                 setFormData({ ...formData, name: e.target.value })
                                             }
-                                            className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                            className="input-field w-full"
                                             placeholder="e.g., 2022-2026 CS Batch A"
                                             required
                                         />
@@ -354,7 +347,7 @@ const BatchManager = () => {
                                                 onChange={(e) =>
                                                     setFormData({ ...formData, startDate: e.target.value })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 required
                                             />
                                         </div>
@@ -368,7 +361,7 @@ const BatchManager = () => {
                                                 onChange={(e) =>
                                                     setFormData({ ...formData, endDate: e.target.value })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 required
                                             />
                                         </div>
@@ -376,7 +369,7 @@ const BatchManager = () => {
                                 </div>
 
                                 {/* Educational Details Section */}
-                                <div className="bg-gray-50 dark:bg-[#111117]/40 p-5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <div className="bg-gray-50 dark:bg-[var(--color-bg-primary)]/40 p-5 rounded-xl border border-gray-100 dark:border-gray-800">
                                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">Educational Defaults</h3>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Default academic details for students in this batch.</p>
 
@@ -394,7 +387,7 @@ const BatchManager = () => {
                                                         education: { ...formData.education, institution: e.target.value }
                                                     })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 placeholder="e.g., ABC Engineering College"
                                             />
                                         </div>
@@ -413,7 +406,7 @@ const BatchManager = () => {
                                                             education: { ...formData.education, degree: e.target.value }
                                                         })
                                                     }
-                                                    className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                    className="input-field w-full"
                                                     placeholder="e.g., B.Tech"
                                                 />
                                             </div>
@@ -466,7 +459,7 @@ const BatchManager = () => {
                                         <div className="relative">
                                             <input
                                                 type="text"
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 placeholder="Type branch code and press Enter or Comma (e.g. CSE, IT)"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' || e.key === ',') {
@@ -519,22 +512,20 @@ const BatchManager = () => {
                                                 ) : null;
                                             })}
                                         </div>
-                                        <select
-                                            className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
-                                            onChange={(e) => {
-                                                const val = e.target.value;
+                                        <CustomDropdown
+                                            options={courses.filter(c => !formData.assignedCourses.includes(c._id)).map(course => ({
+                                                value: course._id,
+                                                label: course.title
+                                            }))}
+                                            value=""
+                                            onChange={(val) => {
                                                 if (val && !formData.assignedCourses.includes(val)) {
                                                     setFormData({ ...formData, assignedCourses: [...formData.assignedCourses, val] });
                                                 }
-                                                e.target.value = '';
                                             }}
-                                            defaultValue=""
-                                        >
-                                            <option value="" disabled>Select a course to assign</option>
-                                            {courses.filter(c => !formData.assignedCourses.includes(c._id)).map(course => (
-                                                <option key={course._id} value={course._id}>{course.title}</option>
-                                            ))}
-                                        </select>
+                                            placeholder="Select a course to assign"
+                                            icon={Layers}
+                                        />
                                     </div>
                                 </div>
 
@@ -547,33 +538,26 @@ const BatchManager = () => {
                                         onChange={(e) =>
                                             setFormData({ ...formData, description: e.target.value })
                                         }
-                                        className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                        className="input-field w-full"
                                         rows="3"
                                         placeholder="Optional notes about this batch..."
                                     />
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-interactive)]">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateModal(false)}
-                                        className="btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn-primary px-6" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Creating...
-                                            </>
-                                        ) : 'Create Batch'}
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Creating...' : 'Create Batch'}
+                                </button>
+                            </div>
+                        </form>
                         </div>
                     </div>
                 </div>
@@ -582,23 +566,23 @@ const BatchManager = () => {
             {/* Edit Batch Modal */}
             {showEditModal && selectedBatch && (
                 <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
-                    <div className="modal-content max-w-4xl max-h-[90vh] overflow-y-auto p-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#111117]/40 rounded-t-2xl">
+                        <div className="modal-header">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                                     <Edit2 size={20} />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Edit Batch</h2>
+                                <h2 className="modal-title">Edit Batch</h2>
                             </div>
                             <button
                                 onClick={() => setShowEditModal(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-[#23232e] rounded-lg transition-colors"
+                                className="modal-close"
                             >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6">
-                            <form onSubmit={handleUpdateBatch} className="space-y-6">
+
+                        <form onSubmit={handleUpdateBatch} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="modal-body space-y-6">
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -610,7 +594,7 @@ const BatchManager = () => {
                                             onChange={(e) =>
                                                 setEditFormData({ ...editFormData, name: e.target.value })
                                             }
-                                            className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                            className="input-field w-full"
                                             required
                                         />
                                     </div>
@@ -626,7 +610,7 @@ const BatchManager = () => {
                                                 onChange={(e) =>
                                                     setEditFormData({ ...editFormData, startDate: e.target.value })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 required
                                             />
                                         </div>
@@ -640,7 +624,7 @@ const BatchManager = () => {
                                                 onChange={(e) =>
                                                     setEditFormData({ ...editFormData, endDate: e.target.value })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                                 required
                                             />
                                         </div>
@@ -648,9 +632,9 @@ const BatchManager = () => {
                                 </div>
 
                                 {/* Educational Details Section */}
-                                <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Educational Defaults</h3>
-                                    <p className="text-sm text-gray-500 mb-4">Updates will apply to new students or when synced.</p>
+                                <div className="bg-gray-50 dark:bg-[var(--color-bg-primary)]/40 p-5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">Educational Defaults</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Updates will apply to new students or when synced.</p>
 
                                     <div className="space-y-4">
                                         <div>
@@ -666,7 +650,7 @@ const BatchManager = () => {
                                                         education: { ...editFormData.education, institution: e.target.value }
                                                     })
                                                 }
-                                                className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                className="input-field w-full"
                                             />
                                         </div>
 
@@ -684,7 +668,7 @@ const BatchManager = () => {
                                                             education: { ...editFormData.education, degree: e.target.value }
                                                         })
                                                     }
-                                                    className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                                    className="input-field w-full"
                                                 />
                                             </div>
                                             <div>
@@ -716,7 +700,7 @@ const BatchManager = () => {
                                     <div className="space-y-3">
                                         <div className="flex flex-wrap gap-2 mb-2">
                                             {editFormData.branches.map((branch, index) => (
-                                                <div key={index} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
+                                                <div key={index} className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium border border-blue-100 dark:border-blue-800">
                                                     <span>{branch}</span>
                                                     <button
                                                         type="button"
@@ -771,7 +755,7 @@ const BatchManager = () => {
                                             {editFormData.assignedCourses.map((courseId, index) => {
                                                 const course = courses.find(c => c._id === courseId);
                                                 return course ? (
-                                                    <div key={index} className="flex items-center gap-1 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium border border-purple-100">
+                                                    <div key={index} className="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-medium border border-purple-100 dark:border-purple-800">
                                                         <span>{course.title}</span>
                                                         <button
                                                             type="button"
@@ -787,22 +771,20 @@ const BatchManager = () => {
                                                 ) : null;
                                             })}
                                         </div>
-                                        <select
-                                            className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
-                                            onChange={(e) => {
-                                                const val = e.target.value;
+                                        <CustomDropdown
+                                            options={courses.filter(c => !editFormData.assignedCourses.includes(c._id)).map(course => ({
+                                                value: course._id,
+                                                label: course.title
+                                            }))}
+                                            value=""
+                                            onChange={(val) => {
                                                 if (val && !editFormData.assignedCourses.includes(val)) {
                                                     setEditFormData({ ...editFormData, assignedCourses: [...editFormData.assignedCourses, val] });
                                                 }
-                                                e.target.value = '';
                                             }}
-                                            defaultValue=""
-                                        >
-                                            <option value="" disabled>Select a course to assign</option>
-                                            {courses.filter(c => !editFormData.assignedCourses.includes(c._id)).map(course => (
-                                                <option key={course._id} value={course._id}>{course.title}</option>
-                                            ))}
-                                        </select>
+                                            placeholder="Select a course to assign"
+                                            icon={Layers}
+                                        />
                                     </div>
                                 </div>
 
@@ -820,27 +802,20 @@ const BatchManager = () => {
                                     />
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowEditModal(false)}
-                                        className="btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn-primary px-6" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Updating...
-                                            </>
-                                        ) : 'Update Batch'}
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Updating...' : 'Update Batch'}
+                                </button>
+                            </div>
+                        </form>
                         </div>
                     </div>
                 </div>
@@ -850,7 +825,7 @@ const BatchManager = () => {
             {showExtendModal && selectedBatch && (
                 <div className="modal-backdrop" onClick={() => setShowExtendModal(false)}>
                     <div className="modal-content max-w-md p-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#111117]/40 rounded-t-2xl">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[var(--color-bg-primary)]/40 rounded-t-2xl">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg">
                                     <Clock size={20} />
@@ -865,7 +840,7 @@ const BatchManager = () => {
                             </button>
                         </div>
                         <div className="p-6">
-                            <div className="bg-gray-50 dark:bg-[#111117]/50 p-4 rounded-lg mb-4 border border-gray-100 dark:border-gray-800">
+                             <div className="bg-gray-50 dark:bg-[var(--color-bg-primary)]/50 p-4 rounded-lg mb-4 border border-gray-100 dark:border-gray-800">
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Current End Date: <strong className="text-gray-900 dark:text-gray-100">{new Date(selectedBatch.endDate).toLocaleDateString()}</strong>
                                 </p>
@@ -888,7 +863,7 @@ const BatchManager = () => {
                                         type="date"
                                         name="newEndDate"
                                         min={selectedBatch.endDate}
-                                        className="input-field w-full dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100"
+                                         className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100"
                                         required
                                     />
                                 </div>
@@ -922,7 +897,7 @@ const BatchManager = () => {
             {showStatsModal && selectedBatch && (
                 <div className="modal-backdrop" onClick={() => setShowStatsModal(false)}>
                     <div className="modal-content max-w-2xl max-h-[90vh] overflow-y-auto p-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#111117]/40 rounded-t-2xl">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[var(--color-bg-primary)]/40 rounded-t-2xl">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
                                     <BarChart2 size={24} />
@@ -941,7 +916,7 @@ const BatchManager = () => {
                             {batchStats ? (
                                 <div className="space-y-6">
                                     {/* Batch Information */}
-                                    <div className="bg-gray-50 dark:bg-[#111117]/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                                     <div className="bg-gray-50 dark:bg-[var(--color-bg-primary)]/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
                                         <h3 className="text-sm font-semibold mb-3 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Batch Details</h3>
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>

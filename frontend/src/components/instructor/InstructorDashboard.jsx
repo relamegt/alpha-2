@@ -59,7 +59,7 @@ const InstructorDashboard = () => {
             case 'accepted': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/30';
             case 'wrong answer': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30';
             case 'time limit exceeded': return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800/30';
-            default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700';
+            default: return 'text-gray-600 dark:text-gray-400 bg-[var(--color-bg-primary)] border-gray-100 dark:border-gray-800';
         }
     };
 
@@ -88,7 +88,7 @@ const InstructorDashboard = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-[#F1F3F4] dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Users className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -101,7 +101,7 @@ const InstructorDashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-[#F1F3F4] dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <BookOpen className="w-24 h-24 text-green-600 dark:text-green-400" />
                     </div>
@@ -114,7 +114,7 @@ const InstructorDashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-[#F1F3F4] dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Activity className="w-24 h-24 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -137,7 +137,7 @@ const InstructorDashboard = () => {
                     </h3>
                     <div className="space-y-4">
                         {stats.batches.filter(b => b.status === 'active').slice(0, 5).map(batch => (
-                            <div key={batch._id} className="bg-[#F1F3F4] dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                            <div key={batch._id} className="bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="font-semibold text-gray-900 dark:text-gray-100">{batch.name}</h4>
                                     <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Active</span>
@@ -158,7 +158,7 @@ const InstructorDashboard = () => {
                             </div>
                         ))}
                         {stats.activeBatchesCount === 0 && (
-                            <div className="text-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-[var(--color-border-interactive)]">
+                            <div className="text-center p-8 bg-[var(--color-bg-primary)]/50 rounded-xl border border-dashed border-[var(--color-border-interactive)]">
                                 <p className="text-gray-500 dark:text-gray-400 text-sm">No active batches found.</p>
                             </div>
                         )}
@@ -174,10 +174,10 @@ const InstructorDashboard = () => {
                         <Activity size={20} className="text-primary-500" />
                         Recent Student Activity
                     </h3>
-                    <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="bg-[var(--color-bg-card)] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-100 dark:border-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-100 dark:border-gray-800">
                                     <tr>
                                         <th className="px-6 py-4">Student</th>
                                         <th className="px-6 py-4">Title</th>
@@ -238,6 +238,8 @@ const InstructorDashboard = () => {
 };
 
 export default InstructorDashboard;
+
+
 
 
 

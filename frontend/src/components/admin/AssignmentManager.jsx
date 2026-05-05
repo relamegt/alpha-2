@@ -52,25 +52,29 @@ export default function AssignmentManager() {
   );
 
   return (
-    <div className="admin-assignment-manager">
-      <div className="manager-header">
-        <div className="title-section">
-          <h1>Assignment Lab Manager</h1>
-          <p>Configure industry-grade practical projects with automated testing.</p>
-        </div>
-        <div className="header-actions">
-          <div className="search-box">
-            <Search size={16} />
-            <input 
-              type="text" 
-              placeholder="Filter by title or type..." 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+    <div className="admin-page-wrapper transition-colors">
+      <header className="page-header-container">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="page-header-title">Assignment Lab Manager</h1>
+            <p className="page-header-desc">Configure industry-grade practical projects with automated testing.</p>
           </div>
           <button className="btn-primary" onClick={() => navigate('/admin/assignments/new')}>
             <Plus size={18} /> New Assignment
           </button>
+        </div>
+      </header>
+
+      <div className="page-tabs-container">
+        <div className="page-search-wrapper w-full max-w-md">
+          <Search className="page-search-icon" size={18} />
+          <input 
+            type="text" 
+            placeholder="Filter by title or type..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="page-search-input"
+          />
         </div>
       </div>
 
@@ -117,13 +121,13 @@ export default function AssignmentManager() {
                 </td>
                 <td className="actions-td">
                   <div className="action-row">
-                    <button className="btn-secondary p-2 hover:text-blue-500 border-transparent" onClick={() => window.open(`/assignments/${a.id}`, '_blank')} title="Student View">
+                    <button className="icon-btn view" onClick={() => window.open(`/assignments/${a.id}`, '_blank')} title="Student View">
                       <Eye size={16} />
                     </button>
-                    <button className="btn-secondary p-2 hover:text-primary-500 border-transparent" onClick={() => navigate(`/admin/assignments/build/${a.id}`)} title="Open IDE Builder">
+                    <button className="icon-btn build" onClick={() => navigate(`/admin/assignments/build/${a.id}`)} title="Open IDE Builder">
                       <Layers size={16} />
                     </button>
-                    <button className="btn-secondary p-2 hover:text-red-500 border-transparent" onClick={() => handleDelete(a.id)} title="Delete">
+                    <button className="icon-btn delete" onClick={() => handleDelete(a.id)} title="Delete">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -143,11 +147,3 @@ export default function AssignmentManager() {
     </div>
   );
 }
-
-
-
-
-
-
-
-

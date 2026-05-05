@@ -88,21 +88,30 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in pb-24">
-            <div className="flex items-center gap-4">
-                <button onClick={onBack} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 className="text-3xl font-bold flex items-center gap-3 tracking-tight">
-                    <Trophy className="text-indigo-600" />
-                    {initialData ? 'Edit Course Contest' : 'New Course Contest'}
-                </h1>
-            </div>
+        <div className="space-y-8 animate-fade-in transition-colors">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <button
+                            onClick={onBack}
+                            className="flex items-center text-gray-500 hover:text-primary-600 mb-2 transition-colors text-sm font-medium"
+                        >
+                            <ArrowLeft size={16} className="mr-1" /> Back to Contests
+                        </button>
+                        <h1 className="page-header-title">
+                            {initialData ? 'Edit Course Contest' : 'New Course Contest'}
+                        </h1>
+                        <p className="page-header-desc">
+                            {initialData ? 'Update contest details and problems.' : 'Set up a new coding challenge for your students.'}
+                        </p>
+                    </div>
+                </div>
+            </header>
 
             <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Form Details */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
+                    <div className="bg-white dark:bg-[#181820] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
                         <div className="flex items-center gap-2 text-lg font-bold border-b border-gray-50 pb-4">
                             <FileText size={20} className="text-indigo-500" /> Basic Information
                         </div>
@@ -157,7 +166,7 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
+                    <div className="bg-white dark:bg-[#181820] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
                         <div className="flex items-center gap-2 text-lg font-bold border-b border-gray-50 pb-4">
                             <Shield size={20} className="text-indigo-500" /> Proctoring & Integrity
                         </div>
@@ -200,7 +209,7 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
 
                 {/* Right Column: Problem Selection */}
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-[700px]">
+                    <div className="bg-white dark:bg-[#181820] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-[700px]">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold flex items-center gap-2">
                                 <Code size={20} className="text-indigo-500" /> Problems
@@ -274,11 +283,3 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
 };
 
 export default CourseContestCreator;
-
-
-
-
-
-
-
-

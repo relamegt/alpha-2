@@ -12,18 +12,19 @@ import {
 
 } from 'lucide-react';
 import './MultiFileAssignmentBuilder.css';
+import CustomDropdown from '../shared/CustomDropdown';
 
 
 
 const INITIAL_FILES = {
-  'src/App.jsx': `export default function App() {\n  return (\n    <div className="p-8 bg-[#0a0a15] text-white min-h-screen font-sans">\n      <h1 className="text-4xl font-black text-indigo-400 mb-4 tracking-tighter">New Assignment</h1>\n      <p className="text-gray-400">Start building your project template here.</p>\n      <button className="mt-8 px-6 py-2 bg-indigo-600 rounded-lg font-bold hover:bg-indigo-500 transition-colors">\n        Interactive Button\n      </button>\n    </div>\n  );\n}`,
-  'src/index.css': `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\nbody { \n  background: #0a0a0f;\n  color: #f0f0f0;\n  -webkit-font-smoothing: antialiased;\n}`,
+  'src/App.jsx': `export default function App() {\n  return (\n    <div className="p-8 bg-[#000000] text-white min-h-screen font-sans">\n      <h1 className="text-4xl font-black text-indigo-400 mb-4 tracking-tighter">New Assignment</h1>\n      <p className="text-gray-400">Start building your project template here.</p>\n      <button className="mt-8 px-6 py-2 bg-indigo-600 rounded-lg font-bold hover:bg-indigo-500 transition-colors">\n        Interactive Button\n      </button>\n    </div>\n  );\n}`,
+  'src/index.css': `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\nbody { \n  background: #000000;\n  color: #f0f0f0;\n  -webkit-font-smoothing: antialiased;\n}`,
   'package.json': `{\n  "name": "alphalearn-template",\n  "version": "1.0.0",\n  "dependencies": {\n    "react": "^18.2.0",\n    "react-dom": "^18.2.0",\n    "lucide-react": "^0.263.1"\n  }\n}`,
   'README.md': `# Assignment Template\n\nProvide instructions here for the student.`
 };
 
 const MERN_FILES = {
-  'client/src/App.jsx': `export default function App() {\n  return (\n    <div className="p-8 bg-[#0a0a15] text-white min-h-screen font-sans">\n      <h1 className="text-4xl font-black text-indigo-400 mb-4 tracking-tighter">MERN Frontend</h1>\n      <p className="text-gray-400">Communicating with backend at /api...</p>\n    </div>\n  );\n}`,
+  'client/src/App.jsx': `export default function App() {\n  return (\n    <div className="p-8 bg-[#000000] text-white min-h-screen font-sans">\n      <h1 className="text-4xl font-black text-indigo-400 mb-4 tracking-tighter">MERN Frontend</h1>\n      <p className="text-gray-400">Communicating with backend at /api...</p>\n    </div>\n  );\n}`,
   'server/index.js': `const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 5000;\n\napp.get('/api', (req, res) => res.json({ message: "Hello from MERN Backend" }));\n\napp.listen(PORT, () => console.log('Server running on port ' + PORT));`,
   'package.json': `{\n  "name": "mern-project",\n  "scripts": {\n    "dev": "concurrently \\"cd server && npm run dev\\" \\"cd client && npm run dev\\"",\n    "install:all": "npm install && cd client && npm install && cd ../server && npm install"\n  }\n}`,
   'README.md': `# MERN Assignment\n\nFollow the instructions in the README to complete the full-stack project.`
@@ -327,40 +328,33 @@ export default function MultiFileAssignmentBuilder() {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[9px] uppercase font-bold text-gray-500">Validation Type</label>
-                        <select
-                          className="w-full bg-[#111117] border border-[#282833] text-[11px] p-1 rounded"
+                        <CustomDropdown
+                          options={[
+                            { value: 'FILE_EXISTS', label: 'File Exists' },
+                            { value: 'TEXT_MATCH', label: 'Content Match' },
+                            { value: 'api_route_exists', label: 'API Route Exists' },
+                            { value: 'mongoose_model_exists', label: 'Mongoose Model Exists' },
+                            { value: 'mongoose_field_exists', label: 'Mongoose Field Check' },
+                            { value: 'mongodb_connected', label: 'MongoDB Connection Check' },
+                            { value: 'react_component_exists', label: 'React Component Exists' },
+                            { value: 'react_fetch_exists', label: 'API Fetch Used' },
+                            { value: 'react_useState_used', label: 'useState Used' },
+                            { value: 'vite_proxy_configured', label: 'Vite Proxy Set' },
+                            { value: 'fullstack_api_consumed', label: 'End-to-End API Check' }
+                          ]}
                           value={tc.type}
-                          onChange={e => {
+                          onChange={val => {
                             const next = [...testCases];
-                            next[idx].type = e.target.value;
+                            next[idx].type = val;
                             setTestCases(next);
                           }}
-                        >
-                          <optgroup label="General">
-                            <option value="FILE_EXISTS">File Exists</option>
-                            <option value="TEXT_MATCH">Content Match</option>
-                          </optgroup>
-                          <optgroup label="Backend (Express/Mongoose)">
-                            <option value="api_route_exists">API Route Exists</option>
-                            <option value="mongoose_model_exists">Mongoose Model Exists</option>
-                            <option value="mongoose_field_exists">Mongoose Field Check</option>
-                            <option value="mongodb_connected">MongoDB Connection Check</option>
-                          </optgroup>
-                          <optgroup label="Frontend (React)">
-                            <option value="react_component_exists">React Component Exists</option>
-                            <option value="react_fetch_exists">API Fetch Used</option>
-                            <option value="react_useState_used">useState Used</option>
-                            <option value="vite_proxy_configured">Vite Proxy Set</option>
-                          </optgroup>
-                          <optgroup label="Integration">
-                            <option value="fullstack_api_consumed">End-to-End API Check</option>
-                          </optgroup>
-                        </select>
+                          size="small"
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[9px] uppercase font-bold text-gray-500">Target (File/Selector)</label>
                         <input
-                          className="w-full bg-[#111117] border border-[#282833] text-[11px] p-1 rounded"
+                          className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[11px] p-1 rounded"
                           placeholder="e.g. src/App.jsx"
                           value={tc.target}
                           onChange={e => {
@@ -374,7 +368,7 @@ export default function MultiFileAssignmentBuilder() {
                         <div className="space-y-2">
                           <label className="text-[9px] uppercase font-bold text-gray-500">Expected Value</label>
                           <input
-                            className="w-full bg-[#111117] border border-[#282833] text-[11px] p-1 rounded"
+                            className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[11px] p-1 rounded"
                             placeholder="Value to find..."
                             value={tc.expected}
                             onChange={e => {
@@ -462,7 +456,7 @@ export default function MultiFileAssignmentBuilder() {
                   <span>ANALYTICS & SUBMISSIONS</span>
                 </div>
                 <div className="p-4 space-y-6 overflow-y-auto h-full">
-                  <div className="analytics-card bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
+                  <div className="analytics- bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
                     <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
                       <BarChart3 size={12} /> Performance Heatmap
                     </h4>
@@ -478,7 +472,7 @@ export default function MultiFileAssignmentBuilder() {
                     </div>
                   </div>
 
-                  <div className="analytics-card bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
+                  <div className="analytics- bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
                     <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
                       <AlertCircle size={12} className="text-red-400" /> Common Failures
                     </h4>
@@ -581,7 +575,7 @@ export default function MultiFileAssignmentBuilder() {
                         </div>
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                           {testCases.map((tc, idx) => (
-                            <div key={idx} className="bg-[#111117] p-4 rounded-xl border border-[#282833] space-y-3 shadow-lg hover:border-indigo-500/30 transition-all">
+                            <div key={idx} className="bg-[var(--color-bg-primary)] p-4 rounded-xl border border-[#282833] space-y-3 shadow-lg hover:border-indigo-500/30 transition-all">
                               <div className="flex justify-between items-center">
                                 <input
                                   className="bg-transparent border-none text-[12px] font-bold text-white focus:outline-none w-full"
@@ -601,34 +595,29 @@ export default function MultiFileAssignmentBuilder() {
                               <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                   <label className="text-[8px] uppercase font-bold text-gray-500">Validator</label>
-                                  <select
-                                    className="w-full bg-[#0a0a0f] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
+                                  <CustomDropdown
+                                    options={[
+                                      { value: 'FILE_EXISTS', label: 'File Exists' },
+                                      { value: 'TEXT_MATCH', label: 'Content Match' },
+                                      { value: 'api_route_exists', label: 'API Route' },
+                                      { value: 'mongoose_model_exists', label: 'Mongoose Model' },
+                                      { value: 'mongodb_connected', label: 'DB Check' },
+                                      { value: 'react_component_exists', label: 'React Component' },
+                                      { value: 'react_useState_used', label: 'State Hook' }
+                                    ]}
                                     value={tc.type}
-                                    onChange={e => {
+                                    onChange={val => {
                                       const next = [...testCases];
-                                      next[idx].type = e.target.value;
+                                      next[idx].type = val;
                                       setTestCases(next);
                                     }}
-                                  >
-                                    <optgroup label="General">
-                                      <option value="FILE_EXISTS">File Exists</option>
-                                      <option value="TEXT_MATCH">Content Match</option>
-                                    </optgroup>
-                                    <optgroup label="Backend">
-                                      <option value="api_route_exists">API Route</option>
-                                      <option value="mongoose_model_exists">Mongoose Model</option>
-                                      <option value="mongodb_connected">DB Check</option>
-                                    </optgroup>
-                                    <optgroup label="Frontend">
-                                      <option value="react_component_exists">React Component</option>
-                                      <option value="react_useState_used">State Hook</option>
-                                    </optgroup>
-                                  </select>
+                                    size="small"
+                                  />
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[8px] uppercase font-bold text-gray-500">Path / Target</label>
                                   <input
-                                    className="w-full bg-[#0a0a0f] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
                                     placeholder="src/App.jsx"
                                     value={tc.target}
                                     onChange={e => {
@@ -643,7 +632,7 @@ export default function MultiFileAssignmentBuilder() {
                                 <div className="space-y-1">
                                   <label className="text-[8px] uppercase font-bold text-gray-500">Expected (Exact/Regex)</label>
                                   <input
-                                    className="w-full bg-[#0a0a0f] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
+                                    className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
                                     placeholder="Enter value..."
                                     value={tc.expected}
                                     onChange={e => {
@@ -703,13 +692,17 @@ export default function MultiFileAssignmentBuilder() {
 
             <div className="form-group">
               <label>Project Type</label>
-              <select value={initForm.type} onChange={e => setInitForm({ ...initForm, type: e.target.value })}>
-                <option value="HTML_CSS_JS">Static (HTML/CSS/JS)</option>
-                <option value="REACT">React Project</option>
-                <option value="NODE">Node.js Project</option>
-                <option value="FULLSTACK">Fullstack App</option>
-                <option value="FULLSTACK_MERN">MERN Stack Project</option>
-              </select>
+              <CustomDropdown
+                options={[
+                  { value: 'HTML_CSS_JS', label: 'Static (HTML/CSS/JS)' },
+                  { value: 'REACT', label: 'React Project' },
+                  { value: 'NODE', label: 'Node.js Project' },
+                  { value: 'FULLSTACK', label: 'Fullstack App' },
+                  { value: 'FULLSTACK_MERN', label: 'MERN Stack Project' }
+                ]}
+                value={initForm.type}
+                onChange={val => setInitForm({ ...initForm, type: val })}
+              />
             </div>
 
             <div className="form-group">
@@ -724,7 +717,7 @@ export default function MultiFileAssignmentBuilder() {
             {initForm.type === 'FULLSTACK_MERN' && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                className="mern-config-fields bg-[#111117] p-4 rounded-xl border border-[#282833] mb-4 space-y-4"
+                className="mern-config-fields bg-[var(--color-bg-primary)] p-4 rounded-xl border border-[#282833] mb-4 space-y-4"
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="form-group mb-0">

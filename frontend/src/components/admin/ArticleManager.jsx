@@ -38,7 +38,10 @@ const ArticleManager = () => {
         let result = articles.filter(a => a.type === 'article');
         if (searchQuery) {
             const lowerQuery = searchQuery.toLowerCase();
-            result = result.filter(p => p.title.toLowerCase().includes(lowerQuery));
+            result = result.filter(a => 
+                (a.title && a.title.toLowerCase().includes(lowerQuery)) ||
+                (a.section && a.section.toLowerCase().includes(lowerQuery))
+            );
         }
         setFilteredArticles(result);
     }, [articles, searchQuery]);
@@ -116,96 +119,116 @@ const ArticleManager = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-[32px] border border-[var(--color-border-interactive)] shadow-xl shadow-[var(--color-accent)]/5">
-                <div>
-                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
-                        <div className="p-2 bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded-xl">
-                            <FileText size={24} />
-                        </div>
-                        Article Manager
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">Manage reading materials and documentation</p>
-                </div>
-                <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                    <Plus size={18} />
-                    <span>Create New Article</span>
-                </button>
-            </div>
+        <div className="admin-page-wrapper transition-colors">
+            <div className="max-w-7xl mx-auto">
+                <header className="page-header-container flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">Article Manager</h1>
+                        <p className="page-header-desc">Manage reading materials and documentation</p>
+                    </div>
+                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                        <Plus size={18} />
+                        <span>Create New Article</span>
+                    </button>
+                </header>
 
-            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-[var(--color-border-interactive)]">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search articles..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-transparent dark:bg-[#1c1c26] focus:ring-2 focus:ring-[var(--color-accent)]/30 outline-none transition-all"
-                    />
+                <div className="page-controls-bar">
+                    <div className="page-search-wrapper flex-1 max-w-md">
+                        <Search className="page-search-icon" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search articles..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="page-search-input"
+                        />
+                    </div>
                 </div>
-            </div>
 
-            {loading ? (
-                <div className="flex justify-center py-20"><div className="spinner"></div></div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredArticles.map(a => (
-                        <div key={a._id} className="card group hover:border-teal-500/50 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 rounded-lg bg-teal-100/50 text-teal-600">
-                                    <BookOpen size={24} />
-                                </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => { 
-                                        setEditingArticle(a); 
-                                        setFormData({
-                                            ...a,
-                                            type: 'article',
-                                            article: a.article || { content: '' }
-                                        }); 
-                                        setShowEditModal(true); 
-                                    }} className="btn-secondary p-1.5 text-blue-600 border-transparent hover:border-blue-200">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDelete(a._id, a.title)} className="btn-secondary p-1.5 text-red-600 border-transparent hover:border-red-200">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">{a.title}</h3>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span className="flex items-center gap-1 font-semibold uppercase">{a.section || 'General'}</span>
-                                <span className="flex items-center gap-1 font-mono uppercase text-[10px] tracking-widest">{a.difficulty}</span>
-                            </div>
-                        </div>
-                    ))}
+                {loading ? (
+                    <div className="flex justify-center py-20"><div className="spinner"></div></div>
+                ) : filteredArticles.length > 0 ? (
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Article Title</th>
+                                <th>Difficulty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredArticles.map(a => (
+                                <tr key={a._id}>
+                                    <td className="title-td">
+                                        <div className="title-group">
+                                            <span className="main-title">{a.title}</span>
+                                            <span className="sub-description">{a.description?.slice(0, 80)}...</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`diff-badge ${a.difficulty || 'Easy'}`}>
+                                            {a.difficulty || 'Easy'}
+                                        </span>
+                                    </td>
+                                    <td className="actions-td">
+                                        <div className="action-row">
+                                            <button onClick={() => { 
+                                                setEditingArticle(a); 
+                                                setFormData({
+                                                    ...a,
+                                                    type: 'article',
+                                                    article: a.article || { content: '' }
+                                                }); 
+                                                setShowEditModal(true); 
+                                            }} className="icon-btn build" title="Edit">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => handleDelete(a._id, a.title)} className="icon-btn delete" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+                ) : (
+                    <div className="empty-state-container">
+                        <div className="empty-state-icon">
+                            <FileText size={32} />
+                        </div>
+                        <p className="empty-state-text">No articles found</p>
+                        <p className="empty-state-subtext">Publish helpful resources for students</p>
+                    </div>
+                )}
+
+            </div>
 
             {(showCreateModal || showEditModal) && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
-                            <h2 className="text-xl font-bold">{showCreateModal ? 'New Article' : 'Edit Article'}</h2>
-                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
+                    <div className="modal-content max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{showCreateModal ? 'New Article' : 'Edit Article'}</h2>
+                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="modal-close">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="flex-1 overflow-y-auto p-8 space-y-6">
+                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="modal-body space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Title</label>
-                                    <input required placeholder="Article Title" type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <label className="text-sm font-semibold">Title <span className="text-red-500">*</span></label>
+                                    <input required placeholder="Article Title" type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="input-field w-full" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Section/Topic</label>
-                                    <input placeholder="e.g. Introduction, Concepts" type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="e.g. Introduction, Concepts" type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="input-field w-full" />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Description</label>
-                                <textarea rows={2} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none resize-none px-4 py-2.5" placeholder="Brief summary for preview cards..." />
+                                <textarea rows={2} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="input-field w-full min-h-[80px] resize-none" placeholder="Brief summary for preview cards..." />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">GitHub Article Link (Mandatory)*</label>
@@ -215,18 +238,18 @@ const ArticleManager = () => {
                                     type="text" 
                                     value={formData.articleLink} 
                                     onChange={e => setFormData({...formData, articleLink: e.target.value})} 
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-mono text-sm" 
+                                    className="input-field w-full font-mono text-sm" 
                                 />
-                                <p className="text-[10px] text-gray-500 italic">If provided, this content will be fetched and rendered synchronously with markdown support.</p>
+                                <p className="text-[10px] text-gray-500 italic">This content will be fetched and rendered synchronously with markdown support.</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Article Content (Optional - Markdown)</label>
-                                <textarea rows={12} value={formData.article?.content || ''} onChange={e => setFormData({...formData, article: { content: e.target.value }})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-sans leading-relaxed resize-none" placeholder="Optional: Write fallback markdown here..." />
+                                <textarea rows={10} value={formData.article?.content || ''} onChange={e => setFormData({...formData, article: { content: e.target.value }})} className="input-field w-full min-h-[200px] font-sans leading-relaxed resize-none" placeholder="Optional: Write fallback markdown here..." />
                             </div>
-                             <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-interactive)] mt-4">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary px-6">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="btn-primary px-10">
-                                    {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create Article' : 'Save Changes')}
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary">
+                                    {isSubmitting ? 'Processing...' : (showCreateModal ? 'Publish Article' : 'Update Changes')}
                                 </button>
                             </div>
                         </form>
@@ -238,11 +261,3 @@ const ArticleManager = () => {
 };
 
 export default ArticleManager;
-
-
-
-
-
-
-
-

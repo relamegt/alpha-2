@@ -23,7 +23,11 @@ import {
     Award,
     Link,
     Youtube,
-    Database
+    Database,
+    UploadCloud,
+    CheckSquare,
+    BookOpen,
+    Layers
 } from 'lucide-react';
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
@@ -45,6 +49,7 @@ const ProblemManager = () => {
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
     const [difficultyFilter, setDifficultyFilter] = useState('all');
+    const [activeTab, setActiveTab] = useState('all');
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showBulkModal, setShowBulkModal] = useState(false);
@@ -82,6 +87,10 @@ const ProblemManager = () => {
     useEffect(() => {
         let result = problems;
 
+        if (activeTab !== 'all') {
+            result = result.filter(p => p.type === activeTab);
+        }
+
         if (difficultyFilter !== 'all') {
             result = result.filter(p => p.difficulty === difficultyFilter);
         }
@@ -95,7 +104,7 @@ const ProblemManager = () => {
         }
 
         setFilteredProblems(result);
-    }, [problems, difficultyFilter, searchQuery]);
+    }, [problems, difficultyFilter, searchQuery, activeTab]);
 
     const fetchProblems = async () => {
         setLoading(true);
@@ -126,6 +135,23 @@ const ProblemManager = () => {
         }
     };
 
+    const handleBulkUploadDirect = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsSubmitting(true);
+        try {
+            const response = await problemService.bulkCreateProblems(file);
+            toast.success(response.message || 'Bulk upload successful');
+            fetchProblems();
+        } catch (error) {
+            toast.error(error.message || 'Bulk upload failed');
+        } finally {
+            setIsSubmitting(false);
+            e.target.value = null;
+        }
+    };
+
     const handleBulkUpload = async (e) => {
         e.preventDefault();
         if (!bulkFile) {
@@ -151,7 +177,18 @@ const ProblemManager = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await problemService.updateProblem(editingProblem._id, formData);
+            const { 
+                title, type, difficulty, points, description, constraints, 
+                examples, testCases, timeLimit, editorialLink, videoUrl, 
+                solutionCode, quizQuestions, section 
+            } = formData;
+            const updatePayload = { 
+                title, type, difficulty, points, description, constraints, 
+                examples, testCases, timeLimit, editorialLink, videoUrl, 
+                solutionCode, quizQuestions, section 
+            };
+            
+            await problemService.updateProblem(editingProblem.id || editingProblem._id, updatePayload);
             toast.success('Problem updated successfully');
             setShowEditModal(false);
             setEditingProblem(null);
@@ -343,7 +380,7 @@ const ProblemManager = () => {
         }
     };
 
-    const downloadSampleJSON = () => {
+    const downloadSample = () => {
         const sample = [
             {
                 title: 'Right-Angle Triangle Pattern',
@@ -398,69 +435,29 @@ const ProblemManager = () => {
                         "jsOutputGenerator": "console.log(1000000000);",
                         isHidden: true,
                         note: "N=10^6, all 1s except last element is 10^9. Tests O(N) solution."
-                    },
-                    {
-                        "_comment": "OPTION B (SLOWER ~150ms first run, then cached): Use generatorScript (Python) — use if you prefer Python syntax",
-                        "generatorScript": "print(1000000)\nprint(' '.join(str(i) for i in range(1, 1000001)))",
-                        "tcOutputGenerator": "print(1000000)",
-                        isHidden: true,
-                        note: "N=10^6 sorted 1..10^6. Expected output generated dynamically too."
-                    }
-                ],
-                timeLimit: 2000,
-                memoryLimit: "256 MB",
-                expectedTimeComplexity: "O(N)",
-                expectedSpaceComplexity: "O(1)",
-                solutionCode: {
-                    "python": "n = int(input())\narr = list(map(int, input().split()))\nprint(max(arr))",
-                    "cpp": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\nint main() {\n    int n; cin >> n;\n    int mx = -2e9;\n    for(int i=0; i<n; i++) { int x; cin >> x; mx = max(mx, x); }\n    cout << mx << endl;\n    return 0;\n}"
-                }
-            },
-            {
-                title: "Introduction to Big O",
-                type: "material",
-                difficulty: "Easy",
-                description: "## Material Only Example\n\nStudy material does not require any submissions or test cases. Users simply read the content and mark it as complete. You can embed images like `![alt](url)` and format text with markdown.\n\n### Basics of Algorithm Complexity\n- Time Complexity measures how the runtime scales.\n- Space Complexity measures how the memory usage scales.",
-                editorialLink: "https://example.com/big-o",
-                videoUrl: "https://youtube.com/watch?placeholder"
-            },
-            {
-                title: "Data Structures Quiz",
-                type: "quiz",
-                difficulty: "Medium",
-                description: "Test your knowledge of basic data structures. You need to score at least 75% to pass.",
-                quizQuestions: [
-                    {
-                        question: "Which data structure follows the Last In First Out (LIFO) principle?",
-                        options: ["Queue", "Stack", "Linked List", "Binary Tree"],
-                        correctAnswer: 1
-                    },
-                    {
-                        question: "What is the average time complexity for a search operation in a Hash Map?",
-                        options: ["O(1)", "O(log N)", "O(N)", "O(N^2)"],
-                        correctAnswer: 0
                     }
                 ]
             },
             {
-                title: "Employees in Department 1",
-                type: "sql",
+                title: "Two Sum",
+                type: "problem",
                 difficulty: "Easy",
-                description: "Write a SQL query to report the **name** and **salary** of all employees in department `1`.\n\n**Table: employees**\n\n| id | name | salary | department_id |\n|---|---|---|---|\n| 1 | Alice | 5000 | 1 |\n| 2 | Bob | 6000 | 1 |\n| 3 | Charlie | 7000 | 2 |",
-                supported_dbs: ["mysql", "postgres", "postgresql"],
+                points: 20,
+                description: "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+                constraints: ["2 <= nums.length <= 104", "-109 <= nums[i] <= 109", "-109 <= target <= 109"],
                 examples: [
-                    { input: "employees table as shown above", output: "name | salary\nAlice | 5000\nBob | 6000", explanation: "Alice and Bob are in department 1." }
+                    { input: "nums = [2,7,11,15], target = 9", output: "[0,1]", explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]." }
                 ],
                 testCases: [
-                    {
-                        "input": "CREATE TABLE employees (id INT, name VARCHAR(50), salary INT, department_id INT);\nINSERT INTO employees VALUES (1, 'Alice', 5000, 1), (2, 'Bob', 6000, 1), (3, 'Charlie', 7000, 2);",
-                        "output": "name | salary\nAlice | 5000\nBob | 6000",
-                        "isHidden": false
-                    }
+                    { "input": "4\n2 7 11 15\n9", "output": "0 1", "isHidden": false },
+                    { "input": "3\n3 2 4\n6", "output": "1 2", "isHidden": false }
                 ],
                 timeLimit: 2000,
+                expectedTimeComplexity: "O(n)",
+                expectedSpaceComplexity: "O(n)",
                 solutionCode: {
-                    "mysql": "SELECT name, salary FROM employees WHERE department_id = 1;"
+                    "python": "class Solution:\n    def twoSum(self, nums, target):\n        prevMap = {} # val : index\n        for i, n in enumerate(nums):\n            diff = target - n\n            if diff in prevMap:\n                return [prevMap[diff], i]\n            prevMap[n] = i",
+                    "cpp": "#include <iostream>\n#include <vector>\n#include <unordered_map>\nusing namespace std;\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> prevMap;\n        for (int i = 0; i < nums.size(); i++) {\n            int diff = target - nums[i];\n            if (prevMap.find(diff) != prevMap.end()) return {prevMap[diff], i};\n            prevMap[nums[i]] = i;\n        }\n        return {};\n    }\n};"
                 }
             }
         ];
@@ -469,8 +466,11 @@ const ProblemManager = () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'sample_problems.json';
+        a.download = 'coding_problems_sample.json';
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
     };
 
     const typeOptions = [
@@ -489,159 +489,144 @@ const ProblemManager = () => {
     const formDifficultyOptions = DIFFICULTIES.map(d => ({ value: d, label: d }));
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in pb-24">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                        <div className="p-2 bg-[var(--color-accent)] rounded-xl text-white shadow-lg shadow-[var(--color-accent)]/20">
-                            <Code size={28} />
+        <div className="admin-page-wrapper">
+            <div className="max-w-7xl mx-auto">
+                <header className="page-header-container">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h1 className="page-header-title">Problem Manager</h1>
+                            <p className="page-header-desc">Create and manage coding problems, quizzes, and videos.</p>
                         </div>
-                        Problem Management
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 font-medium">Create, edit, and manage coding problems.</p>
-                </div>
-            </div>
+                        <div className="flex items-center gap-3">
+                            <button onClick={downloadSample} className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                                <Download size={18} />
+                                <span>Sample JSON</span>
+                            </button>
+                            <label className={`px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2 ${isSubmitting ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {isSubmitting ? <div className="spinner border-2 !w-4 !h-4" /> : <Upload size={18} />}
+                                <span>Bulk Upload</span>
+                                <input type="file" accept=".json" onChange={handleBulkUploadDirect} className="hidden" />
+                            </label>
+                            <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 flex items-center gap-2">
+                                <Plus size={18} />
+                                <span>Create Problem</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
 
-            {/* Controls */}
-            <div className="glass-panel p-6 rounded-2xl border border-gray-100 dark:border-gray-800 dark:bg-[#111117] shadow-sm flex flex-col md:flex-row gap-4 justify-between items-end">
-                <div className="w-full md:w-auto flex flex-col md:flex-row gap-4 flex-1">
-                    <div className="relative w-full md:w-96">
+                <div className="page-controls-bar">
+                    <div className="page-tab-container overflow-x-auto">
+                        {[
+                            { id: 'all', label: 'All Content' },
+                            { id: 'problem', label: 'Coding' },
+                            { id: 'quiz', label: 'Quizzes' },
+                            { id: 'video', label: 'Videos' },
+                            { id: 'material', label: 'Articles' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`page-tab-item ${activeTab === tab.id ? 'active' : ''}`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="page-search-wrapper flex-1 max-w-md">
+                        <Search className="page-search-icon" size={18} />
                         <input
                             type="text"
-                            placeholder="Search problems..."
+                            placeholder="Search content..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 focus:border-primary-400 dark:focus:border-primary-600 transition-all shadow-sm text-gray-900 dark:text-gray-100"
-                        />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    </div>
-                    <div className="w-full md:w-60">
-                        <CustomDropdown
-                            options={difficultyOptions}
-                            value={difficultyFilter}
-                            onChange={setDifficultyFilter}
-                            placeholder="Filter by Difficulty"
-                            icon={Filter}
+                            className="page-search-input"
                         />
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    {selectedProblems.length > 0 && (
-                        <button onClick={handleBulkDelete} className="btn-secondary text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border-red-200 dark:border-red-800">
-                            <Trash2 size={18} /> Delete Selected ({selectedProblems.length})
-                        </button>
-                    )}
-                    <button onClick={() => setShowCreateModal(true)} className="btn-primary flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
-                        <Plus size={18} /> Create Problem
-                    </button>
-                    <button onClick={() => setShowBulkModal(true)} className="btn-secondary flex items-center gap-2 px-4 py-2.5">
-                        <Upload size={18} /> Bulk Upload
-                    </button>
-                    <button onClick={downloadSampleJSON} className="btn-secondary p-2.5" title="Download Sample JSON">
-                        <Download size={20} />
-                    </button>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="bg-[#F1F3F4] dark:bg-[#111117] rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100">
                 {loading ? (
-                    <div className="flex justify-center py-16">
-                        <div className="spinner border-t-primary-500 border-2 w-8 h-8"></div>
-                    </div>
-                ) : filteredProblems.length === 0 ? (
-                    <div className="text-center py-20 px-6">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Search className="w-8 h-8 text-gray-300" />
-                        </div>
-                        <h3 className="text-gray-900 font-medium">No problems found</h3>
-                        <p className="text-gray-500 text-sm mt-1">Try adjusting your filters or search query.</p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-50/50 dark:bg-zinc-800/30 text-xs uppercase text-gray-500 font-semibold tracking-wider border-b border-gray-100 dark:border-gray-800">
-                                <tr>
-                                    <th className="px-6 py-4 w-10">
-                                        <input
-                                            type="checkbox"
-                                            className="rounded border-gray-300 dark:border-gray-600 bg-[#F1F3F4] dark:bg-[#111117] text-primary-600 focus:ring-primary-500 w-4 h-4 cursor-pointer"
-                                            checked={selectedProblems.length === filteredProblems.length && filteredProblems.length > 0}
-                                            onChange={toggleSelectAll}
-                                        />
-                                    </th>
-                                    <th className="px-6 py-4">Problem</th>
-                                    <th className="px-6 py-4">Difficulty</th>
-                                    <th className="px-6 py-4">Coins</th>
-                                    <th className="px-6 py-4">Created Date</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800 bg-[#F1F3F4] dark:bg-[#111117]">
-                                {filteredProblems.map((problem) => (
-                                    <tr key={problem.id || problem._id} className="hover:bg-gray-50/40 dark:hover:bg-[#23232e] transition-colors group">
-                                        <td className="px-6 py-4 text-center">
-                                            <input
-                                                type="checkbox"
-                                                className="rounded border-gray-300 dark:border-gray-600 bg-[#F1F3F4] dark:bg-[#111117] text-primary-600 focus:ring-primary-500 w-4 h-4 cursor-pointer"
-                                                checked={selectedProblems.includes(problem._id)}
-                                                onChange={() => toggleProblemSelection(problem._id)}
-                                            />
+                    <div className="flex justify-center py-20"><div className="spinner"></div></div>
+                ) : filteredProblems.length > 0 ? (
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Title & Description</th>
+                                <th>Type</th>
+                                <th>Difficulty</th>
+                                <th>Points</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredProblems.map(p => (
+                                    <tr key={p._id}>
+                                        <td className="title-td">
+                                            <div className="title-group">
+                                                <span className="main-title">{p.title}</span>
+                                                <span className="sub-description">{p.description?.slice(0, 100)}...</span>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-semibold text-gray-900 dark:text-gray-100">{problem.title}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 capitalize">{problem.type === 'material' ? 'Article' : (problem.type || 'problem')}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${problem.difficulty === 'Easy' ? 'bg-green-50 text-green-700 border-green-100' :
-                                                problem.difficulty === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
-                                                    'bg-red-50 text-red-700 border-red-100'
-                                                }`}>
-                                                {problem.difficulty}
+                                        <td>
+                                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                {p.type || 'problem'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            {problem.points} Coins
+                                        <td>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${p.difficulty === 'Easy' ? 'bg-green-500/10 text-green-500' :
+                                                p.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-500' :
+                                                    'bg-red-500/10 text-red-500'
+                                                }`}>
+                                                {p.difficulty}
+                                            </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {new Date(problem.createdAt).toLocaleDateString()}
+                                        <td>
+                                            <span className="text-xs font-bold text-gray-500">{p.points || 0} pts</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right relative">
-                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => openSolutionModal(problem)}
-                                                    className="p-2 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg transition-colors"
-                                                    title="Set Reference Solution"
-                                                >
-                                                    <Code2 size={16} />
-                                                </button>
-                                                <button onClick={() => openEditModal(problem)} className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
+                                        <td className="actions-td">
+                                            <div className="action-row">
+                                                <button onClick={() => openEditModal(p)} className="icon-btn build" title="Edit">
                                                     <Edit2 size={16} />
                                                 </button>
-                                                <button onClick={() => handleDeleteProblem(problem._id, problem.title)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">
+                                                {p.type === 'problem' && (
+                                                    <button onClick={() => openSolutionModal(p)} className="icon-btn build" title="Reference Solution">
+                                                        <Code size={16} />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => handleDeleteProblem(p._id, p.title)} className="icon-btn delete" title="Delete">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="empty-state-container">
+                    <div className="empty-state-icon">
+                        <Database size={32} />
                     </div>
-                )}
-            </div>
-
-            {/* Create/Edit Modal */}
+                    <p className="empty-state-text">No content found</p>
+                    <p className="empty-state-subtext">Start by adding your first educational material or problem</p>
+                </div>
+            )}
+            
+            {/* Modals follow the main content block */}
             {(showCreateModal || showEditModal) && (
                 <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
-                    <div className="modal-content max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col my-8" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        {/* ... Modal Header ... */}
                         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                     {showEditModal ? <Edit2 size={20} /> : <Plus size={20} />}
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                     {showEditModal ? 'Edit' : 'Create New'} {formData.type === 'material' ? 'Article' : formData.type === 'video' ? 'Video' : formData.type === 'quiz' ? 'Quiz' : 'Problem'}
                                 </h2>
                             </div>
@@ -650,11 +635,13 @@ const ProblemManager = () => {
                             </button>
                         </div>
 
-                        <div className="overflow-y-auto p-6 flex-1">
+                        <div className="modal-body">
+                            {/* Form content remains same as before but ensured clean */}
                             <form id="problemForm" onSubmit={showEditModal ? handleUpdateProblem : handleCreateProblem} className="space-y-6">
+                                {/* Form groups here */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Title <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
                                             value={formData.title}
@@ -665,7 +652,7 @@ const ProblemManager = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
                                         <CustomDropdown
                                             options={typeOptions}
                                             value={formData.type}
@@ -677,7 +664,7 @@ const ProblemManager = () => {
                                 {formData.type !== 'video' && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Difficulty</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Difficulty</label>
                                             <CustomDropdown
                                                 options={formDifficultyOptions}
                                                 value={formData.difficulty}
@@ -689,18 +676,18 @@ const ProblemManager = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-2">
                                                 <Award size={16} className="text-gray-400" /> Coins
                                             </label>
                                             <input
                                                 type="number"
                                                 value={formData.points}
                                                 readOnly
-                                                className="input-field w-full bg-gray-50 text-gray-500"
+                                                className="input-field w-full bg-gray-50 dark:bg-gray-800 text-gray-500"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-2">
                                                 <Clock size={16} className="text-gray-400" /> Time Limit (ms)
                                             </label>
                                             <input
@@ -715,7 +702,7 @@ const ProblemManager = () => {
 
                                 {formData.type !== 'video' && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                             Description (Markdown Supported) {(formData.type === 'problem' || formData.type === 'sql') && <span className="text-red-500">*</span>}
                                         </label>
                                         <textarea
@@ -731,7 +718,7 @@ const ProblemManager = () => {
                                 {(formData.type === 'problem' || formData.type === 'sql') && (
                                     <>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Constraints</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Constraints</label>
                                             <textarea
                                                 value={formData.constraints.join(', ')}
                                                 onChange={(e) => setFormData({
@@ -744,18 +731,17 @@ const ProblemManager = () => {
                                             />
                                         </div>
 
-                                        {/* Examples */}
-                                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                             <div className="flex justify-between items-center">
-                                                <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                                <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                                                     <List size={16} /> Examples
                                                 </label>
-                                                <button type="button" onClick={addExample} className="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline">
+                                                <button type="button" onClick={addExample} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                                                     + Add Example
                                                 </button>
                                             </div>
                                             {formData.examples.map((example, idx) => (
-                                                <div key={idx} className="bg-gray-50 rounded-xl p-4 border border-gray-200 relative group">
+                                                <div key={idx} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 relative group">
                                                     <button type="button" onClick={() => removeItem('example', idx)} className="absolute right-2 top-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <X size={16} />
                                                     </button>
@@ -786,13 +772,12 @@ const ProblemManager = () => {
                                             ))}
                                         </div>
 
-                                        {/* Test Cases */}
-                                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                             <div className="flex justify-between items-center">
-                                                <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                                <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                                                     <CheckCircle size={16} /> Test Cases
                                                 </label>
-                                                <button type="button" onClick={addTestCase} className="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline">
+                                                <button type="button" onClick={addTestCase} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                                                     + Add Test Case
                                                 </button>
                                             </div>
@@ -822,86 +807,33 @@ const ProblemManager = () => {
                                                             type="checkbox"
                                                             checked={tc.isHidden}
                                                             onChange={(e) => updateTestCase(idx, 'isHidden', e.target.checked)}
-                                                            className="rounded bg-gray-700 border-gray-600 text-primary-500 focus:ring-offset-gray-900"
+                                                            className="rounded bg-gray-700 border-gray-600 text-primary-500"
                                                         />
                                                         <span className="text-xs font-medium text-gray-400">Hidden Test Case</span>
                                                     </label>
                                                 </div>
                                             ))}
                                         </div>
-
-                                        {/* Reference Solution */}
-                                        <div className="space-y-3 pt-4 border-t border-gray-100">
-                                            <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                                                <Code2 size={16} /> Reference Solution (Optional)
-                                            </label>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                                                    C++ Solution Code (Used to generate expected outputs for custom test cases)
-                                                </label>
-                                                <div className="h-64 border border-gray-200 rounded-lg overflow-hidden">
-                                                    <Editor
-                                                        height="100%"
-                                                        language="cpp"
-                                                        theme={isDark ? 'antigravity-dark' : 'vs-light'}
-                                                        value={formData.solutionCode?.cpp || ''}
-                                                        onChange={(val) => setFormData({
-                                                            ...formData,
-                                                            solutionCode: {
-                                                                ...formData.solutionCode,
-                                                                cpp: val
-                                                            }
-                                                        })}
-                                                        options={{
-                                                            minimap: { enabled: false },
-                                                            fontSize: 13,
-                                                            scrollBeyondLastLine: false,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <p className="text-[10px] text-gray-400 mt-2">You can add reference solutions in other languages via the <Code2 size={10} className="inline mx-0.5" /> button in the problem list.</p>
-                                            </div>
-                                        </div>
                                     </>
                                 )}
 
-                                {formData.type === 'sql' && (
-                                    <div className="space-y-3 pt-4 border-t border-gray-100">
-                                        <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                                            <Database size={18} className="text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-                                            <div className="text-sm text-blue-800 dark:text-blue-300">
-                                                <p className="font-bold mb-1">SQL Problems use Test Cases (LeetCode-style)</p>
-                                                <p className="text-xs leading-relaxed">
-                                                    <strong>Input:</strong> Write your <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">CREATE TABLE</code> + <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">INSERT</code> statements in the Test Case <em>Input</em> field.<br/>
-                                                    <strong>Output:</strong> Write the expected result as a pipe-delimited table in the <em>Expected Output</em> field:
-                                                </p>
-                                                <pre className="mt-2 bg-blue-100 dark:bg-blue-800/60 rounded p-2 text-[11px] font-mono overflow-x-auto">
-{`name | salary
-Alice | 5000
-Bob | 6000`}
-                                                </pre>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
                                 {formData.type === 'quiz' && (
-                                    <div className="space-y-4 pt-4 border-t border-gray-100">
+                                    <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                         <div className="flex justify-between items-center">
-                                            <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                            <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                                                 <List size={16} /> Quiz Questions
                                             </label>
-                                            <button type="button" onClick={addQuizQuestion} className="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline">
+                                            <button type="button" onClick={addQuizQuestion} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                                                 + Add Question
                                             </button>
                                         </div>
                                         {formData.quizQuestions.map((q, idx) => (
-                                            <div key={idx} className="bg-gray-50 rounded-xl p-4 border border-gray-200 relative group">
+                                            <div key={idx} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 relative group">
                                                 <button type="button" onClick={() => removeItem('quizQuestion', idx)} className="absolute right-2 top-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <X size={16} />
                                                 </button>
                                                 <div className="mb-3">
-                                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Question {idx + 1}</label>
+                                                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Question {idx + 1}</label>
                                                     <input
                                                         type="text"
                                                         value={q.questionText}
@@ -909,16 +841,6 @@ Bob | 6000`}
                                                         className="input-field w-full text-sm"
                                                         placeholder="Enter question text here..."
                                                         required
-                                                    />
-                                                </div>
-                                                <div className="mb-3">
-                                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Explanation (Optional)</label>
-                                                    <textarea
-                                                        value={q.explanation || ''}
-                                                        onChange={(e) => updateQuizQuestion(idx, 'explanation', e.target.value)}
-                                                        className="input-field w-full text-sm"
-                                                        placeholder="Explanation shown after quiz completion..."
-                                                        rows="2"
                                                     />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -929,7 +851,6 @@ Bob | 6000`}
                                                                 name={`correct_opt_${idx}`}
                                                                 checked={q.correctOptionIndex === optIdx}
                                                                 onChange={() => updateQuizQuestion(idx, 'correctOptionIndex', optIdx)}
-                                                                className="text-primary-600 focus:ring-primary-500 cursor-pointer"
                                                             />
                                                             <input
                                                                 type="text"
@@ -937,315 +858,183 @@ Bob | 6000`}
                                                                 onChange={(e) => updateQuizQuestion(idx, 'options', e.target.value, optIdx)}
                                                                 className="input-field w-full text-sm py-1.5"
                                                                 placeholder={`Option ${optIdx + 1}`}
-                                                                required={q.correctOptionIndex === optIdx || opt.length > 0}
                                                             />
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <p className="text-[10px] text-gray-500 mt-2 ml-6">Select the radio button next to the correct answer.</p>
                                             </div>
                                         ))}
                                     </div>
                                 )}
 
-                                {(formData.type === 'problem' || formData.type === 'sql' || formData.type === 'material' || formData.type === 'video') && (
-                                    <div className={`space-y-3 pt-4 border-t border-gray-100 ${formData.type === 'video' ? 'bg-blue-50/30 -mx-6 px-6 py-6 pb-2' : ''}`}>
-                                        <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                                            <Youtube size={18} className="text-red-500" /> {formData.type === 'video' ? 'Video Details' : 'Editorial & Video Links'}
-                                        </label>
-                                        
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                                                <Link size={12} className="text-gray-400" /> GitHub Content URL (Markdown file to fetch)
+                                {formData.type === 'problem' && (
+                                    <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                                                <Code2 size={16} /> Reference Solutions
                                             </label>
-                                            <input
-                                                type="url"
-                                                value={formData.editorialLink}
-                                                onChange={(e) => setFormData({ ...formData, editorialLink: e.target.value })}
-                                                className="input-field w-full font-mono text-sm"
-                                                placeholder="https://github.com/user/repo/blob/main/content.md"
+                                            <div className="flex gap-2">
+                                                {['cpp', 'python', 'javascript', 'java', 'c'].map(lang => (
+                                                    <button
+                                                        key={lang}
+                                                        type="button"
+                                                        onClick={() => setSolutionLang(lang)}
+                                                        className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                                                            solutionLang === lang 
+                                                                ? 'bg-primary-600 text-white' 
+                                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                                        }`}
+                                                    >
+                                                        {lang === 'cpp' ? 'C++' : lang.toUpperCase()}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="h-[300px] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                                            <Editor
+                                                height="100%"
+                                                language={solutionLang === 'cpp' || solutionLang === 'c' ? 'cpp' : solutionLang === 'python' ? 'python' : 'javascript'}
+                                                theme={isDark ? "vs-dark" : "vs-light"}
+                                                value={(formData.solutionCode && formData.solutionCode[solutionLang]) || ''}
+                                                onChange={(val) => {
+                                                    const updatedSolution = { ...formData.solutionCode, [solutionLang]: val || '' };
+                                                    setFormData({ ...formData, solutionCode: updatedSolution });
+                                                }}
+                                                options={{
+                                                    minimap: { enabled: false },
+                                                    fontSize: 13,
+                                                    lineNumbers: 'on',
+                                                    scrollBeyondLastLine: false,
+                                                    automaticLayout: true
+                                                }}
                                             />
                                         </div>
-                                        
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                                                <Youtube size={13} className="text-red-500" /> YouTube Video URL {formData.type === 'video' ? <span className="text-red-500">*</span> : '(optional)'}
-                                            </label>
-                                            <input
-                                                type="url"
-                                                value={formData.videoUrl}
-                                                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                                                className="input-field w-full font-mono text-sm"
-                                                placeholder="https://www.youtube.com/watch?v=..."
-                                                required={formData.type === 'video'}
-                                            />
-                                            {formData.type === 'video' && <p className="text-[10px] text-gray-400 mt-1 italic">For video type, only title and YouTube URL are mandatory.</p>}
+                                        <p className="text-[10px] text-gray-500 italic">💡 Reference solutions are used for server-side verification and as hints for students.</p>
+                                    </div>
+                                )}
+
+                                {(formData.type === 'problem' || formData.type === 'sql' || formData.type === 'material' || formData.type === 'video') && (
+                                    <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                        <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                                            <Link size={16} /> External Content
+                                        </label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">GitHub URL</label>
+                                                <input
+                                                    type="url"
+                                                    value={formData.editorialLink}
+                                                    onChange={(e) => setFormData({ ...formData, editorialLink: e.target.value })}
+                                                    className="input-field w-full text-sm"
+                                                    placeholder="https://github.com/..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">YouTube URL</label>
+                                                <input
+                                                    type="url"
+                                                    value={formData.videoUrl}
+                                                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                                                    className="input-field w-full text-sm"
+                                                    placeholder="https://youtube.com/..."
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </form>
                         </div>
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}
-                                className="btn-secondary"
-                            >
-                                Cancel
-                            </button>
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-800/30 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
+                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
                             <button type="submit" form="problemForm" className="btn-primary" disabled={isSubmitting}>
-                                {isSubmitting ? (
-                                    <>
-                                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Saving...
-                                    </>
-                                ) : showEditModal ? 'Update Problem' : 'Create Problem'}
+                                {isSubmitting ? 'Saving...' : showEditModal ? 'Update Problem' : 'Create Problem'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Bulk Upload Modal */}
             {showBulkModal && (
                 <div className="modal-backdrop" onClick={() => setShowBulkModal(false)}>
-                    <div className="modal-content p-0" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                    <Upload size={20} />
-                                </div>
-                                <h2 className="text-xl font-bold text-gray-900">Bulk Upload</h2>
-                            </div>
-                            <button onClick={() => setShowBulkModal(false)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                <X size={24} />
-                            </button>
+                    <div className="modal-content max-w-md" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Bulk Upload</h2>
+                            <button onClick={() => setShowBulkModal(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
                         </div>
                         <div className="p-6">
                             <form onSubmit={handleBulkUpload} className="space-y-4">
-                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                                    <input
-                                        type="file"
-                                        accept=".json"
-                                        onChange={(e) => setBulkFile(e.target.files[0])}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        required
-                                    />
-                                    <div className="pointer-events-none">
-                                        <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                                        {bulkFile ? (
-                                            <p className="text-sm font-medium text-blue-600">{bulkFile.name}</p>
-                                        ) : (
-                                            <>
-                                                <p className="text-sm font-medium text-gray-700">Click to upload JSON</p>
-                                                <p className="text-xs text-gray-500 mt-1">Array of problems</p>
-                                            </>
-                                        )}
-                                    </div>
+                                <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer relative">
+                                    <input type="file" accept=".json" onChange={(e) => setBulkFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required />
+                                    <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{bulkFile ? bulkFile.name : 'Click to upload JSON file'}</p>
                                 </div>
-                                <div className="flex justify-end space-x-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowBulkModal(false)}
-                                        className="btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Uploading...
-                                            </>
-                                        ) : 'Upload'}
-                                    </button>
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button type="button" onClick={() => setShowBulkModal(false)} className="btn-secondary">Cancel</button>
+                                    <button type="submit" className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Uploading...' : 'Upload'}</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
-            )
-            }
-            {/* Solution Code Modal — full fixed overlay, bypasses any container clipping */}
-            {
-                showSolutionModal && (
-                    <div
-                        style={{
-                            position: 'fixed', inset: 0, zIndex: 9999,
-                            background: 'rgba(15,15,25,0.72)',
-                            backdropFilter: 'blur(6px)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            padding: '24px'
-                        }}
-                        onClick={() => setShowSolutionModal(false)}
-                    >
-                        <div
-                            style={{
-                                background: '#fff', borderRadius: '20px',
-                                width: '100%', maxWidth: '900px',
-                                maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-                                boxShadow: '0 32px 80px rgba(0,0,0,0.4)',
-                                overflow: 'hidden',
-                                border: '1px solid rgba(255,255,255,0.08)'
-                            }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            {/* ── Header ── */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #f0f0f5', background: 'linear-gradient(135deg,#f8f7ff 0%,#fff 100%)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                    <div style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124,58,237,0.3)' }}>
-                                        <Code2 size={20} color="#fff" />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1a1a2e', margin: 0 }}>Reference Solution</h2>
-                                        <p style={{ fontSize: '12px', color: '#7c3aed', margin: '2px 0 0', fontWeight: 500, background: '#f3f0ff', padding: '2px 8px', borderRadius: '20px', display: 'inline-block' }}>
-                                            {solutionProblem?.title}
-                                        </p>
-                                    </div>
-                                </div>
+            )}
+
+            {showSolutionModal && (
+                <div className="modal-backdrop" onClick={() => setShowSolutionModal(false)}>
+                    <div className="modal-content max-w-4xl" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div>
+                                <h2 className="modal-title">Reference Solution</h2>
+                                <p className="text-xs text-primary-600 font-medium">{solutionProblem?.title}</p>
+                            </div>
+                            <button onClick={() => setShowSolutionModal(false)} className="modal-close"><X size={24} /></button>
+                        </div>
+                        <div className="modal-body p-0">
+
+                        <div className="flex bg-gray-900 p-1 border-b border-gray-800 overflow-x-auto">
+                            {['c', 'cpp', 'java', 'python', 'javascript'].map(id => (
                                 <button
-                                    onClick={() => setShowSolutionModal(false)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '10px', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                >
-                                    <X size={22} />
-                                </button>
-                            </div>
-
-                            {/* ── Info banner ── */}
-                            <div style={{ padding: '10px 24px', background: '#fffbeb', borderBottom: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <AlertTriangle size={14} color="#d97706" />
-                                <span style={{ fontSize: '12px', color: '#92400e', fontWeight: 500 }}>
-                                    When a student runs their code with custom input, the backend also executes this reference solution to generate the expected output.
-                                </span>
-                            </div>
-
-                            {/* ── Language tabs (IDE-style) ── */}
-                            <div style={{ display: 'flex', alignItems: 'center', background: '#1e1e2e', padding: '0 16px', borderBottom: '1px solid #2d2d3f', gap: '2px', minHeight: '44px' }}>
-                                {[
-                                    { id: 'c', label: 'C' },
-                                    { id: 'cpp', label: 'C++' },
-                                    { id: 'java', label: 'Java' },
-                                    { id: 'python', label: 'Python' },
-                                    { id: 'javascript', label: 'JavaScript' },
-                                ].map(({ id, label }) => {
-                                    const isActive = solutionLang === id;
-                                    return (
-                                        <button
-                                            key={id}
-                                            onClick={async () => {
-                                                setSolutionLang(id);
-                                                try {
-                                                    const data = await problemService.getProblemById(solutionProblem.id || solutionProblem._id);
-                                                    setSolutionCodeVal(data.problem?.solutionCode?.[id] || '');
-                                                } catch (error) { console.error('Failed fetching solution', error); }
-                                            }}
-                                            style={{
-                                                background: isActive ? '#fff' : 'transparent',
-                                                border: 'none',
-                                                borderRadius: '8px 8px 0 0',
-                                                padding: '8px 16px',
-                                                fontSize: '12px',
-                                                fontWeight: isActive ? 700 : 500,
-                                                color: isActive ? '#7c3aed' : '#9ca3af',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.15s',
-                                                position: 'relative',
-                                                letterSpacing: '0.01em',
-                                            }}
-                                        >
-                                            {label}
-                                            {isActive && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: '#7c3aed', borderRadius: '2px 2px 0 0' }} />}
-                                        </button>
-                                    );
-                                })}
-                                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <span style={{ fontSize: '11px', color: '#6b7280', background: '#2d2d3f', padding: '3px 10px', borderRadius: '20px' }}>
-                                        {solutionCode?.trim() ? `${solutionCode.split('\n').length} lines` : 'empty'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* ── Monaco Editor ── */}
-                            <div style={{ height: '380px', flexShrink: 0 }}>
-                                <Editor
-                                    height="380px"
-                                    language={
-                                        solutionLang === 'cpp' ? 'cpp' :
-                                            solutionLang === 'c' ? 'c' :
-                                                solutionLang === 'java' ? 'java' :
-                                                    solutionLang === 'python' ? 'python' :
-                                                        'javascript'
-                                    }
-                                    value={solutionCode}
-                                    onChange={val => setSolutionCodeVal(val || '')}
-                                    theme="antigravity-dark"
-                                    options={{
-                                        minimap: { enabled: false },
-                                        fontSize: 13,
-                                        fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
-                                        fontLigatures: true,
-                                        lineNumbers: 'on',
-                                        scrollBeyondLastLine: false,
-                                        automaticLayout: true,
-                                        padding: { top: 12, bottom: 12 },
-                                        renderLineHighlight: 'gutter',
-                                        cursorBlinking: 'smooth',
+                                    key={id}
+                                    onClick={async () => {
+                                        setSolutionLang(id);
+                                        try {
+                                            const data = await problemService.getProblemById(solutionProblem.id || solutionProblem._id);
+                                            setSolutionCodeVal(data.problem?.solutionCode?.[id] || '');
+                                        } catch (error) { console.error(error); }
                                     }}
-                                />
-                            </div>
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
+                                        solutionLang === id ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'
+                                    }`}
+                                >
+                                    {id === 'cpp' ? 'C++' : id.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
 
-                            {/* ── Footer ── */}
-                            <div style={{ padding: '16px 24px', borderTop: '1px solid #e5e7eb', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>
-                                    💡 This solution is executed server-side and never shown to students. Only the output is compared.
-                                </p>
-                                <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
-                                    <button
-                                        onClick={() => setShowSolutionModal(false)}
-                                        className="btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSaveSolution}
-                                        disabled={savingSolution}
-                                        className="btn-primary flex items-center gap-2 px-6"
-                                    >
-                                        {savingSolution ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            <><CheckCircle size={15} /> Save Solution</>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="flex-1 min-h-[400px]">
+                            <Editor
+                                height="100%"
+                                language={solutionLang === 'cpp' ? 'cpp' : solutionLang === 'python' ? 'python' : 'javascript'}
+                                value={solutionCode}
+                                onChange={val => setSolutionCodeVal(val || '')}
+                                theme="vs-dark"
+                                options={{ minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false }}
+                            />
+                        </div>
+
+                        </div>
+                        <div className="modal-footer">
+                            <p className="text-[10px] text-gray-500 italic absolute left-8">💡 Used for comparing student output server-side.</p>
+                            <button onClick={() => setShowSolutionModal(false)} className="btn-secondary">Cancel</button>
+                            <button onClick={handleSaveSolution} disabled={savingSolution} className="btn-primary flex items-center gap-2">
+                                {savingSolution ? 'Saving...' : <><CheckCircle size={16} /> Save Solution</>}
+                            </button>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
         </div>
-    );
+    </div>
+);
 };
 
 export default ProblemManager;
-
-
-
-
-
-
-
-

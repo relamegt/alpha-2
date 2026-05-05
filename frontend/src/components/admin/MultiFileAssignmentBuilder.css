@@ -2,7 +2,7 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #0d0d17;
+    background: var(--color-bg-primary);
     color: #cccccc;
     font-family: 'Inter', system-ui, sans-serif;
 }
@@ -10,8 +10,8 @@
 /* --- NAVIGATION --- */
 .builder-nav {
     height: 48px;
-    background: #161625;
-    border-bottom: 1px solid #2a2a3e;
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -26,7 +26,7 @@
 }
 
 .logo-box {
-    background: #2a2a3e;
+    background: var(--color-bg-primary);
     width: 28px;
     height: 28px;
     border-radius: 6px;
@@ -51,8 +51,8 @@
 }
 
 .search-bar {
-    background: #1a1a2e;
-    border: 1px solid #2a2a3e;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 4px 12px;
     display: flex;
@@ -76,8 +76,8 @@
 }
 
 .repo-badge {
-    background: #0d0d17;
-    border: 1px solid #2a2a3e;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -148,14 +148,14 @@
 
 /* ACTIVITY BAR */
 .activity-bar {
-    background: #0d0d17;
+    background: var(--color-bg-primary);
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-right: 1px solid #2a2a3e;
+    border-right: 1px solid var(--color-border);
 }
 
 .tool-icon {
@@ -177,7 +177,7 @@
 
 /* EXPLORER */
 .explorer {
-    background: #13131f;
+    background: var(--color-bg-card);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -209,7 +209,7 @@
     gap: 8px;
 }
 
-.tree-item:hover { background: #1a1a2e; }
+.tree-item:hover { background: var(--color-bg-hover); }
 .tree-item.active { background: rgba(233, 69, 96, 0.1); color: #fff; border-left: 2px solid #e94560; }
 
 .tree-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
@@ -226,7 +226,7 @@
 }
 
 .tab-container {
-    background: #161625;
+    background: var(--color-bg-primary);
     height: 35px;
     display: flex;
     overflow-x: auto;
@@ -237,8 +237,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #13131f;
-    border-right: 1px solid #0d0d17;
+    background: var(--color-bg-card);
+    border-right: 1px solid var(--color-border);
     font-size: 12px;
     cursor: pointer;
     color: #888;
@@ -252,14 +252,14 @@
 
 /* TERMINAL ZONE */
 .terminal-zone {
-    background: #0d0d17;
+    background: var(--color-bg-primary);
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .terminal-zone .header {
-    background: #161625;
+    background: var(--color-bg-card);
     height: 30px;
     display: flex;
     padding: 0 20px;
@@ -333,7 +333,7 @@
 .init-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 15, 0.9);
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -342,8 +342,8 @@
 }
 
 .init-modal {
-  background: #181820;
-  border: 1px solid #282833;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   width: 100%;
   max-width: 450px;
   padding: 2.5rem;
@@ -389,8 +389,8 @@
 .init-modal select,
 .init-modal textarea {
   width: 100%;
-  background: #111117;
-  border: 1px solid #282833;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
   color: #fff;
   padding: 0.8rem 1rem;
   border-radius: 8px;
@@ -458,8 +458,8 @@
 .form-group-builder textarea,
 .form-group-builder select {
   width: 100%;
-  background: #0a0a0f;
-  border: 1px solid #282833;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
   color: #d1d1d1;
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
@@ -473,7 +473,7 @@
   outline: none;
   border-color: #6366f1;
   color: #fff;
-  background: #111117;
+  background: var(--color-bg-hover);
 }
 
 .form-group-builder .help-text {

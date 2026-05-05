@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import YouTubeModal from '../shared/YouTubeModal';
 import SheetEditorialRender from '../shared/SheetEditorialRender';
+import CustomDropdown from '../shared/CustomDropdown';
 
 // ============= INLINE EDITABLE TEXT COMPONENT =============
 const InlineEditableText = ({
@@ -98,7 +99,7 @@ const InlineEditableText = ({
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-800 text-gray-900 dark:text-white text-sm resize-none min-w-0 disabled:opacity-50 disabled:cursor-not-allowed w-full font-normal"
+            className="flex-1 px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm resize-none min-w-0 disabled:opacity-50 disabled:cursor-not-allowed w-full font-normal"
             placeholder={placeholder}
             autoFocus
             rows={2}
@@ -110,7 +111,7 @@ const InlineEditableText = ({
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-800 text-gray-900 dark:text-white text-sm min-w-0 disabled:opacity-50 disabled:cursor-not-allowed w-full font-normal"
+            className="flex-1 px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm min-w-0 disabled:opacity-50 disabled:cursor-not-allowed w-full font-normal"
             placeholder={placeholder}
             autoFocus
             disabled={saving}
@@ -210,7 +211,7 @@ const InlineFieldEditor = ({ value, onSave, placeholder, type = 'text', disabled
           onChange={(e) => setTempValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="flex-1 px-2 py-1 border border-primary-400 dark:border-primary-500 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm disabled:opacity-50 font-normal"
+          className="flex-1 px-2 py-1 border border-primary-400 dark:border-primary-500 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm disabled:opacity-50 font-normal"
           disabled={saving}
         />
       </div>
@@ -340,7 +341,7 @@ const ProblemSelector = ({ onSelect, selectedProblemIds = [] }) => {
           zIndex: 999999,
           maxHeight: '400px'
         }}
-        className="bg-[#F1F3F4] dark:bg-slate-800 rounded-xl shadow-2xl border border-primary-200 dark:border-primary-600 overflow-y-auto"
+        className="bg-[var(--color-bg-card)] rounded-xl shadow-2xl border border-primary-200 dark:border-primary-600 overflow-y-auto"
       >
         {loading ? (
           <div className="p-4 text-center text-gray-500 flex items-center justify-center gap-2">
@@ -376,10 +377,10 @@ const ProblemSelector = ({ onSelect, selectedProblemIds = [] }) => {
                         {problem.difficulty && (
                           <span
                             className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${problem.difficulty.toLowerCase() === 'easy'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : problem.difficulty.toLowerCase() === 'medium'
-                                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : problem.difficulty.toLowerCase() === 'medium'
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                               }`}
                           >
                             {problem.difficulty}
@@ -408,7 +409,7 @@ const ProblemSelector = ({ onSelect, selectedProblemIds = [] }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => searchTerm.length >= 2 && setShowDropdown(true)}
           placeholder="Search problems by title or platform..."
-          className="w-full pl-10 pr-4 py-3 border border-primary-300 dark:border-primary-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+          className="w-full pl-10 pr-4 py-3 border border-primary-300 dark:border-primary-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
         />
       </div>
 
@@ -454,7 +455,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
   };
 
   return (
-    <div className="bg-[#F1F3F4] dark:bg-slate-800/50 rounded-xl p-4 md:p-6 border border-primary-200 dark:border-primary-800 mb-4 shadow-sm">
+    <div className="bg-[var(--color-bg-card)]/50 rounded-xl p-4 md:p-6 border border-primary-200 dark:border-primary-800 mb-4 shadow-sm">
       <form onSubmit={handleFormSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
@@ -466,7 +467,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
               type="text"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white disabled:opacity-50 text-sm font-medium"
+              className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white disabled:opacity-50 text-sm font-medium"
               required
               disabled={!canManageSheets || submitting}
               placeholder="Enter problem title"
@@ -481,7 +482,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
                   type="text"
                   value={formData.platform || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, platform: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
                   placeholder="e.g., LeetCode"
                   disabled={submitting}
                 />
@@ -493,7 +494,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
                   type="url"
                   value={formData.practiceLink || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, practiceLink: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
                   placeholder="https://..."
                   disabled={submitting}
                 />
@@ -505,7 +506,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
                   type="url"
                   value={formData.youtubeLink || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, youtubeLink: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
                   placeholder="https://youtube.com/..."
                   disabled={submitting}
                 />
@@ -513,16 +514,16 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Difficulty</label>
-                <select
+                <CustomDropdown
+                  options={[
+                    { value: 'Easy', label: 'Easy' },
+                    { value: 'Medium', label: 'Medium' },
+                    { value: 'Hard', label: 'Hard' }
+                  ]}
                   value={formData.difficulty || 'Easy'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  onChange={(val) => setFormData(prev => ({ ...prev, difficulty: val }))}
                   disabled={submitting}
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Editorial Link</label>
@@ -530,7 +531,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
                   type="url"
                   value={formData.editorialLink || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, editorialLink: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
                   placeholder="https://raw.githubusercontent.com/...md"
                   disabled={submitting}
                 />
@@ -542,7 +543,7 @@ const ProblemForm = ({ problem, onSubmit, onCancel, isEditing = false, canManage
                   type="url"
                   value={formData.notesLink || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, notesLink: e.target.value }))}
-                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm"
                   placeholder="Link to external notes/doc"
                   disabled={submitting}
                 />
@@ -643,7 +644,7 @@ const AddItemForm = ({
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value)}
                     placeholder={field.placeholder}
-                    className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm font-medium resize-none disabled:opacity-50"
+                    className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm font-medium resize-none disabled:opacity-50"
                     rows={2}
                     required={field.required}
                     disabled={submitting}
@@ -654,7 +655,7 @@ const AddItemForm = ({
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value)}
                     placeholder={field.placeholder}
-                    className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-50"
+                    className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm font-medium disabled:opacity-50"
                     required={field.required}
                     disabled={submitting}
                   />
@@ -672,7 +673,7 @@ const AddItemForm = ({
               value={value || ''}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[#F1F3F4] dark:bg-slate-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-50"
+              className="w-full px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-[var(--color-bg-card)] text-gray-900 dark:text-white text-sm font-medium disabled:opacity-50"
               autoFocus
               required
               disabled={submitting}
@@ -917,7 +918,7 @@ const SheetManagement = () => {
         <div className="space-y-6">
           {/* Add Problems Card */}
           {canManageSheets && (
-            <div className="bg-[#F1F3F4] dark:bg-slate-900 rounded-2xl p-5 md:p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div className="bg-[var(--color-bg-card)] rounded-2xl p-5 md:p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Plus className="w-5 h-5 text-primary-500" />
@@ -925,7 +926,7 @@ const SheetManagement = () => {
                 </h3>
                 <button
                   onClick={() => setShowCreateForm(!showCreateForm)}
-                  className={`w-full sm:w-auto px-4 py-2 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 ${showCreateForm ? 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800 hover:bg-gray-200 dark:hover:bg-slate-700' : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm'}`}
+                  className={`w-full sm:w-auto px-4 py-2 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 ${showCreateForm ? 'bg-gray-100 dark:bg-[var(--color-bg-card)] text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800 hover:bg-gray-200 dark:hover:bg-slate-700' : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm'}`}
                 >
                   {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   {showCreateForm ? 'Cancel Creation' : 'Create New Problem'}
@@ -949,8 +950,8 @@ const SheetManagement = () => {
           )}
 
           {/* Problems List Card */}
-          <div className="bg-[#F1F3F4] dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-            <div className="p-5 md:p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30">
+          <div className="bg-[var(--color-bg-card)] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="p-5 md:p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[var(--color-bg-card)]/30">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Problems ({currentProblems.length}) - Click field to inline edit
               </h3>
@@ -969,7 +970,7 @@ const SheetManagement = () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                  <thead className="bg-gray-50/80 dark:bg-slate-800/80">
+                  <thead className="bg-gray-50/80 dark:bg-[var(--color-bg-card)]/80">
                     <tr>
                       <th className="px-6 py-4 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                         Title / Platform
@@ -987,7 +988,7 @@ const SheetManagement = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
                     {currentProblems.map((prob, idx) => (
-                      <tr key={prob.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={prob.id} className="hover:bg-gray-50/50 dark:hover:bg-[var(--color-bg-card)]/30 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
                             <span className="text-xs font-bold text-gray-400 mt-1.5 shrink-0">#{idx + 1}</span>
@@ -1014,22 +1015,21 @@ const SheetManagement = () => {
                         <td className="px-6 py-4">
                           <div className="flex justify-center">
                             {canManageSheets ? (
-                              <select
+                              <CustomDropdown
+                                options={[
+                                  { value: 'Easy', label: 'EASY' },
+                                  { value: 'Medium', label: 'MEDIUM' },
+                                  { value: 'Hard', label: 'HARD' }
+                                ]}
                                 value={prob.difficulty || 'Easy'}
-                                onChange={(e) => handleUpdateProblem(prob.id, { difficulty: e.target.value })}
-                                className={`px-2.5 py-1 text-[11px] font-bold uppercase rounded-full border-0 focus:ring-2 focus:ring-primary-500 cursor-pointer text-center outline-none ${prob.difficulty === 'Easy' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' :
-                                    prob.difficulty === 'Medium' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
-                                      'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                                  }`}
-                              >
-                                <option value="Easy">EASY</option>
-                                <option value="Medium">MEDIUM</option>
-                                <option value="Hard">HARD</option>
-                              </select>
+                                onChange={(val) => handleUpdateProblem(prob.id, { difficulty: val })}
+                                size="small"
+                                width="w-24"
+                              />
                             ) : (
                               <span className={`inline-flex px-2.5 py-1 text-[11px] font-bold uppercase rounded-full ${prob.difficulty === 'Easy' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' :
-                                  prob.difficulty === 'Medium' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
-                                    'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                                prob.difficulty === 'Medium' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
+                                  'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
                                 }`}>
                                 {prob.difficulty || 'EASY'}
                               </span>
@@ -1117,31 +1117,35 @@ const SheetManagement = () => {
 
   // ================= MAIN SCREEN =================
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6 animate-in fade-in duration-500">
+    <div className="admin-page-wrapper">
 
       {/* HEADER */}
-      <div className="bg-[#F1F3F4] dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sheet Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage practice sheets, sections, and subsections</p>
+      <header className="page-header-container animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="page-header-title">Sheet Management</h1>
+            <p className="page-header-desc">
+              Manage practice sheets, sections, and subsections across the curriculum.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={invalidate}
+              className="p-2 bg-[var(--color-bg-card)] rounded-xl text-gray-400 hover:text-primary-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border border-gray-200 dark:border-gray-800"
+              title="Refresh Sheets"
+            >
+              <RotateCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => setShowAddSheet(true)}
+              className="btn-primary flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>New Sheet</span>
+            </button>
+          </div>
         </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={invalidate}
-            className="p-2 bg-gray-100 dark:bg-slate-800 rounded-lg text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all border border-gray-100 dark:border-gray-800"
-          >
-            <RotateCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            onClick={() => setShowAddSheet(true)}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold text-sm shadow-sm hover:bg-primary-700 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Add New Sheet
-          </button>
-        </div>
-      </div>
+      </header>
 
       {/* ADD SHEET FORM */}
       {showAddSheet && (
@@ -1164,7 +1168,7 @@ const SheetManagement = () => {
           <p className="text-sm font-medium">Loading sheets...</p>
         </div>
       ) : sheets.length === 0 ? (
-        <div className="text-center py-24 bg-[#F1F3F4] dark:bg-slate-900 rounded-2xl border border-dashed border-[var(--color-border-interactive)]">
+        <div className="text-center py-24 bg-[var(--color-bg-card)] rounded-2xl border border-dashed border-[var(--color-border-interactive)]">
           <Folder className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No sheets available</h3>
           <p className="text-sm text-gray-500">Create your first sheet to get started.</p>
@@ -1175,13 +1179,13 @@ const SheetManagement = () => {
           {sheets.map(sheet => (
             <div
               key={sheet.id}
-              className={`bg-[#F1F3F4] dark:bg-slate-900 rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm
+              className={`bg-[var(--color-bg-card)] rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm
                 ${expandedItems[`sheet_${sheet.id}`] ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-[var(--color-border-interactive)]'}
               `}
             >
               <div className="p-4 md:p-6 flex items-center gap-4 cursor-pointer" onClick={() => toggleExpand(`sheet_${sheet.id}`)}>
                 <div className={`p-2.5 rounded-xl transition-all duration-300
-                  ${expandedItems[`sheet_${sheet.id}`] ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-800 text-gray-400'}
+                  ${expandedItems[`sheet_${sheet.id}`] ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-[var(--color-bg-card)] text-gray-400'}
                 `}>
                   {expandedItems[`sheet_${sheet.id}`] ? <FolderOpen className="w-5 h-5" /> : <Folder className="w-5 h-5" />}
                 </div>
@@ -1212,7 +1216,7 @@ const SheetManagement = () => {
                       setAddingSection(p => ({ ...p, [sheet.id]: true }));
                       if (!expandedItems[`sheet_${sheet.id}`]) toggleExpand(`sheet_${sheet.id}`);
                     }}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 transition-all border border-gray-100 dark:border-gray-800"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-[var(--color-bg-card)] text-gray-700 dark:text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 transition-all border border-gray-100 dark:border-gray-800"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add Section
@@ -1302,7 +1306,7 @@ const SheetManagement = () => {
                               {section.subsections && section.subsections.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                   {section.subsections.map(sub => (
-                                    <div key={sub.id} className="group/sub p-3 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-gray-800 rounded-xl hover:border-primary-400 dark:hover:border-primary-600 transition-all relative">
+                                    <div key={sub.id} className="group/sub p-3 bg-gray-50 dark:bg-[var(--color-bg-card)]/50 border border-gray-100 dark:border-gray-800 rounded-xl hover:border-primary-400 dark:hover:border-primary-600 transition-all relative">
                                       <div onClick={e => e.stopPropagation()} className="mb-2">
                                         <InlineEditableText
                                           value={sub.name}
@@ -1342,7 +1346,7 @@ const SheetManagement = () => {
                                   ))}
                                 </div>
                               ) : (
-                                <div className="text-center py-4 bg-gray-50 dark:bg-slate-800/20 border border-dashed border-[var(--color-border-interactive)] rounded-xl">
+                                <div className="text-center py-4 bg-gray-50 dark:bg-[var(--color-bg-card)]/20 border border-dashed border-[var(--color-border-interactive)] rounded-xl">
                                   <p className="text-xs text-gray-400 font-medium font-normal">No subsections added</p>
                                 </div>
                               )}
@@ -1351,7 +1355,7 @@ const SheetManagement = () => {
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-10 bg-gray-50 dark:bg-slate-800/20 border border-dashed border-[var(--color-border-interactive)] rounded-2xl">
+                      <div className="text-center py-10 bg-gray-50 dark:bg-[var(--color-bg-card)]/20 border border-dashed border-[var(--color-border-interactive)] rounded-2xl">
                         <p className="text-sm text-gray-400 font-normal">No sections found</p>
                         <button onClick={() => setAddingSection(p => ({ ...p, [sheet.id]: true }))} className="mt-2 text-primary-600 font-semibold text-sm hover:underline">Add first section</button>
                       </div>
@@ -1368,6 +1372,11 @@ const SheetManagement = () => {
 };
 
 export default SheetManagement;
+
+
+
+
+
 
 
 

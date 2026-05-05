@@ -336,7 +336,7 @@
 
     /* Typography */
     .page-header-container {
-        @apply mb-3;
+        @apply mb-4;
     }
 
     .page-tabs-container {
@@ -344,11 +344,68 @@
     }
 
     .page-header-title {
-        @apply text-2xl font-semibold text-gray-900 dark:text-white tracking-tight;
+        @apply text-3xl font-bold text-gray-900 dark:text-white tracking-tight;
     }
 
     .page-header-desc {
-        @apply text-gray-500 dark:text-gray-400 mt-1;
+        @apply text-base text-gray-500 dark:text-gray-400 mt-1;
+    }
+
+    .admin-page-wrapper {
+        @apply space-y-8 animate-fade-in transition-colors;
+    }
+
+    .admin-section-title {
+        @apply text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4;
+    }
+
+    /* ── Unified Search Bar ── */
+    .page-search-wrapper {
+        @apply relative flex items-center;
+    }
+
+    .page-search-icon {
+        @apply absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10;
+    }
+
+    .page-search-input {
+        @apply w-full pl-11 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all
+               bg-[#F1F3F4] text-gray-800 border border-transparent
+               focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+               shadow-sm;
+    }
+
+    .page-search-input::placeholder {
+        color: #9CA3AF;
+    }
+
+    .dark .page-search-input {
+        @apply bg-[var(--color-bg-card)] border border-gray-800 text-gray-200
+               focus:ring-2 focus:ring-primary-500/20 focus:bg-[var(--color-bg-card)];
+    }
+
+    .dark .page-search-input::placeholder {
+        color: #6B7280;
+    }
+
+    /* ── Page Controls Bar (search + actions row) ── */
+    .page-controls-bar {
+        @apply flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2;
+    }
+
+    /* ── Tab Pills (same as student page tabs) ── */
+    .page-tab-container {
+        @apply flex items-center p-1 bg-[var(--color-tab-container-bg)] border border-gray-100 dark:border-gray-800 rounded-full w-max shadow-sm;
+    }
+
+    .page-tab-item {
+        @apply flex items-center gap-2 px-6 py-2 rounded-full text-sm transition-all whitespace-nowrap cursor-pointer
+               text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300;
+    }
+
+    .page-tab-item.active {
+        @apply bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)]
+               shadow-md ring-1 ring-[var(--color-tab-ring-active)];
     }
 
     .gradient-text {
@@ -376,7 +433,168 @@
     .custom-thin-scrollbar::-webkit-scrollbar-thumb:hover {
         @apply bg-gray-300 dark:bg-gray-700;
     }
+
+    /* Standardized Dropdown & Select styles */
+    .dropdown-menu {
+        @apply absolute z-[500] bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] py-2 transition-all duration-200;
+        animation: animate-in 0.2s ease-out, fade-in 0.2s ease-out, slide-in-from-top-2 0.2s ease-out;
+    }
+
+    .dropdown-item {
+        @apply flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-500/10 hover:text-primary-600 dark:hover:text-primary-400 transition-all cursor-pointer;
+    }
+
+    .dropdown-divider {
+        @apply my-2 border-t border-gray-100 dark:border-gray-700;
+    }
+
+    .dropdown-item-danger {
+        @apply dropdown-item hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400;
+    }
+
+    /* Premium Custom Dropdown */
+    .custom-select-trigger {
+        @apply flex items-center justify-between gap-3 px-4 py-2.5 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 transition-all hover:border-primary-500/50 focus:ring-2 focus:ring-primary-500/20 shadow-sm cursor-pointer min-w-[120px];
+    }
+
+    .custom-select-trigger-small {
+        @apply py-1.5 px-3 text-xs gap-2 min-w-[90px];
+    }
+
+    .custom-select-options {
+        @apply absolute z-[1000] mt-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden py-1 min-w-full;
+        animation: dropdown-fade-in 0.2s ease-out;
+    }
+
+    .custom-select-option {
+        @apply px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-500/10 hover:text-primary-600 dark:hover:text-primary-400 transition-all cursor-pointer flex items-center gap-2;
+    }
+
+    .custom-select-option.selected {
+        @apply bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 font-semibold;
+    }
+
+    @keyframes dropdown-fade-in {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Editorial Content Editor Styles */
+    .content {
+        @apply text-[var(--color-text-primary)] leading-relaxed;
+    }
+
+    .content h1 { @apply text-2xl font-bold mb-4 mt-6; }
+    .content h2 { @apply text-xl font-bold mb-3 mt-5; }
+    .content h3 { @apply text-lg font-bold mb-2 mt-4; }
+    .content p { @apply mb-4; }
+    .content ul { @apply list-disc pl-6 mb-4; }
+    .content ol { @apply list-decimal pl-6 mb-4; }
+    .content code { @apply bg-[var(--color-bg-input)] px-1.5 py-0.5 rounded text-[var(--color-accent)] font-mono text-sm border border-[var(--color-border)]; }
+    
+    .content table {
+        @apply w-full border-collapse mb-6 rounded-lg overflow-hidden border border-[var(--color-border)];
+    }
+
+    .content table th {
+        @apply bg-[var(--color-bg-input)] border border-[var(--color-border)] p-3 text-left font-bold text-[var(--color-text-primary)];
+    }
+
+    .content table td {
+        @apply border border-[var(--color-border)] p-3 text-[var(--color-text-secondary)] bg-[var(--color-bg-card)];
+    }
+
+    .content hr {
+        @apply my-8 border-t border-[var(--color-border)];
+    }
+
+    .content a {
+        @apply text-[var(--color-accent)] hover:underline;
+    }
+
+    .content img {
+        @apply rounded-xl max-w-full h-auto my-6 border border-[var(--color-border)];
+    }
 }
+
+/* Manual Animation Definitions to avoid PostCSS @apply plugin failures */
+@keyframes animate-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slide-in-from-top-2 {
+    from { transform: translateY(-0.5rem); }
+    to { transform: translateY(0); }
+}
+@keyframes slide-in-from-top-4 {
+    from { transform: translateY(-1rem); }
+    to { transform: translateY(0); }
+}
+@keyframes slide-in-from-bottom-2 {
+    from { transform: translateY(0.5rem); }
+    to { transform: translateY(0); }
+}
+@keyframes slide-in-from-bottom-4 {
+    from { transform: translateY(1rem); }
+    to { transform: translateY(0); }
+}
+@keyframes slide-in-from-left-2 {
+    from { transform: translateX(-0.5rem); }
+    to { transform: translateX(0); }
+}
+@keyframes slide-in-from-left-4 {
+    from { transform: translateX(-1rem); }
+    to { transform: translateX(0); }
+}
+@keyframes zoom-in-95 {
+    from { transform: scale(0.95); }
+    to { transform: scale(1); }
+}
+@keyframes zoom-in-50 {
+    from { transform: scale(0.5); }
+    to { transform: scale(1); }
+}
+
+.animate-in {
+    animation-duration: 300ms;
+    animation-fill-mode: forwards;
+}
+.fade-in {
+    animation-name: fade-in;
+}
+.slide-in-from-top-2 {
+    animation-name: slide-in-from-top-2;
+}
+.slide-in-from-top-4 {
+    animation-name: slide-in-from-top-4;
+}
+.slide-in-from-bottom-2 {
+    animation-name: slide-in-from-bottom-2;
+}
+.slide-in-from-bottom-4 {
+    animation-name: slide-in-from-bottom-4;
+}
+.slide-in-from-left-2 {
+    animation-name: slide-in-from-left-2;
+}
+.slide-in-from-left-4 {
+    animation-name: slide-in-from-left-4;
+}
+.zoom-in-95 {
+    animation-name: zoom-in-95;
+}
+.zoom-in-50 {
+    animation-name: zoom-in-50;
+}
+.duration-200 { animation-duration: 200ms; }
+.duration-300 { animation-duration: 300ms; }
+.duration-500 { animation-duration: 500ms; }
+.duration-700 { animation-duration: 700ms; }
+.duration-1000 { animation-duration: 1000ms; }
 
 /* ============================================
    Fullscreen mode for contests
@@ -1375,4 +1593,82 @@ body.secure-mode {
 .technical-code-block .react-syntax-highlighter-line-number {
     font-style: normal !important;
     opacity: 0.6;
+}
+
+/* Global Modal System */
+.modal-backdrop {
+    position: fixed !important;
+    top: -100px !important;
+    left: -100px !important;
+    right: -100px !important;
+    bottom: -100px !important;
+    width: calc(100vw + 200px) !important;
+    height: calc(100vh + 200px) !important;
+    z-index: 9999 !important;
+    @apply flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto overflow-x-hidden;
+    animation: modal-backdrop-in 0.3s ease-out;
+}
+
+.modal-content {
+    @apply bg-[var(--color-bg-card)] rounded-[2.5rem] w-full shadow-2xl relative border border-gray-100 dark:border-gray-800 transition-all duration-300;
+    max-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    animation: modal-content-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+    @apply flex items-center justify-between p-8 pb-4;
+}
+
+.modal-title {
+    @apply text-2xl font-black text-gray-900 dark:text-white tracking-tight;
+}
+
+.modal-close {
+    @apply p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all;
+}
+
+.modal-body {
+    @apply p-8 pt-4 flex-1 overflow-y-auto custom-thin-scrollbar;
+}
+
+.modal-footer {
+    @apply p-8 pt-4 flex justify-end gap-3 border-t border-gray-50 dark:border-gray-800/50 mt-4;
+}
+
+@keyframes modal-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-content-in {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Fixed overflow for long modals */
+.modal-backdrop::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-backdrop::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full;
+}
+
+/* Empty State Styling */
+.empty-state-container {
+    @apply flex flex-col items-center justify-center py-20 bg-[var(--color-bg-card)] rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-800;
+}
+
+.empty-state-icon {
+    @apply w-16 h-16 bg-gray-50 dark:bg-gray-900/50 rounded-2xl flex items-center justify-center text-gray-300 dark:text-gray-700 mb-4;
+}
+
+.empty-state-text {
+    @apply text-lg font-bold text-gray-400 dark:text-gray-500;
+}
+
+.empty-state-subtext {
+    @apply text-sm text-gray-400 dark:text-gray-600 mt-1;
 }

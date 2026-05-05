@@ -628,7 +628,7 @@ const ReportAnalytics = () => {
                         <>
                             {/* Contest Stats Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="card bg-blue-50 border-blue-100">
+                                <div className=" bg-blue-50 border-blue-100">
                                     <h3 className="text-sm font-medium text-gray-600">
                                         Total Participants
                                     </h3>
@@ -638,7 +638,7 @@ const ReportAnalytics = () => {
                                             0}
                                     </p>
                                 </div>
-                                <div className="card bg-green-50 border-green-100">
+                                <div className=" bg-green-50 border-green-100">
                                     <h3 className="text-sm font-medium text-gray-600">
                                         Contest Title
                                     </h3>
@@ -659,7 +659,7 @@ const ReportAnalytics = () => {
                                             : ''}
                                     </p>
                                 </div>
-                                <div className="card bg-purple-50 border-purple-100">
+                                <div className=" bg-purple-50 border-purple-100">
                                     <h3 className="text-sm font-medium text-gray-600">
                                         Leaderboard Entries
                                     </h3>
@@ -861,7 +861,7 @@ const ReportAnalytics = () => {
 
                         {analyticsData && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="card bg-blue-50 border-blue-100">
+                                <div className=" bg-blue-50 border-blue-100">
                                     <h4 className="text-sm font-medium text-gray-600">
                                         Batch Information
                                     </h4>
@@ -876,7 +876,7 @@ const ReportAnalytics = () => {
                                     </p>
                                 </div>
 
-                                <div className="card bg-green-50 border-green-100">
+                                <div className=" bg-green-50 border-green-100">
                                     <h4 className="text-sm font-medium text-gray-600">Submissions</h4>
                                     <p className="text-2xl font-bold text-green-600 mt-2">
                                         {analyticsData.submissions?.total || 0}
@@ -887,7 +887,7 @@ const ReportAnalytics = () => {
                                     </p>
                                 </div>
 
-                                <div className="card bg-purple-50 border-purple-100">
+                                <div className=" bg-purple-50 border-purple-100">
                                     <h4 className="text-sm font-medium text-gray-600">Contests</h4>
                                     <p className="text-2xl font-bold text-purple-600 mt-2">
                                         {analyticsData.contests?.total || 0}

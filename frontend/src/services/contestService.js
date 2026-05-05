@@ -56,7 +56,7 @@ const contestService = {
 
         const promise = (async () => {
             try {
-                const response = await apiClient.get(`/contest/course/${courseId}`);
+                const response = await apiClient.get(`/course-contests/course/${courseId}`);
                 return response.data;
             } catch (error) {
                 throw error.response?.data || { message: 'Failed to fetch course contests' };

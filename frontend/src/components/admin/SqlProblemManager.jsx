@@ -3,8 +3,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import sqlProblemService from '../../services/sqlProblemService';
 import toast from 'react-hot-toast';
 import {
-    Plus, Search, Edit2, Trash2, Database, Code2, Link, FileText, X, AlertTriangle, Upload, Download
+    Plus, Search, Edit2, Trash2, Database, Code2, Link, FileText, X, AlertTriangle, Upload, Download, CheckCircle
 } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 
 const SqlProblemManager = () => {
     const { isDark } = useTheme();
@@ -174,115 +175,137 @@ const SqlProblemManager = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-[#23232e] shadow-sm">
-                <div>
-                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2">
-                        <Database className="text-primary-500" />
-                        SQL Problem Manager
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">Manage database and SQL queries content</p>
+        <div className="admin-page-wrapper transition-colors">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">SQL Problem Manager</h1>
+                        <p className="page-header-desc">Manage database and SQL queries content</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button onClick={downloadSample} className="btn-secondary flex items-center gap-2 py-2">
+                            <Download size={16} />
+                            Sample JSON
+                        </button>
+                        <label className={`btn-secondary flex items-center gap-2 py-2 cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {isUploading ? <div className="spinner border-2 !w-4 !h-4" /> : <Upload size={16} />}
+                            Bulk Upload
+                            <input type="file" accept=".json" onChange={handleBulkUpload} className="hidden" />
+                        </label>
+                        <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2 py-2">
+                            <Plus size={16} />
+                            Create Problem
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={downloadSample} className="px-4 py-2 flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#1c1c26] dark:hover:bg-[#23232e] text-gray-700 dark:text-gray-300 rounded-xl transition-colors font-medium text-sm">
-                        <Download size={16} />
-                        Sample JSON
-                    </button>
-                    <label className={`px-4 py-2 flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#1c1c26] dark:hover:bg-[#23232e] text-gray-700 dark:text-gray-300 rounded-xl transition-colors font-medium text-sm cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {isUploading ? <div className="spinner border-2 !w-4 !h-4" /> : <Upload size={16} />}
-                        Bulk Upload
-                        <input type="file" accept=".json" onChange={handleBulkUpload} className="hidden" />
-                    </label>
-                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="px-4 py-2 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors font-medium text-sm shadow-sm shadow-primary-500/20">
-                        <Plus size={16} />
-                        Create Problem
-                    </button>
-                </div>
-            </div>
+            </header>
 
-            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="page-tabs-container">
+                <div className="page-search-wrapper w-full max-w-md">
+                    <Search className="page-search-icon" size={18} />
                     <input
                         type="text"
                         placeholder="Search SQL problems..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="page-search-input"
                     />
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center py-20"><div className="spinner"></div></div>
+            ) : filteredProblems.length > 0 ? (
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Problem Title</th>
+                                <th>Difficulty</th>
+                                <th>Points</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredProblems.map(p => (
+                                <tr key={p._id}>
+                                    <td className="title-td">
+                                        <div className="title-group">
+                                            <span className="main-title">{p.title}</span>
+                                            <span className="sub-description">{p.description?.slice(0, 80)}...</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`diff-badge ${p.difficulty || 'Easy'}`}>
+                                            {p.difficulty || 'Easy'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className="text-xs font-bold text-gray-400">{p.points || 0} PTS</span>
+                                    </td>
+                                    <td className="actions-td">
+                                        <div className="action-row">
+                                            <button onClick={() => { 
+                                                setEditingProblem(p); 
+                                                setFormData({
+                                                    ...p,
+                                                    type: 'sql',
+                                                    solutionCode: p.solutionCode || { sql: '' },
+                                                    supported_dbs: p.supported_dbs || ['postgres'],
+                                                    testCases: p.testCases || [{ input: '', output: '', isHidden: false, explanation: '' }]
+                                                }); 
+                                                setShowEditModal(true); 
+                                            }} className="icon-btn build" title="Edit">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => handleDelete(p._id, p.title)} className="icon-btn delete" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredProblems.map(p => (
-                        <div key={p._id} className="card group hover:border-primary-500/50 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                    p.difficulty === 'Easy' ? 'bg-green-100 text-green-700' : 
-                                    p.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                }`}>
-                                    {p.difficulty}
-                                </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => { 
-                                        setEditingProblem(p); 
-                                        setFormData({
-                                            ...p,
-                                            type: 'sql',
-                                            solutionCode: p.solutionCode || { sql: '' },
-                                            supported_dbs: p.supported_dbs || ['postgres'],
-                                            testCases: p.testCases || [{ input: '', output: '', isHidden: false, explanation: '' }]
-                                        }); 
-                                        setShowEditModal(true); 
-                                    }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDelete(p._id, p.title)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">{p.title}</h3>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span className="flex items-center gap-1"><Database size={12} /> {p.section || 'General'}</span>
-                                <span className="flex items-center gap-1"><FileText size={12} /> {p.points} Pts</span>
-                            </div>
-                        </div>
-                    ))}
+                <div className="empty-state-container">
+                    <div className="empty-state-icon">
+                        <Database size={32} />
+                    </div>
+                    <p className="empty-state-text">No SQL problems found</p>
+                    <p className="empty-state-subtext">Start by creating your first SQL query challenge</p>
                 </div>
             )}
 
             {/* Simple Modal skeleton */}
             {(showCreateModal || showEditModal) && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                            <h2 className="text-xl font-bold">{showCreateModal ? 'Create SQL Problem' : 'Edit SQL Problem'}</h2>
-                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
+                    <div className="modal-content max-w-4xl" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{showCreateModal ? 'Create SQL Problem' : 'Edit SQL Problem'}</h2>
+                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="modal-close">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="flex-1 overflow-y-auto p-6 space-y-6">
+                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="modal-body space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Title</label>
-                                    <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Section/Topic</label>
-                                    <input type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" placeholder="e.g. Joins, Aggregation" />
+                                    <input type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="e.g. Joins, Aggregation" />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Description (Markdown)</label>
-                                <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none resize-none" />
+                                <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none resize-none" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Initial SQL Schema (DDL)</label>
-                                <textarea rows={6} value={formData.sqlSchema} onChange={e => setFormData({...formData, sqlSchema: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-mono text-xs" placeholder="CREATE TABLE users (...);" />
+                                <textarea rows={6} value={formData.sqlSchema} onChange={e => setFormData({...formData, sqlSchema: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-mono text-xs" placeholder="CREATE TABLE users (...);" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Article Link (GitHub URL for Markdown)</label>
@@ -291,16 +314,35 @@ const SqlProblemManager = () => {
                                     type="text" 
                                     value={formData.articleLink || ''} 
                                     onChange={e => setFormData({...formData, articleLink: e.target.value})} 
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-mono text-sm" 
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-mono text-sm" 
                                 />
                                 <p className="text-[10px] text-gray-500 italic">This will render as the "Article" tab explanation for this query problem.</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold">Solution Query</label>
-                                <textarea required rows={4} value={formData.solutionCode.sql} onChange={e => setFormData({...formData, solutionCode: { ...formData.solutionCode, sql: e.target.value }})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-mono text-xs" placeholder="SELECT * FROM users WHERE ..." />
+                            <div className="space-y-4">
+                                <label className="text-sm font-bold flex items-center gap-2">
+                                    <CheckCircle size={16} className="text-green-500" />
+                                    Solution Query
+                                </label>
+                                <div className="h-[200px] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                                    <Editor
+                                        height="100%"
+                                        language="sql"
+                                        theme={isDark ? "vs-dark" : "vs-light"}
+                                        value={formData.solutionCode.sql || ''}
+                                        onChange={(val) => setFormData({ ...formData, solutionCode: { ...formData.solutionCode, sql: val || '' } })}
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 13,
+                                            lineNumbers: 'on',
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-gray-500 italic">💡 This query will be executed against the test case state to verify correctness.</p>
                             </div>
 
-                            <div className="space-y-4 pt-4 border-t border-[var(--color-border-interactive)]">
+                            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                 <div className="flex items-center justify-between">
                                     <label className="text-sm font-bold flex items-center gap-2">
                                         <Code2 size={16} className="text-primary-500" />
@@ -338,7 +380,7 @@ const SqlProblemManager = () => {
                                                         }}
                                                         placeholder="-- Extra inserts or different state"
                                                         rows={3}
-                                                        className="w-full p-2 text-xs font-mono bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded outline-none"
+                                                        className="w-full p-2 text-xs font-mono bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded outline-none"
                                                     />
                                                 </div>
                                                 <div className="space-y-1">
@@ -353,7 +395,7 @@ const SqlProblemManager = () => {
                                                         }}
                                                         placeholder="| col1 | col2 |\n| val1 | val2 |"
                                                         rows={3}
-                                                        className="w-full p-2 text-xs font-mono bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded outline-none"
+                                                        className="w-full p-2 text-xs font-mono bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded outline-none"
                                                     />
                                                 </div>
                                             </div>
@@ -368,7 +410,7 @@ const SqlProblemManager = () => {
                                                         }}
                                                         placeholder="Explanation for this example..."
                                                         rows={2}
-                                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded outline-none resize-none"
+                                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded outline-none resize-none"
                                                     />
                                                 </div>
                                                 <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -389,9 +431,9 @@ const SqlProblemManager = () => {
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-3 mt-8">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="px-6 py-2 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="px-8 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-200 dark:shadow-none transition-all font-bold flex items-center gap-2">
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary">
                                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create' : 'Save Changes')}
                                 </button>
                             </div>
@@ -404,11 +446,3 @@ const SqlProblemManager = () => {
 };
 
 export default SqlProblemManager;
-
-
-
-
-
-
-
-

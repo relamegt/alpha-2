@@ -15,13 +15,15 @@ import {
   TrendingUp,
   Award
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import interviewExperienceService from '../../../services/interviewExperienceService';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '../../../contexts/ThemeContext';
+import CustomDropdown from '../../shared/CustomDropdown';
 
 const InterviewExperienceList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
@@ -76,7 +78,7 @@ const InterviewExperienceList = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate('/dashboard/interview/experience/submit')}
+                    onClick={() => navigate(location.pathname.includes('/admin') ? '/admin/interview-experience/submit' : '/dashboard/interview/experience/submit')}
                     className="btn-primary"
                 >
                     <Plus className="w-4 h-4" />
@@ -105,42 +107,35 @@ const InterviewExperienceList = () => {
 
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
                     {['Difficulty', 'Outcome', 'Sort'].map((filterType) => (
-                        <select
+                        <CustomDropdown
                             key={filterType}
+                            options={
+                                filterType === 'Difficulty' ? [
+                                    { value: 'All', label: 'Difficulty' },
+                                    { value: 'Easy', label: 'Easy' },
+                                    { value: 'Medium', label: 'Medium' },
+                                    { value: 'Hard', label: 'Hard' }
+                                ] : filterType === 'Outcome' ? [
+                                    { value: 'All', label: 'Outcome' },
+                                    { value: 'Selected', label: 'Selected' },
+                                    { value: 'Rejected', label: 'Rejected' },
+                                    { value: 'Waitlisted', label: 'Waitlisted' }
+                                ] : [
+                                    { value: 'Most Upvoted', label: 'Most Upvoted' },
+                                    { value: 'Most Recent', label: 'Most Recent' }
+                                ]
+                            }
                             value={filterType === 'Difficulty' ? selectedDifficulty : filterType === 'Outcome' ? selectedOutcome : sortBy}
-                            onChange={(e) => {
-                                if (filterType === 'Difficulty') setSelectedDifficulty(e.target.value);
-                                else if (filterType === 'Outcome') setSelectedOutcome(e.target.value);
-                                else setSortBy(e.target.value);
+                            onChange={(val) => {
+                                if (filterType === 'Difficulty') setSelectedDifficulty(val);
+                                else if (filterType === 'Outcome') setSelectedOutcome(val);
+                                else setSortBy(val);
                                 setPage(1);
                             }}
-                            className={`rounded-xl px-4 py-2 text-xs font-semibold border outline-none transition-all cursor-pointer ${
-                                isDark ? 'bg-[var(--color-bg-input)] border-gray-800 focus:border-primary-500/50' : 'bg-[var(--color-bg-input)] border-gray-200 focus:border-primary-500'
-                            }`}
-                        >
-                            {filterType === 'Difficulty' && (
-                                <>
-                                    <option value="All">Difficulty</option>
-                                    <option value="Easy">Easy</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Hard">Hard</option>
-                                </>
-                            )}
-                            {filterType === 'Outcome' && (
-                                <>
-                                    <option value="All">Outcome</option>
-                                    <option value="Selected">Selected</option>
-                                    <option value="Rejected">Rejected</option>
-                                    <option value="Waitlisted">Waitlisted</option>
-                                </>
-                            )}
-                            {filterType === 'Sort' && (
-                                <>
-                                    <option value="Most Upvoted">Most Upvoted</option>
-                                    <option value="Most Recent">Most Recent</option>
-                                </>
-                            )}
-                        </select>
+                            size="small"
+                            width="w-auto"
+                            className="min-w-[100px]"
+                        />
                     ))}
                     {(searchQuery || selectedDifficulty !== 'All' || selectedOutcome !== 'All') && (
                         <button onClick={handleResetFilters} className="text-xs font-semibold text-rose-500 hover:underline px-2 whitespace-nowrap">Reset</button>
@@ -183,7 +178,7 @@ const InterviewExperienceList = () => {
             experiences.map((exp) => (
               <div
                 key={exp.id}
-                onClick={() => navigate(`/dashboard/interview/experience/${exp.id}`)}
+                onClick={() => navigate(location.pathname.includes('/admin') ? `/admin/interview-experience/${exp.id}` : `/dashboard/interview/experience/${exp.id}`)}
                 className={`group p-6 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all duration-200 cursor-pointer flex flex-col relative overflow-hidden ${
                     isDark 
                         ? 'bg-[var(--color-bg-card)] hover:bg-[var(--color-bg-hover)]' 

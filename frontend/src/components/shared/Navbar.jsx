@@ -30,55 +30,33 @@ const NavItem = ({ link, isDark, setIsMenuOpen }) => {
                 {/* Submenu - Accordion style on mobile */}
                 <div className={`${isSubmenuOpen ? 'block' : 'hidden'} lg:hidden bg-gray-50 dark:bg-[var(--color-bg-card)] mx-2 mt-0.5 rounded-md overflow-hidden animate-in slide-in-from-top-1 duration-200`}>
                     {link.children.map((child, cIdx) => (
-                        child.newTab ? (
-                            <a
-                                key={cIdx}
-                                href={child.to}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-xs font-semibold transition-colors"
-                            >
-                                {child.label}
-                            </a>
-                        ) : (
-                            <Link
-                                key={cIdx}
-                                to={child.to}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-xs font-semibold transition-colors"
-                            >
-                                {child.label}
-                            </Link>
-                        )
+                        <Link
+                            key={cIdx}
+                            to={child.to}
+                            target={child.newTab ? "_blank" : undefined}
+                            rel={child.newTab ? "noopener noreferrer" : undefined}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-xs font-semibold transition-colors"
+                        >
+                            {child.label}
+                        </Link>
                     ))}
                 </div>
 
                 {/* Desktop Flyout */}
                 <div className="absolute right-full top-0 pr-1 hidden lg:group-hover/item:block z-[500]">
-                    <div className={`w-56 bg-[#F1F3F4] dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 py-1 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                    <div className="dropdown-menu w-56">
                         {link.children.map((child, cIdx) => (
-                            child.newTab ? (
-                                <a
-                                    key={cIdx}
-                                    href={child.to}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all text-sm font-medium truncate"
-                                >
-                                    {child.label}
-                                </a>
-                            ) : (
-                                <Link
-                                    key={cIdx}
-                                    to={child.to}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="block px-4 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all text-sm font-medium truncate"
-                                >
-                                    {child.label}
-                                </Link>
-                            )
+                            <Link
+                                key={cIdx}
+                                to={child.to}
+                                target={child.newTab ? "_blank" : undefined}
+                                rel={child.newTab ? "noopener noreferrer" : undefined}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="dropdown-item"
+                            >
+                                {child.label}
+                            </Link>
                         ))}
                     </div>
                 </div>
@@ -162,6 +140,8 @@ const Navbar = () => {
             Courses: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
             Content: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
             Compiler: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+            Zap: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+            Map: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>,
         };
 
 
@@ -169,6 +149,7 @@ const Navbar = () => {
         const menus = {
             admin: [
                 { to: '/admin/dashboard', label: 'Dashboard', icon: Icons.Dashboard },
+                { to: '/dashboard/interview', label: 'AI Interviewer', icon: Icons.Zap },
                 { to: '/compiler', label: 'Quick Compiler', icon: Icons.Compiler, newTab: true },
                 { to: '/articles', label: 'Technical Articles', icon: Icons.Content },
                 { to: '/admin/batches', label: 'Batches', icon: Icons.Practice },
@@ -187,10 +168,12 @@ const Navbar = () => {
                         { to: '/admin/assignments', label: 'Assignment Manager' },
                         { to: '/admin/course-contests', label: 'Course Contests Manager' },
                         { to: '/admin/jobs', label: 'Job Manager' },
+                        { to: '/dashboard/interview/experience', label: 'Interview Experiences' },
                     ]
                 },
                 { to: '/admin/courses', label: 'Course Manager', icon: Icons.Leaderboard },
                 { to: '/admin/contests', label: 'Contests', icon: Icons.Contest },
+                { to: '/dashboard/leaderboard', label: 'Leaderboard', icon: Icons.Map },
                 { to: '/admin/reports', label: 'Reports', icon: Icons.Dashboard },
                 {
                     label: 'Settings',
@@ -305,38 +288,38 @@ const Navbar = () => {
 
                             {/* Dropdown Menu */}
                             {isMenuOpen && (
-                                <div className={`absolute top-[60px] right-0 w-64 bg-[#F1F3F4] dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 block z-[500] py-2 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
-                                {/* Header in Dropdown (optional context) */}
-                                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
-                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                                </div>
+                                <div className="dropdown-menu top-[60px] right-0 w-64">
+                                    {/* Header in Dropdown (optional context) */}
+                                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
+                                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                    </div>
 
-                                {/* Menu Items */}
-                                <div className="space-y-0.5">
-                                    {links.map((link, idx) => (
-                                        <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
-                                    ))}
-                                </div>
+                                    {/* Menu Items */}
+                                    <div className="space-y-0.5">
+                                        {links.map((link, idx) => (
+                                            <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
+                                        ))}
+                                    </div>
 
-                                {/* Divider */}
-                                <div className="my-2 border-t border-gray-100 dark:border-gray-700" />
+                                    {/* Divider */}
+                                    <div className="dropdown-divider" />
 
-                                {/* Logout */}
-                                <button
-                                    onClick={handleLogout}
-                                    disabled={isLoggingOut}
-                                    className="w-[calc(100%-1rem)] flex items-center space-x-3 px-4 py-2.5 mx-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-all text-sm font-medium text-left disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isLoggingOut ? (
-                                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                    ) : (
-                                        <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
-                                    )}
-                                    <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
-                                </button>
+                                    {/* Logout */}
+                                    <button
+                                        onClick={handleLogout}
+                                        disabled={isLoggingOut}
+                                        className="dropdown-item-danger"
+                                    >
+                                        {isLoggingOut ? (
+                                            <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                        )}
+                                        <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                                    </button>
                                 </div>
                             )}
                         </div>

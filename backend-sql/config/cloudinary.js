@@ -16,7 +16,7 @@ const createStorage = (folder, width, height) => new CloudinaryStorage({
         return {
             folder: folder,
             resource_type: 'image',
-            allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
+            allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif', 'avif', 'svg', 'bmp', 'tiff'],
             transformation: [{ width, height, crop: 'limit' }],
             public_id: `${folder.split('/').pop()}-${Date.now()}`
         };

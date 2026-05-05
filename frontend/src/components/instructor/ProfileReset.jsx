@@ -307,7 +307,7 @@ const ProfileReset = () => {
                         {selectedStudent ? (
                             <>
                                 {/* Student Details */}
-                                <div className="card bg-gradient-to-br from-blue-50 to-purple-50 dark:from-[#23232e] dark:to-[#111117] border-2 border-primary-200 dark:border-primary-900/50">
+                                <div className=" bg-gradient-to-br from-blue-50 to-purple-50 dark:from-[#23232e] dark:to-[#111117] border-2 border-primary-200 dark:border-primary-900/50">
                                     <div className="flex items-start justify-between mb-4">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                             Selected Student

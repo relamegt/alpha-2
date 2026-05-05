@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import CustomDropdown from '../shared/CustomDropdown';
 import { useLocation } from "react-router-dom";
 import sheetService from "../../services/sheetService";
 import { clsx } from 'clsx';
@@ -40,8 +41,8 @@ const ToastContainer = ({ toasts, removeToast }) => {
             exit={{ opacity: 0, x: 20, scale: 0.9 }}
             className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md min-w-[300px] max-w-sm"
             style={{
-              backgroundColor: toast.type === 'error' ? '#fef2f2' : toast.type === 'success' ? '#f0fdf4' : '#eff6ff',
-              borderColor: toast.type === 'error' ? '#fecaca' : toast.type === 'success' ? '#bbf7d0' : '#bfdbfe',
+              backgroundColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : toast.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+              borderColor: toast.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : toast.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)',
             }}
           >
             <div className={cn("text-lg", 
@@ -52,13 +53,13 @@ const ToastContainer = ({ toasts, removeToast }) => {
             </div>
             <div className="flex-1">
               <p className={cn("text-sm font-semibold", 
-                  toast.type === 'error' ? "text-red-800" : 
-                  toast.type === 'success' ? "text-emerald-800" : "text-blue-800"
+                  toast.type === 'error' ? "text-red-500" : 
+                  toast.type === 'success' ? "text-emerald-500" : "text-blue-500"
               )}>
                 {toast.message}
               </p>
             </div>
-            <button onClick={() => removeToast(toast.id)} className="text-slate-400 hover:text-slate-600">
+            <button onClick={() => removeToast(toast.id)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
@@ -231,7 +232,7 @@ const SecureImage = ({ src, alt, className, style, onLoad, ...props }) => {
   
   if (isLoading) {
     return (
-      <div className={cn("flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800 w-full min-h-[200px]", className)}>
+      <div className={cn("flex items-center justify-center p-8 bg-[var(--color-bg-input)] rounded-lg border border-[var(--color-border)] w-full min-h-[200px]", className)}>
         <FaSpinner className="animate-spin h-6 w-6 text-[var(--color-accent)]"/>
       </div>
     );
@@ -315,7 +316,7 @@ const ImageCarousel = ({ images }) => {
   if (!Array.isArray(images) || images.length === 0) return null;
 
   return (
-    <div className="w-full aspect-video max-w-3xl mx-auto my-6 flex flex-col rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 shadow-md select-none bg-black">
+    <div className="w-full aspect-video max-w-3xl mx-auto my-6 flex flex-col rounded-lg overflow-hidden border border-[var(--color-border)] shadow-md select-none bg-black">
       
       <div className="relative w-full h-full flex-1 overflow-hidden group">
         {images.map((imgSrc, index) => {
@@ -343,23 +344,23 @@ const ImageCarousel = ({ images }) => {
         })}
       </div>
 
-      <div className="h-8 bg-gray-100 dark:bg-[#121214] border-t border-[var(--color-border-interactive)] flex items-center justify-between px-4 z-30 relative">
+      <div className="h-8 bg-[var(--color-bg-input)] border-t border-[var(--color-border)] flex items-center justify-between px-4 z-30 relative">
         <div className="w-12 hidden sm:block"></div>
         <div className="flex items-center justify-center gap-4 sm:gap-6 flex-1">
-          <button onClick={prevSlide} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors p-1" title="Previous Slide">
+          <button onClick={prevSlide} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors p-1" title="Previous Slide">
             <FaChevronLeft className="w-3.5 h-3.5" />
           </button>
           
-          <button onClick={togglePlay} className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title={isPlaying ? "Pause" : "Play"}>
+          <button onClick={togglePlay} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors p-1.5 rounded-full hover:bg-[var(--color-bg-hover)]" title={isPlaying ? "Pause" : "Play"}>
             {isPlaying ? <FaPause className="w-3.5 h-3.5" /> : <FaPlay className="w-3.5 h-3.5 ml-0.5" />}
           </button>
           
-          <button onClick={nextSlide} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors p-1" title="Next Slide">
+          <button onClick={nextSlide} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors p-1" title="Next Slide">
             <FaChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
         <div className="w-12 text-right">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 font-mono">
+          <span className="text-xs font-semibold text-[var(--color-text-muted)] font-mono">
             {current + 1}/{length}
           </span>
         </div>
@@ -434,10 +435,10 @@ const CodeBlockViewer = React.memo(({
   };
 
   return (
-    <div className="my-6 sm:my-8 w-full rounded-lg sm:rounded-xl border border-zinc-800 bg-[#0c0c0e] overflow-hidden shadow-lg">
+    <div className="my-6 sm:my-8 w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] overflow-hidden shadow-lg">
 
       {/* ================= HEADER ================= */}
-      <div className="flex items-center justify-between h-10 sm:h-12 px-3 sm:px-4 bg-[#18181b] border-b border-zinc-800 select-none">
+      <div className="flex items-center justify-between h-10 sm:h-12 px-3 sm:px-4 bg-[var(--color-bg-surface)] border-b border-[var(--color-border)] select-none">
         <div className="flex items-center gap-4">
           {/* MAC DOTS */}
           <div className="flex gap-1.5">
@@ -448,7 +449,7 @@ const CodeBlockViewer = React.memo(({
 
           {/* CODE / OUTPUT SWITCH */}
           {hasOutput && (
-            <div className="flex items-center p-0.5 bg-zinc-900 rounded-lg border border-zinc-700/50">
+            <div className="flex items-center p-0.5 bg-[var(--color-bg-input)] rounded-lg border border-[var(--color-border)]">
               {['code', 'output'].map(mode => {
                 const active = viewMode === mode;
                 return (
@@ -458,8 +459,8 @@ const CodeBlockViewer = React.memo(({
                     className={cn(
                       "px-3 py-1 text-[11px] font-bold uppercase rounded-md flex items-center gap-1.5 transition-colors",
                       active
-                        ? "bg-zinc-700 text-white"
-                        : "text-zinc-500 hover:text-zinc-300"
+                        ? "bg-[var(--color-accent)] text-white"
+                        : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                     )}
                   >
                     {mode === 'code' ? <Code2 className="w-3 h-3" /> : <Terminal className="w-3 h-3" />}
@@ -474,7 +475,7 @@ const CodeBlockViewer = React.memo(({
         {/* COPY */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
         >
           {localCopied ? <FaCheck className="text-emerald-500" /> : <FaCopy />}
           {localCopied ? 'Copied' : 'Copy'}
@@ -483,7 +484,7 @@ const CodeBlockViewer = React.memo(({
 
       {/* ================= LANGUAGE TABS ================= */}
       {viewMode === 'code' && (
-        <div className="bg-[#121214] border-b border-zinc-800 px-4">
+        <div className="bg-[var(--color-bg-card)] border-b border-[var(--color-border)] px-4">
           <div className="flex gap-x-4 overflow-x-auto no-scrollbar">
             {languages.map(lang => (
               <button
@@ -492,8 +493,8 @@ const CodeBlockViewer = React.memo(({
                 className={cn(
                   "py-2 text-xs font-medium border-b-2 transition-colors",
                   currentLang === lang
-                    ? "border-[var(--color-accent)] text-zinc-100"
-                    : "border-transparent text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 disabled:cursor-default"
+                    ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
+                    : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border)] disabled:cursor-default"
                 )}
               >
                 {lang === 'cpp' ? 'C++' : lang === 'py' ? 'Python' : lang}
@@ -504,7 +505,7 @@ const CodeBlockViewer = React.memo(({
       )}
 
       {/* ================= CONTENT ================= */}
-      <div className="relative bg-[#0c0c0e]">
+      <div className="relative bg-[var(--color-bg-card)]">
         <div
           style={{
             maxHeight: window.innerWidth < 640 ? '240px' : window.innerWidth < 1024 ? '320px' : '380px',
@@ -561,7 +562,7 @@ const CodeBlockViewer = React.memo(({
                 fontFamily: 'monospace',
                 fontSize: '13px',
                 lineHeight: '1.5',
-                color: '#d4d4d8',
+                color: 'var(--color-text-primary)',
                 whiteSpace: 'pre'
               }}
             >
@@ -573,13 +574,13 @@ const CodeBlockViewer = React.memo(({
 
       {/* ================= COMPLEXITY ================= */}
       {viewMode === 'code' && hasComplexity && (
-        <div className="border-t border-zinc-800 bg-[#121214]">
+        <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-input)]">
           <button
             onClick={() => setIsComplexityOpen(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-xs text-zinc-400 hover:text-zinc-200 transition"
+            className="w-full flex items-center justify-between px-4 py-3 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
           >
             <span className="flex items-center gap-2">
-              <Timer className="w-3.5 h-3.5 text-zinc-500" />
+              <Timer className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
               Complexity Analysis
             </span>
             <ChevronDownLucide
@@ -588,17 +589,17 @@ const CodeBlockViewer = React.memo(({
           </button>
 
           {isComplexityOpen && (
-            <div className="px-5 pb-5 pt-3 border-t border-zinc-800/50 space-y-3 text-[13px]">
+            <div className="px-5 pb-5 pt-3 border-t border-[var(--color-border)] space-y-3 text-[13px]">
               {complexity.time && (
                 <div className="grid grid-cols-[96px_1fr] gap-4 items-start">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Time</span>
-                  <span className="text-zinc-300 leading-relaxed">{complexity.time.replace(/`/g, '')}</span>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--color-text-muted)]">Time</span>
+                  <span className="text-[var(--color-text-secondary)] leading-relaxed">{complexity.time.replace(/`/g, '')}</span>
                 </div>
               )}
               {complexity.space && (
                 <div className="grid grid-cols-[96px_1fr] gap-4 items-start">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Space</span>
-                  <span className="text-zinc-300 leading-relaxed">{complexity.space.replace(/`/g, '')}</span>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--color-text-muted)]">Space</span>
+                  <span className="text-[var(--color-text-secondary)] leading-relaxed">{complexity.space.replace(/`/g, '')}</span>
                 </div>
               )}
             </div>
@@ -619,13 +620,13 @@ const MarkdownComponents = {
       {...props}
     />
   ),
-  hr: () => <hr className="my-8 border-t-2 border-gray-200 dark:border-zinc-700" />,
-  h1: ({ children }) => <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-6 border-b border-gray-100 dark:border-gray-800 pb-2">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">{children}</h3>,
-  p: ({ children }) => <div className="mb-4 leading-7 text-gray-700 dark:text-gray-300">{children}</div>,
-  ul: ({ children }) => <ul className="text-gray-700 dark:text-gray-300 text-[16px] list-disc ml-5 mb-4 space-y-1">{children}</ul>,
-  ol: ({ children }) => <ol className="text-gray-700 dark:text-gray-300 text-[16px] list-decimal ml-5 mb-4 space-y-1">{children}</ol>,
+  hr: () => <hr className="my-8 border-t-2 border-[var(--color-border)]" />,
+  h1: ({ children }) => <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mt-8 mb-6 border-b border-[var(--color-border)] pb-2">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mt-8 mb-4">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mt-6 mb-3">{children}</h3>,
+  p: ({ children }) => <div className="mb-4 leading-7 text-[var(--color-text-secondary)]">{children}</div>,
+  ul: ({ children }) => <ul className="text-[var(--color-text-secondary)] text-[16px] list-disc ml-5 mb-4 space-y-1">{children}</ul>,
+  ol: ({ children }) => <ol className="text-[var(--color-text-secondary)] text-[16px] list-decimal ml-5 mb-4 space-y-1">{children}</ol>,
   li: ({ children }) => (
     <li 
       className="pl-1 leading-7 whitespace-pre-wrap"
@@ -634,8 +635,8 @@ const MarkdownComponents = {
       {children}
     </li>
   ),
-  strong: ({ children }) => <strong className="font-bold text-gray-900 dark:text-gray-100">{children}</strong>,
-  em: ({ children }) => <em className="italic text-gray-800 dark:text-gray-200">{children}</em>,
+  strong: ({ children }) => <strong className="font-bold text-[var(--color-text-primary)]">{children}</strong>,
+  em: ({ children }) => <em className="italic text-[var(--color-text-secondary)]">{children}</em>,
   a: ({ href, children }) => (
     <a 
       href={href} 
@@ -646,19 +647,19 @@ const MarkdownComponents = {
       {children}
     </a>
   ),
-  table: (props) => <div className="my-6 w-full overflow-x-auto rounded-lg border border-gray-300 dark:border-gray-700"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
-  thead: (props) => <thead className="bg-gray-100 dark:bg-zinc-900 text-gray-900 dark:text-gray-100" {...props} />,
-  tbody: (props) => <tbody className="bg-[#F1F3F4] dark:bg-[#0c0c0e]" {...props} />,
-  tr: (props) => <tr className="border-t border-gray-300 dark:border-gray-700 even:bg-gray-50 dark:even:bg-zinc-900/30" {...props} />,
-  th: (props) => <th className="px-4 py-3 font-semibold border border-gray-300 dark:border-gray-700 whitespace-nowrap" {...props} />,
-  td: (props) => <td className="px-4 py-3 border border-gray-300 dark:border-gray-700 align-top text-gray-700 dark:text-gray-300" {...props} />,
+  table: (props) => <div className="my-6 w-full overflow-x-auto rounded-lg border border-[var(--color-border)]"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
+  thead: (props) => <thead className="bg-[var(--color-bg-input)] text-[var(--color-text-primary)]" {...props} />,
+  tbody: (props) => <tbody className="bg-[var(--color-bg-card)]" {...props} />,
+  tr: (props) => <tr className="border-t border-[var(--color-border)] even:bg-[var(--color-bg-hover)]" {...props} />,
+  th: (props) => <th className="px-4 py-3 font-semibold border border-[var(--color-border)] whitespace-nowrap" {...props} />,
+  td: (props) => <td className="px-4 py-3 border border-[var(--color-border)] align-top text-[var(--color-text-secondary)]" {...props} />,
  code: ({ inline, className, children }) => {
     const content = String(children).trim();
     const isInline = inline || !content.includes('\n');
 
     if (isInline) {
       return (
-        <code className="bg-[#f1f5f9] dark:bg-zinc-800 text-[var(--color-accent)] px-1.5 py-0.5 rounded text-[14px] font-mono font-bold border border-[var(--color-border-interactive)]">
+        <code className="bg-[var(--color-bg-input)] text-[var(--color-accent)] px-1.5 py-0.5 rounded text-[14px] font-mono font-bold border border-[var(--color-border)]">
           {content}
         </code>
       );
@@ -868,11 +869,11 @@ const CodeEditorInterface = ({
   onOutputChange 
 }) => {
   return (
-    <div className="bg-[#F1F3F4] dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-      <div className="flex justify-between items-center p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-        <div className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">CODE SNIPPETS</div>
-        <button onClick={onLangAdd} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-xs font-bold transition-all shadow-sm">
-          <FaPlus /> Language
+    <div className="bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm">
+      <div className="flex justify-between items-center p-3 border-b border-[var(--color-border)] bg-[var(--color-bg-surface)]">
+        <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">Code Snippets</div>
+        <button onClick={onLangAdd} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-accent)] text-white hover:opacity-90 rounded-lg text-xs font-bold transition-all shadow-sm">
+          <FaPlus className="w-3 h-3" /> <span>Language</span>
         </button>
       </div>
 
@@ -885,15 +886,15 @@ const CodeEditorInterface = ({
                 key={l} 
                 onClick={() => onLangSelect(l)}
                 className={cn(
-                  "group relative px-4 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2", 
+                  "group relative px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-2", 
                   activeLang === l 
-                    ? "bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-black" 
-                    : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700"
+                    ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]" 
+                    : "bg-[var(--color-bg-input)] border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-accent)]/50"
                 )} 
               >
                 {l.toUpperCase()} 
                 <span 
-                  className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity ml-1 p-0.5 rounded-full hover:bg-white/20" 
+                  className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity ml-1 p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10" 
                   onClick={(e) => { e.stopPropagation(); onLangRemove(l); }}
                   title="Remove language"
                 >
@@ -903,18 +904,18 @@ const CodeEditorInterface = ({
             ))}
           </div>
         ) : (
-          <div className="mb-4 p-6 border-2 border-dashed border-slate-200 rounded-xl text-center">
-            <p className="text-sm text-slate-500 font-medium">No languages added yet.</p>
-            <p className="text-xs text-slate-400 mt-1">Click "+ Language" to start coding.</p>
+          <div className="mb-4 p-8 border-2 border-dashed border-[var(--color-border)] rounded-xl text-center bg-[var(--color-bg-surface)]">
+            <p className="text-sm text-[var(--color-text-muted)] font-medium">No languages added yet.</p>
+            <p className="text-xs text-[var(--color-text-muted)] opacity-60 mt-1">Click "+ Language" to start coding.</p>
           </div>
         )}
 
         {/* Code Area */}
         {activeLang && (
           <div className="relative group">
-            <div className="absolute top-0 right-0 p-2 opacity-50 text-[10px] font-mono text-white/50 pointer-events-none">{activeLang}</div>
+            <div className="absolute top-3 right-4 p-1 px-2 rounded bg-black/30 backdrop-blur-md opacity-50 text-[10px] font-mono text-white pointer-events-none uppercase">{activeLang}</div>
             <textarea 
-              className="w-full h-48 p-4 text-xs font-mono border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-900 text-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y leading-relaxed" 
+              className="w-full h-48 p-4 text-xs font-mono border border-[var(--color-border)] rounded-xl bg-[var(--color-bg-input)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 resize-y leading-relaxed" 
               value={langs[activeLang]} 
               onChange={e => onCodeChange(e.target.value)} 
               placeholder={`Paste or type ${activeLang} code here...`} 
@@ -926,11 +927,11 @@ const CodeEditorInterface = ({
         {/* Output Area */}
         <div className="mt-6">
           <div className="flex items-center gap-2 mb-2">
-            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">EXPECTED OUTPUT</div>
-            <div className="h-px bg-slate-200 flex-1"></div>
+            <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Expected Output</div>
+            <div className="h-px bg-[var(--color-border)] flex-1"></div>
           </div>
           <textarea 
-            className="w-full h-24 p-3 text-xs font-mono border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-colors" 
+            className="w-full h-20 p-3 text-xs font-mono border border-[var(--color-border)] rounded-xl bg-[var(--color-bg-input)] text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors" 
             value={output || ""} 
             onChange={e => onOutputChange(e.target.value)} 
             placeholder="e.g. [0, 1] (Common output for all languages)" 
@@ -1183,7 +1184,7 @@ const insertLink = () => {
     container.dataset.blockId = blockId;
 
     // UPDATED: Removed newlines/whitespace to prevent gaps
-    container.innerHTML = `<div class="border-2 border-dashed border-indigo-300 bg-indigo-50 rounded-xl p-4 flex items-center justify-between hover:bg-indigo-100 transition-colors"><div class="flex items-center gap-3"><div class="p-2 bg-indigo-600 text-white rounded-lg"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div><div class="text-sm font-bold text-indigo-900">Multi-Language Code Block</div><div class="text-xs text-indigo-600 font-mono">ID: ${blockId.substring(0,8)}...</div></div></div><div class="px-3 py-1.5 bg-white text-indigo-600 text-xs font-bold rounded-lg shadow-sm border border-indigo-100 flex items-center gap-2 group-hover:scale-105 transition-transform"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="12" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Click to Edit</div></div>`;
+    container.innerHTML = `<div class="border border-[var(--color-border)] bg-[var(--color-bg-card)] rounded-xl p-4 flex items-center justify-between hover:bg-[var(--color-bg-hover)] transition-all shadow-sm"><div class="flex items-center gap-3"><div class="p-2 bg-[var(--color-accent)] text-white rounded-lg"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div><div class="text-sm font-black text-[var(--color-text-primary)]">Multi-Language Code Block</div><div class="text-[10px] text-[var(--color-text-muted)] font-mono uppercase tracking-tighter">ID: ${blockId.substring(0,8)}...</div></div></div><div class="px-3 py-1.5 bg-[var(--color-bg-input)] text-[var(--color-accent)] text-[10px] font-black uppercase rounded-lg border border-[var(--color-border)] flex items-center gap-2 group-hover:scale-105 transition-transform"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="12" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit Code</div></div>`;
     
     const pBefore = document.createElement("p"); pBefore.innerHTML = "<br/>";
     const pAfter = document.createElement("p"); pAfter.innerHTML = "<br/>";
@@ -1966,27 +1967,27 @@ const loadExistingEditorial = (markdownText) => {
     };
 
     return (
-      <div className="bg-[#F1F3F4] dark:bg-[#030014] text-[15px] p-6 rounded-2xl border border-slate-200 h-full overflow-y-auto">
-         <div className="border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{parsed.title || "Untitled Preview"}</h1>
+      <div className="bg-[var(--color-bg-primary)] text-[15px] p-6 rounded-2xl border border-[var(--color-border)] h-full overflow-y-auto">
+         <div className="border-b border-[var(--color-border)] pb-4 mb-6">
+            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{parsed.title || "Untitled Preview"}</h1>
          </div>
          {parsed.sections.map((section, idx) => {
            if (section.type === 'standard') return <div key={idx}>{section.content.map(renderBlock)}</div>;
            if (section.type === 'approaches') return (
              <div key={idx} className="space-y-4">
                {section.items.map((approach, aIdx) => (
-                 <div key={approach.id} className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-[#F1F3F4] dark:bg-[#0c0c0e] shadow-sm">
-                   <div onClick={() => toggleSection(approach.id)} className="cursor-pointer p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors select-none">
+                 <div key={approach.id} className="border border-[var(--color-border)] rounded-xl overflow-hidden bg-[var(--color-bg-card)] shadow-sm">
+                   <div onClick={() => toggleSection(approach.id)} className="cursor-pointer p-4 flex items-center justify-between hover:bg-[var(--color-bg-hover)] transition-colors select-none">
                      <div className="flex items-center gap-3">
-                       <div className="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">{aIdx + 1}</div>
-                       <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-100">{approach.name}</h3>
+                       <div className="w-6 h-6 rounded-lg bg-[var(--color-accent)]/10 text-[var(--color-accent)] flex items-center justify-center font-bold text-xs">{aIdx + 1}</div>
+                       <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{approach.name}</h3>
                      </div>
-                     {expandedSections[approach.id] ? <ChevronDownLucide className="w-4 h-4 text-indigo-500 rotate-180 transition-transform" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                     {expandedSections[approach.id] ? <ChevronDownLucide className="w-4 h-4 text-[var(--color-accent)] rotate-180 transition-transform" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-muted)]" />}
                    </div>
                    <AnimatePresence>
                      {expandedSections[approach.id] && (
                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                         <div className="p-4 border-t border-gray-100 dark:border-zinc-800/50 bg-gray-50/50 dark:bg-black/20">
+                         <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-bg-input)]">
                            {approach.content.map(renderBlock)}
                          </div>
                        </motion.div>
@@ -2015,97 +2016,101 @@ const loadExistingEditorial = (markdownText) => {
 
   // --- RENDER MAIN LAYOUT ---
   return (
-    <div className="w-full h-screen bg-slate-50 flex flex-col overflow-hidden relative">
+    <div className="w-full h-[calc(100vh-64px)] bg-[var(--color-bg-primary)] flex flex-col overflow-hidden relative">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       <style>{`
-      .content p:empty::before {
-  pointer-events: none;
-}
-        .content { color:#0f172a;white-space: pre-wrap; }
-        .content h1 { font-size:1.85rem; font-weight:900; margin: 0.5em 0; }
-        .content h2 { font-size:1.5rem; font-weight:700; margin: 0.5em 0; }
-        .content h3 { font-size:1.25rem; font-weight:600; margin: 0.5em 0; }
-        .content code { background:#f1f5f9; padding:2px 5px; border-radius:4px; color:#4f46e5; font-family: monospace; }
-        .content table { width:100%; border-collapse: collapse; margin: 1em 0; }
-        .content th, .content td { border: 1px solid #cbd5e1; padding: 8px; }
-        .content th { background-color: #f8fafc; font-weight: bold; }
-        /* Updated List Styling for clear indentation */
+        .content p:empty::before { pointer-events: none; }
+        .content { color: var(--color-text-primary); white-space: pre-wrap; }
+        .content h1 { font-size:1.85rem; font-weight:900; margin: 0.5em 0; color: var(--color-text-primary); }
+        .content h2 { font-size:1.5rem; font-weight:700; margin: 0.5em 0; color: var(--color-text-primary); }
+        .content h3 { font-size:1.25rem; font-weight:600; margin: 0.5em 0; color: var(--color-text-primary); }
+        .content code { background: var(--color-bg-input); padding:2px 5px; border-radius:4px; color: var(--color-accent); font-family: monospace; border: 1px solid var(--color-border); }
+        .content table { width:100%; border-collapse: collapse; margin: 1em 0; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+        .content th, .content td { border: 1px solid var(--color-border); padding: 12px; }
+        .content th { background-color: var(--color-bg-input); font-weight: bold; color: var(--color-text-primary); text-align: left; }
+        .content td { background-color: var(--color-bg-card); color: var(--color-text-secondary); }
         .content ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         .content ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
-        .content li { margin-bottom: 0.25rem;list-style-position: outside; }
-        /* Fix nested lists */
+        .content li { margin-bottom: 0.25rem; list-style-position: outside; }
         .content ul ul { list-style-type: circle; margin-top: 0.25rem; }
         .content ol ol { list-style-type: lower-alpha; margin-top: 0.25rem; }
-        .carousel-container { margin: 1.5rem 0; border: 1px solid #e0e7ff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .carousel-header { background: #f5f3ff; padding: 10px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e7ff; }
-        .carousel-header:hover { background: #ede9fe; }
-        .carousel-content { padding: 10px; background: #fff; }
-        .tableSelected { outline: 3px solid rgba(79,70,229,.4); }
+        .carousel-container { margin: 1.5rem 0; border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .carousel-header { background: var(--color-bg-input); padding: 10px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); }
+        .carousel-header:hover { background: var(--color-bg-hover); }
+        .carousel-content { padding: 10px; background: var(--color-bg-card); }
+        .tableSelected { outline: 3px solid var(--color-accent); outline-offset: -3px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
       
       {/* 2. Language Selection Modal */}
       {showLangModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--color-bg-card)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-[var(--color-border)]">
             <h3 className="text-lg font-bold mb-4">Select Language</h3>
-            <select className="w-full px-3 py-2 rounded-xl border mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" value={selectedLang} onChange={e => setSelectedLang(e.target.value)}>
-              {LANGUAGES.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
-            </select>
+            <CustomDropdown
+              options={LANGUAGES.map(l => ({ value: l, label: l.toUpperCase() }))}
+              value={selectedLang}
+              onChange={val => setSelectedLang(val)}
+              className="mb-4"
+            />
             <div className="flex gap-2">
-                <button className="flex-1 bg-indigo-600 text-white rounded-xl py-2 font-bold hover:bg-indigo-700 transition" onClick={handleLanguageAddConfirm}>Add</button>
-                <button className="flex-1 border rounded-xl py-2 font-bold hover:bg-slate-50 transition" onClick={() => setShowLangModal(false)}>Cancel</button>
+                <button className="flex-1 bg-[var(--color-accent)] text-white rounded-xl py-2 font-bold hover:opacity-90 transition" onClick={handleLanguageAddConfirm}>Add</button>
+                <button className="flex-1 border border-[var(--color-border)] rounded-xl py-2 font-bold hover:bg-[var(--color-bg-hover)] transition" onClick={() => setShowLangModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- UPDATED: SIMPLE LINK RESULT MODAL --- */}
       {showLinkModal && (
-        <div className="fixed inset-0 bg-black/20 z-[70] flex items-center justify-center p-4">
-          <div className="bg-[#F1F3F4] dark:bg-[#0c0c0e] rounded-lg border border-gray-200 dark:border-zinc-800 p-5 max-w-sm w-full">
+        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border)] p-6 max-w-sm w-full shadow-2xl">
             
-            <div className="flex items-center gap-2 mb-4">
-                <FaCircleCheck className="w-4 h-4 text-emerald-500" />
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Upload Complete</h3>
+            <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <FaCircleCheck className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                    <h3 className="font-black text-[var(--color-text-primary)] text-base">Upload Success</h3>
+                    <p className="text-xs text-[var(--color-text-muted)]">Your editorial is now live.</p>
+                </div>
             </div>
             
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded px-3 py-2 mb-4 transition-colors hover:border-indigo-300">
-                <FaLink className="text-gray-400 w-3 h-3 shrink-0" />
+            <div className="flex items-center gap-2 bg-[var(--color-bg-input)] border border-[var(--color-border)] rounded-xl px-4 py-3 mb-6 group transition-all focus-within:border-[var(--color-accent)]">
+                <FaLink className="text-[var(--color-text-muted)] w-3.5 h-3.5 shrink-0" />
                 <input 
                     readOnly 
                     value={generatedLink} 
-                    className="bg-transparent w-full text-xs font-mono text-gray-600 dark:text-gray-300 outline-none selection:bg-indigo-100 selection:text-indigo-900" 
+                    className="bg-transparent w-full text-xs font-mono text-[var(--color-text-primary)] outline-none" 
                     onClick={(e) => e.target.select()}
                 />
             </div>
 
             <div className="flex flex-col gap-3">
                 <button 
-                    className="w-full bg-indigo-600 text-white rounded px-4 py-2 text-xs font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2" 
+                    className="w-full bg-[var(--color-accent)] text-white rounded-xl py-3 text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-accent)]/20" 
                     onClick={() => {
                         navigator.clipboard.writeText(generatedLink);
                         addToast("Copied!", "success");
                     }}
                 >
-                    <FaCopy className="w-3 h-3" />
+                    <FaCopy className="w-3.5 h-3.5" />
                     Copy GitHub Link
                 </button>
                 
                 {problemIdFromUrl && (
                   <button 
-                      className="w-full bg-emerald-600 text-white rounded px-4 py-2 text-xs font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50" 
+                      className="w-full bg-emerald-600 text-white rounded-xl py-3 text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50" 
                       onClick={handleSaveToProblem}
                       disabled={uploading}
                   >
-                      {uploading ? <FaSpinner className="w-3 h-3 animate-spin"/> : <FaCloudArrowUp className="w-3 h-3" />}
-                      Update Problem Editorial
+                      {uploading ? <FaSpinner className="w-3.5 h-3.5 animate-spin"/> : <FaCloudArrowUp className="w-3.5 h-3.5" />}
+                      Update Problem
                   </button>
                 )}
 
                 <button 
-                    className="w-full px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800 rounded transition-colors" 
+                    className="w-full px-4 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors mt-2" 
                     onClick={() => setShowLinkModal(false)}
                 >
                     Close
@@ -2119,17 +2124,17 @@ const loadExistingEditorial = (markdownText) => {
       {/* 3. Inline Code Block Editor Modal */}
       {editingInlineBlockId && inlineBlocks[editingInlineBlockId] && (
         <div className="fixed inset-0 bg-black/60 z-[55] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-[#F1F3F4] dark:bg-slate-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="bg-[var(--color-bg-card)] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[var(--color-border)]">
+                <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white">Edit Code Block</h3>
-                        <p className="text-xs text-slate-500">Add languages and output for this section.</p>
+                        <h3 className="text-lg font-black text-[var(--color-text-primary)]">Edit Code Block</h3>
+                        <p className="text-xs text-[var(--color-text-muted)]">Add languages and output for this section.</p>
                     </div>
-                    <button onClick={() => { setEditingInlineBlockId(null); syncEditorsToState(); }} className="p-2 hover:bg-slate-100 rounded-full dark:hover:bg-slate-800 transition">
-                        <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <button onClick={() => { setEditingInlineBlockId(null); syncEditorsToState(); }} className="p-2 hover:bg-[var(--color-bg-hover)] rounded-full transition">
+                        <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
                     </button>
                 </div>
-                <div className="p-6 overflow-y-auto bg-slate-50 dark:bg-black/20 flex-1">
+                <div className="p-6 overflow-y-auto bg-[var(--color-bg-primary)] flex-1">
                     <CodeEditorInterface 
                         langs={inlineBlocks[editingInlineBlockId].langs}
                         activeLang={inlineBlocks[editingInlineBlockId].activeLang}
@@ -2140,26 +2145,26 @@ const loadExistingEditorial = (markdownText) => {
                         onCodeChange={(c) => updateInlineBlockLang(editingInlineBlockId, inlineBlocks[editingInlineBlockId].activeLang, c)}
                         onOutputChange={(o) => updateInlineBlock(editingInlineBlockId, 'output', o)}
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)]">
     <div>
-        <div className="flex items-center gap-2 mb-1.5 text-slate-600 dark:text-slate-400">
+        <div className="flex items-center gap-2 mb-1.5 text-[var(--color-text-muted)]">
             <Timer className="w-3.5 h-3.5" />
             <label className="text-xs font-medium">Time Complexity</label>
         </div>
         <input 
-    className="w-full p-2.5 text-xs font-mono border border-slate-400 dark:border-slate-600 rounded-lg bg-[#F1F3F4] dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20" 
+    className="w-full p-2.5 text-xs font-mono border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-input)] text-[var(--color-text-primary)] outline-none focus:ring-2 ring-[var(--color-accent)]/20" 
     value={inlineBlocks[editingInlineBlockId].timeComplexity || ""} 
     onChange={e => updateInlineBlock(editingInlineBlockId, 'timeComplexity', e.target.value)} 
     placeholder="e.g. O(N)" 
 />
     </div>
     <div>
-        <div className="flex items-center gap-2 mb-1.5 text-slate-600 dark:text-slate-400">
+        <div className="flex items-center gap-2 mb-1.5 text-[var(--color-text-muted)]">
             <FaCode className="w-3.5 h-3.5" />
             <label className="text-xs font-medium">Space Complexity</label>
         </div>
        <input 
-    className="w-full p-2.5 text-xs font-mono border border-slate-400 dark:border-slate-600 rounded-lg bg-[#F1F3F4] dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20" 
+    className="w-full p-2.5 text-xs font-mono border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-input)] text-[var(--color-text-primary)] outline-none focus:ring-2 ring-[var(--color-accent)]/20" 
     value={inlineBlocks[editingInlineBlockId].spaceComplexity || ""} 
     onChange={e => updateInlineBlock(editingInlineBlockId, 'spaceComplexity', e.target.value)} 
     placeholder="e.g. O(1)" 
@@ -2167,8 +2172,8 @@ const loadExistingEditorial = (markdownText) => {
     </div>
 </div>
                 </div>
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-                    <button onClick={() => { setEditingInlineBlockId(null); syncEditorsToState(); }} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">
+                <div className="p-4 border-t border-[var(--color-border)] flex justify-end">
+                    <button onClick={() => { setEditingInlineBlockId(null); syncEditorsToState(); }} className="px-6 py-2 bg-[var(--color-accent)] text-white font-bold rounded-lg hover:opacity-90 transition">
                         Done
                     </button>
                 </div>
@@ -2177,36 +2182,36 @@ const loadExistingEditorial = (markdownText) => {
       )}
 
       {/* 4. Header (RESPONSIVE) */}
-      <div className="bg-white border-b border-slate-200 p-3 sm:p-4 flex justify-between items-center shrink-0 sticky top-0 z-50">
+      <div className="bg-[var(--color-bg-primary)] border-b border-[var(--color-border)] p-3 sm:p-4 flex justify-between items-center shrink-0 sticky top-0 z-50">
          <div>
-           <div className="flex items-center gap-4">
-  <div className="text-sm sm:text-lg font-black text-slate-900 truncate max-w-[150px] sm:max-w-none">
-    Alpha Editorial
-  </div>
-  <div className="hidden md:flex items-center bg-slate-100 rounded-lg px-2 py-1 border border-slate-200">
-<input 
-  type="text" 
-  placeholder="Paste GitHub Link & Press Enter..." 
-  className="bg-transparent text-[10px] w-48 outline-none font-mono"
-  onKeyDown={async (e) => {
-    if (e.key === 'Enter' && e.target.value) {
-      const url = e.target.value.trim();
-      try {
-        addToast("Fetching content...", "info");
-        const md = await fetchMarkdownFromGithub(url);
-        if (md) {
-          loadExistingEditorial(md);
-          e.target.value = ""; // Clear input
-        }
-      } catch (err) {
-        addToast("Fetch failed: " + err.message, "error");
-      }
-    }
-  }}
+            <div className="flex items-center gap-4">
+   <div className="text-sm sm:text-lg font-black text-[var(--color-text-primary)] truncate max-w-[150px] sm:max-w-none">
+     Alpha Editorial
+   </div>
+   <div className="hidden md:flex items-center bg-[var(--color-bg-input)] rounded-lg px-2 py-1 border border-[var(--color-border)]">
+<input 
+  type="text" 
+  placeholder="Paste GitHub Link & Press Enter..." 
+  className="bg-transparent text-[10px] w-48 outline-none font-mono"
+  onKeyDown={async (e) => {
+    if (e.key === 'Enter' && e.target.value) {
+      const url = e.target.value.trim();
+      try {
+        addToast("Fetching content...", "info");
+        const md = await fetchMarkdownFromGithub(url);
+        if (md) {
+          loadExistingEditorial(md);
+          e.target.value = ""; // Clear input
+        }
+      } catch (err) {
+        addToast("Fetch failed: " + err.message, "error");
+      }
+    }
+  }}
 />
-    <FaLink className="text-slate-400 w-3 h-3 ml-2" />
-  </div>
-</div>
+     <FaLink className="text-[var(--color-text-muted)] w-3 h-3 ml-2" />
+   </div>
+ </div>
          </div>
          <div className="flex gap-1.5 sm:gap-2">
              <button 
@@ -2221,7 +2226,7 @@ const loadExistingEditorial = (markdownText) => {
             <button 
                 onClick={handleGitHubUpload} 
                 disabled={uploading} 
-                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-indigo-600 text-white font-bold text-xs shadow hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-accent)] text-white font-bold text-xs shadow hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 title="Upload & Get Link"
             >
                 {uploading ? <FaSpinner className="animate-spin w-3.5 h-3.5" /> : <FaCloudArrowUp className="w-3.5 h-3.5" />}
@@ -2240,9 +2245,9 @@ const loadExistingEditorial = (markdownText) => {
       </div>
 
       {/* 5. Tab Navigation (Small Screens) */}
-      <div className="lg:hidden p-2 bg-white border-b border-slate-100 flex gap-2">
+      <div className="lg:hidden p-2 bg-[var(--color-bg-primary)] border-b border-[var(--color-border)] flex gap-2">
         {[{k:'editor',l:'Editor'},{k:'preview',l:'Preview'},{k:'export',l:'Raw MD'}].map(t => (
-          <button key={t.k} onClick={() => changeTab(t.k)} className={cn("flex-1 py-2 rounded-lg font-bold text-xs transition-all", activeTab === t.k ? "bg-slate-800 text-white" : "text-slate-600 bg-slate-100")}>{t.l}</button>
+          <button key={t.k} onClick={() => changeTab(t.k)} className={cn("flex-1 py-2 rounded-lg font-bold text-xs transition-all", activeTab === t.k ? "bg-[var(--color-text-primary)] text-[var(--color-bg-primary)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-input)]")}>{t.l}</button>
         ))}
       </div>
 
@@ -2251,95 +2256,97 @@ const loadExistingEditorial = (markdownText) => {
         <div className="h-full grid grid-cols-1 lg:grid-cols-2">
             
            {/* LEFT COLUMN: EDITOR */}
-           <div className={cn("h-full overflow-y-auto p-4 lg:border-r border-slate-200", activeTab !== 'editor' && "hidden lg:block")}>
+           <div className={cn("h-full overflow-y-auto p-4 lg:border-r border-[var(--color-border)]", activeTab !== 'editor' && "hidden lg:block")}>
              
              {/* Document Title (No more status below it) */}
-             <div className="mb-4 bg-white border rounded-xl p-4 shadow-sm">
-                <label className="text-xs font-bold text-slate-500 uppercase">Solution Title</label>
-                <input className="w-full mt-1 text-lg font-bold border-b border-slate-200 focus:border-indigo-500 outline-none pb-1" value={docTitle} onChange={e => setDocTitle(e.target.value)} placeholder="e.g. Two Sum Solution"/>
+             <div className="mb-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 shadow-sm">
+                <label className="text-xs font-bold text-[var(--color-text-primary)]/70 uppercase">Solution Title</label>
+                <input className="w-full mt-1 text-lg font-bold border-b border-[var(--color-border)] focus:border-[var(--color-accent)] bg-transparent text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none pb-1" value={docTitle} onChange={e => setDocTitle(e.target.value)} placeholder="e.g. Two Sum Solution"/>
              </div>
 
              {/* Toolbar */}
-             <div className="sticky top-0 z-40 bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-2 mb-4 shadow-sm flex flex-wrap gap-1.5 items-center justify-start">
+             <div className="sticky top-0 z-40 bg-[var(--color-bg-card)] backdrop-blur border border-[var(--color-border)] rounded-xl p-2 mb-4 shadow-sm flex flex-wrap gap-1.5 items-center justify-start">
                  <input ref={imgPickRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload}/>
                  <input ref={carouselPickRef} type="file" accept="image/*" multiple className="hidden" onChange={handleCarouselUpload}/>
                  
                  {/* Formatting Group */}
                  <div className="flex gap-1">
-                    <button onClick={() => execCmd('bold')} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700" title="Bold (Ctrl+B)"><FaBold /></button>
-                    <button onClick={() => execCmd('italic')} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center italic text-slate-700" title="Italic (Ctrl+I)"><FaItalic /></button>
-                    <button onClick={insertLink} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center text-slate-700" title="Insert Link">
+                    <button onClick={() => execCmd('bold')} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center font-bold text-[var(--color-text-secondary)]" title="Bold (Ctrl+B)"><FaBold /></button>
+                    <button onClick={() => execCmd('italic')} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center italic text-[var(--color-text-secondary)]" title="Italic (Ctrl+I)"><FaItalic /></button>
+                    <button onClick={insertLink} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]" title="Insert Link">
                         <FaLink className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => execCmd('insertUnorderedList')} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center text-slate-700" title="Bullet List"><FaListUl /></button>
-                    <button onClick={() => execCmd('insertOrderedList')} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center text-slate-700" title="Numbered List"><FaListOl /></button>
+                    <button onClick={() => execCmd('insertUnorderedList')} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]" title="Bullet List"><FaListUl /></button>
+                    <button onClick={() => execCmd('insertOrderedList')} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]" title="Numbered List"><FaListOl /></button>
                     
-                    <button onClick={insertLineBreak} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center text-slate-700" title="Insert Line Break"><FaArrowTurnDown className="rotate-90" /></button>
-                    <button onClick={insertHorizontalRule} className="w-8 h-8 rounded hover:bg-slate-100 flex items-center justify-center text-slate-700" title="Horizontal Line"><FaGripLines /></button>
+                    <button onClick={insertLineBreak} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]" title="Insert Line Break"><FaArrowTurnDown className="rotate-90" /></button>
+                    <button onClick={insertHorizontalRule} className="w-8 h-8 rounded hover:bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]" title="Horizontal Line"><FaGripLines /></button>
                  </div>
                  
-                 <div className="w-px h-6 bg-slate-300 mx-1 hidden sm:block"></div>
+                 <div className="w-px h-6 bg-[var(--color-border)] mx-1 hidden sm:block"></div>
 
                   {/* Headings */}
 <div className="flex gap-1">
-  <button onClick={() => execBlock('h1')} className="px-2 h-8 rounded hover:bg-slate-100 text-xs font-bold">H1</button>
-  <button onClick={() => execBlock('h2')} className="px-2 h-8 rounded hover:bg-slate-100 text-xs font-bold">H2</button>
-  <button onClick={() => execBlock('h3')} className="px-2 h-8 rounded hover:bg-slate-100 text-xs font-bold">H3</button>
+  <button onClick={() => execBlock('h1')} className="px-2 h-8 rounded hover:bg-[var(--color-bg-hover)] text-xs font-bold text-[var(--color-text-secondary)]">H1</button>
+  <button onClick={() => execBlock('h2')} className="px-2 h-8 rounded hover:bg-[var(--color-bg-hover)] text-xs font-bold text-[var(--color-text-secondary)]">H2</button>
+  <button onClick={() => execBlock('h3')} className="px-2 h-8 rounded hover:bg-[var(--color-bg-hover)] text-xs font-bold text-[var(--color-text-secondary)]">H3</button>
   {/* Identical styling for P button */}
-  <button onClick={() => execBlock('p')} className="px-2 h-8 rounded hover:bg-slate-100 text-xs font-bold">P</button>
+  <button onClick={() => execBlock('p')} className="px-2 h-8 rounded hover:bg-[var(--color-bg-hover)] text-xs font-bold text-[var(--color-text-secondary)]">P</button>
   
-  <button onClick={insertInlineCode} className="px-2 h-8 rounded hover:bg-slate-100 text-xs font-mono border border-slate-200 ml-1">{'< >'}</button>
+  <button onClick={insertInlineCode} className="px-2 h-8 rounded hover:bg-[var(--color-bg-hover)] text-xs font-mono border border-[var(--color-border)] text-[var(--color-text-secondary)] ml-1">{'< >'}</button>
 </div>
 
-                 <div className="w-px h-6 bg-slate-300 mx-1 hidden sm:block"></div>
+                 <div className="w-px h-6 bg-[var(--color-border)] mx-1 hidden sm:block"></div>
 
                  {/* Table Controls */}
-                 <div className="flex gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200">
-                    <button onClick={insertTableActive} className="px-2 h-8 rounded bg-white shadow-sm hover:bg-slate-50 text-xs font-bold">Table</button>
-                    <div className="w-px h-full bg-slate-200 mx-1"></div>
-                    <button onClick={tableAddRow} className="w-8 h-8 rounded hover:bg-slate-200 text-xs font-bold text-emerald-600" title="Add Row">+R</button>
-                    <button onClick={tableDelRow} className="w-8 h-8 rounded hover:bg-slate-200 text-xs font-bold text-red-500" title="Remove Last Row">-R</button>
-                    <div className="w-px h-full bg-slate-200 mx-1"></div>
-                    <button onClick={tableAddCol} className="w-8 h-8 rounded hover:bg-slate-200 text-xs font-bold text-emerald-600" title="Add Col">+C</button>
-                    <button onClick={tableDelCol} className="w-8 h-8 rounded hover:bg-slate-200 text-xs font-bold text-red-500" title="Remove Last Col">-C</button>
-                 </div>
+                 <div className="flex gap-1 bg-[var(--color-bg-input)] p-0.5 rounded-lg border border-[var(--color-border)]">
+                     <button onClick={insertTableActive} className="px-3 h-8 rounded-lg bg-[var(--color-bg-card)] shadow-sm hover:bg-[var(--color-bg-hover)] text-[10px] font-black uppercase tracking-wider text-[var(--color-text-primary)] border border-[var(--color-border)]">Table</button>
+                     <div className="w-px h-full bg-[var(--color-border)] mx-1"></div>
+                     <button onClick={tableAddRow} className="w-8 h-8 rounded-lg hover:bg-emerald-500/10 text-emerald-600 flex items-center justify-center transition-all" title="Add Row"><FaPlus className="w-2.5 h-2.5" /></button>
+                     <button onClick={tableDelRow} className="w-8 h-8 rounded-lg hover:bg-red-500/10 text-red-500 flex items-center justify-center transition-all" title="Remove Last Row"><FaTrash className="w-2.5 h-2.5" /></button>
+                     <div className="w-px h-full bg-[var(--color-border)] mx-1"></div>
+                     <button onClick={tableAddCol} className="w-8 h-8 rounded-lg hover:bg-emerald-500/10 text-emerald-600 flex items-center justify-center transition-all" title="Add Col"><FaPlus className="w-2.5 h-2.5" /></button>
+                     <button onClick={tableDelCol} className="w-8 h-8 rounded-lg hover:bg-red-500/10 text-red-500 flex items-center justify-center transition-all" title="Remove Last Col"><FaTrash className="w-2.5 h-2.5" /></button>
+                  </div>
 
-                 <div className="w-px h-6 bg-slate-300 mx-1 hidden sm:block"></div>
+                 <div className="w-px h-6 bg-[var(--color-border)] mx-1 hidden sm:block"></div>
                  
                  {/* Insert Buttons */}
                  <div className="flex gap-1.5 flex-wrap">
-                    <button onClick={insertMultiLangBlock} className="px-2 h-8 rounded bg-slate-800 text-white hover:bg-slate-700 text-xs font-bold flex items-center gap-1"><FaCode /> Code</button>
-                    
-                    <button onClick={() => { if(validateEditorAction()) imgPickRef.current?.click(); }} className="px-2 h-8 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold flex items-center gap-1">
-                       <FaImage /> Img
+                    <button onClick={insertMultiLangBlock} className="px-3 h-8 rounded-lg bg-[var(--color-bg-input)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent)] hover:text-white hover:border-[var(--color-accent)] text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all active:scale-95 shadow-sm">
+                        <FaCode className="w-3 h-3" /> Code
                     </button>
                     
-                    <button onClick={() => { if(validateEditorAction()) carouselPickRef.current?.click(); }} className="px-2 h-8 rounded bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-bold flex items-center gap-1">
-                       <FaEye /> Carousel
+                    <button onClick={() => { if(validateEditorAction()) imgPickRef.current?.click(); }} className="px-3 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all active:scale-95 shadow-sm">
+                       <FaImage className="w-3 h-3" /> Image
+                    </button>
+                    
+                    <button onClick={() => { if(validateEditorAction()) carouselPickRef.current?.click(); }} className="px-3 h-8 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white border border-purple-500/20 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all active:scale-95 shadow-sm">
+                       <FaEye className="w-3 h-3" /> Carousel
                     </button>
                  </div>
              </div>
 
              {/* MAIN EDITORIAL EDITOR */}
              <div className="mb-8">
-               <div className="text-xs font-bold text-slate-500 uppercase mb-2">Introduction & Overview</div>
+               <div className="text-xs font-bold text-[var(--color-text-primary)]/70 uppercase mb-2">Introduction & Overview</div>
                <div 
                    ref={editorialEditorRef} 
-                   className="content min-h-[250px] p-4 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 ring-indigo-100 transition-all" 
+                   className="content min-h-[250px] p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 ring-[var(--color-accent)]/20 transition-all" 
                    contentEditable 
                    suppressContentEditableWarning 
                    onFocus={() => setActiveEditor({ type: "editorial" })} 
                    onClick={handleEditorClick} 
                    onInput={syncEditorsToState}
                    onPaste={handlePaste}
-                   onKeyDown={handleKeyDown} // <--- ADD THIS
+                   onKeyDown={handleKeyDown} 
                />
              </div>
 
              {/* APPROACHES SECTION */}
              <div className="flex justify-between items-center mb-4">
-               <div className="text-xs font-bold text-slate-500 uppercase">Approaches</div>
-               <button onClick={addApproach} className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-indigo-700">+ Add Approach</button>
+               <div className="text-xs font-bold text-[var(--color-text-primary)]/70 uppercase">Approaches</div>
+               <button onClick={addApproach} className="px-3 py-1.5 bg-[var(--color-accent)] text-white text-xs font-bold rounded-lg shadow-sm hover:opacity-90">+ Add Approach</button>
              </div>
              
              <div className="space-y-6 pb-20">
@@ -2348,27 +2355,27 @@ const loadExistingEditorial = (markdownText) => {
   return (
     <div key={ap.id} className={cn(
       "border transition-all duration-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-md",
-      isCollapsed ? "bg-white border-slate-200" : "bg-indigo-50/20 border-indigo-200"
+      isCollapsed ? "bg-[var(--color-bg-card)] border-[var(--color-border)]" : "bg-[var(--color-bg-input)] border-[var(--color-accent)]/30"
     )}>
       {/* MODERNIZED HEADER SECTION */}
       <div 
         className={cn(
           "flex justify-between items-center p-3.5 cursor-pointer select-none transition-all duration-300",
-          isCollapsed ? "bg-white" : "bg-gradient-to-r from-indigo-600 to-violet-600 text-white"
+          isCollapsed ? "bg-[var(--color-bg-card)]" : "bg-[var(--color-accent)] text-white shadow-lg shadow-[var(--color-accent)]/20"
         )}
         onClick={() => toggleApproachCollapse(ap.id)}
       >
         <div className="flex items-center gap-4 w-full mr-4">
           <div className={cn(
             "w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0 shadow-sm transition-transform",
-            isCollapsed ? "bg-indigo-600 text-white" : "bg-white/20 text-white backdrop-blur-md border border-white/30"
+            isCollapsed ? "bg-[var(--color-accent)] text-white" : "bg-white/20 text-white backdrop-blur-md border border-white/30"
           )}>
             {idx + 1}
           </div>
           <input 
             className={cn(
-              "font-bold bg-transparent px-2 py-1 w-full focus:outline-none rounded transition-colors placeholder:font-medium",
-              isCollapsed ? "text-slate-800" : "text-white placeholder:text-indigo-100"
+              "font-bold bg-transparent px-2 py-0.5 w-full focus:outline-none transition-colors placeholder:font-medium border-b",
+              isCollapsed ? "text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] border-[var(--color-border)]" : "text-white !text-white dark:placeholder:!text-black placeholder:opacity-20 border-white/30"
             )} 
             value={ap.title} 
             onClick={(e) => e.stopPropagation()} 
@@ -2395,7 +2402,7 @@ const loadExistingEditorial = (markdownText) => {
           
           <div className={cn(
             "p-1 rounded-full transition-all",
-            isCollapsed ? "text-slate-400 bg-slate-100" : "text-white bg-white/20"
+            isCollapsed ? "text-[var(--color-text-muted)] bg-[var(--color-bg-input)]" : "text-white bg-white/20"
           )}>
             <ChevronDownLucide className={cn("w-4 h-4 transition-transform duration-300", isCollapsed ? "" : "rotate-180")} />
           </div>
@@ -2406,13 +2413,13 @@ const loadExistingEditorial = (markdownText) => {
       {!isCollapsed && (
         <div className="p-5 animate-in fade-in slide-in-from-top-2 duration-300">
           {/* SIMPLE EXPLANATION HEADING */}
-          <div className="text-sm font-medium text-slate-600 mb-2">
+          <div className="text-sm font-medium text-[var(--color-text-primary)]/80 mb-2">
             Explanation
           </div>
           
           <div 
             ref={el => approachExplainRefs.current[ap.id] = { current: el }} 
-            className="content min-h-[140px] p-4 bg-white border border-slate-400 rounded-xl focus:outline-none focus:ring-4 ring-indigo-500/5 transition-all mb-6 shadow-sm" 
+            className="content min-h-[140px] p-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:ring-2 ring-[var(--color-accent)]/20 transition-all mb-6 shadow-sm" 
             contentEditable 
             suppressContentEditableWarning 
             dangerouslySetInnerHTML={{ __html: ap.explanation }} 
@@ -2434,26 +2441,26 @@ const loadExistingEditorial = (markdownText) => {
             onOutputChange={(o) => { updateApproachOutput(ap.id, o); syncEditorsToState(); }}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-slate-50 rounded-xl border border-slate-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-[var(--color-bg-input)] rounded-xl border border-[var(--color-border)]">
             <div>
-              <div className="flex items-center gap-2 mb-1.5 text-slate-600">
+              <div className="flex items-center gap-2 mb-1.5 text-[var(--color-text-primary)]/70">
                 <Timer className="w-3.5 h-3.5" />
-                <label className="text-xs font-medium">Time Complexity</label>
+                <label className="text-[10px] uppercase font-black tracking-wider">Time Complexity</label>
               </div>
               <input 
-                className="w-full p-2.5 text-xs font-mono border border-slate-400 rounded-lg bg-white focus:ring-2 ring-indigo-500/20 outline-none transition-colors" 
+                className="w-full p-2.5 text-xs font-mono border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:ring-2 ring-[var(--color-accent)]/20 outline-none transition-colors" 
                 value={ap.timeComplexity} 
                 onChange={e => { updateApproach(ap.id, "timeComplexity", e.target.value); syncEditorsToState(); }} 
                 placeholder="e.g. O(N)" 
               />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1.5 text-slate-600">
+              <div className="flex items-center gap-2 mb-1.5 text-[var(--color-text-primary)]/70">
                 <FaCode className="w-3.5 h-3.5" />
-                <label className="text-xs font-medium">Space Complexity</label>
+                <label className="text-[10px] uppercase font-black tracking-wider">Space Complexity</label>
               </div>
               <input 
-                className="w-full p-2.5 text-xs font-mono border border-slate-400 rounded-lg bg-white focus:ring-2 ring-indigo-500/20 outline-none transition-colors" 
+                className="w-full p-2.5 text-xs font-mono border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:ring-2 ring-[var(--color-accent)]/20 outline-none transition-colors" 
                 value={ap.spaceComplexity} 
                 onChange={e => { updateApproach(ap.id, "spaceComplexity", e.target.value); syncEditorsToState(); }} 
                 placeholder="e.g. O(1)" 
@@ -2467,11 +2474,11 @@ const loadExistingEditorial = (markdownText) => {
 })}
              </div>
              {/* FOOTER SECTION (Summary / Special Thanks) */}
-             <div className="mt-8 border-t border-slate-200 pt-6">
-               <div className="text-xs font-bold text-slate-500 uppercase mb-2">Summary & Special Thanks</div>
+             <div className="mt-8 border-t border-[var(--color-border)] pt-6">
+               <div className="text-xs font-bold text-[var(--color-text-primary)]/70 uppercase mb-2">Summary & Special Thanks</div>
                <div 
                    ref={footerEditorRef} 
-                   className="content min-h-[150px] p-4 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 ring-indigo-100 transition-all" 
+                   className="content min-h-[150px] p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 ring-[var(--color-accent)]/20 transition-all" 
                    contentEditable 
                    suppressContentEditableWarning 
                    onFocus={() => setActiveEditor({ type: "footer" })} 
@@ -2485,10 +2492,10 @@ const loadExistingEditorial = (markdownText) => {
            </div>
 
            {/* RIGHT COLUMN: LIVE PREVIEW */}
-           <div className={cn("h-full bg-slate-100 overflow-y-auto", activeTab === 'preview' ? "block" : "hidden lg:block")}>
+           <div className={cn("h-full bg-[var(--color-bg-primary)] overflow-y-auto", activeTab === 'preview' ? "block" : "hidden lg:block")}>
               <div className="h-full p-6">
                  <div className="sticky top-6">
-                    <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-400 uppercase tracking-widest"><FaEye className="w-4 h-4"/> Live Preview</div>
+                    <div className="flex items-center gap-2 mb-4 text-xs font-bold text-[var(--color-text-primary)]/70 uppercase tracking-widest"><FaEye className="w-4 h-4"/> Live Preview</div>
                     <LivePreview />
                  </div>
               </div>
@@ -2497,7 +2504,7 @@ const loadExistingEditorial = (markdownText) => {
            {/* EXPORT TAB CONTENT */}
            {activeTab === 'export' && (
              <div className="p-4 lg:hidden">
-                <textarea className="w-full h-[80vh] p-4 font-mono text-xs bg-slate-900 text-emerald-400 rounded-xl" readOnly value={markdownOutput || exportMarkdown()} />
+                <textarea className="w-full h-[80vh] p-4 font-mono text-xs bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border)] rounded-xl outline-none" readOnly value={markdownOutput || exportMarkdown()} />
              </div>
            )}
 
@@ -2508,6 +2515,7 @@ const loadExistingEditorial = (markdownText) => {
 }
 
 export default EditorialModalPage;
+
 
 
 

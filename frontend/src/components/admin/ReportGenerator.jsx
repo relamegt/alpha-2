@@ -95,77 +95,68 @@ const ReportGenerator = () => {
     const batchOptions = batches.map(b => ({ value: b._id, label: b.name }));
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-8 animate-fade-in pb-24">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-3">
-                        {user?.role === 'instructor' ? 'My Batch Leaderboard' : 'Batch Reports & Leaderboards'}
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1">
-                        View student performance and generate detailed reports.
-                    </p>
-                </div>
-            </div>
-
-            {/* Controls Section */}
-            <div className="glass-panel p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    {/* Batch Selector */}
-                    <div className="w-full md:w-80">
-                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5 ml-1">
-                            Select Batch
-                        </label>
-                        <CustomDropdown
-                            options={batchOptions}
-                            value={selectedBatch}
-                            onChange={setSelectedBatch}
-                            placeholder="Select a Batch"
-                            icon={Layers}
-                        />
+        <div className="admin-page-wrapper">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">
+                            {user?.role === 'instructor' ? 'Batch Reports' : 'System Reports'}
+                        </h1>
+                        <p className="page-header-desc">
+                            View student performance, track progress, and generate detailed analytical reports.
+                        </p>
                     </div>
-
-                    {/* Export Buttons */}
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                         <button
                             onClick={handleExportCSV}
                             disabled={!selectedBatch && user?.role !== 'instructor' || isExportingCSV}
-                            className="bg-[#F1F3F4] dark:bg-gray-800 border border-gray-100 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-500 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                            className="btn-secondary flex items-center justify-center gap-2 min-w-[140px]"
                         >
                             {isExportingCSV ? (
                                 <>
-                                    <svg className="animate-spin -ml-1 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Exporting...
+                                    <div className="spinner border-2 !w-4 !h-4" />
+                                    <span>Exporting...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Database size={18} className="text-green-600" />
-                                    Export CSV
+                                    <Download size={18} />
+                                    <span>Export CSV</span>
                                 </>
                             )}
                         </button>
                         <button
                             onClick={handleExportPDF}
                             disabled={!selectedBatch && user?.role !== 'instructor' || isExportingPDF}
-                            className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md shadow-primary-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                            className="btn-primary flex items-center justify-center gap-2 min-w-[140px]"
                         >
                             {isExportingPDF ? (
                                 <>
-                                    <svg className="animate-spin -ml-1 h-5 w-5 text-current inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Exporting...
+                                    <div className="spinner border-2 !w-4 !h-4 border-white border-t-transparent" />
+                                    <span>Exporting...</span>
                                 </>
                             ) : (
                                 <>
                                     <FileText size={18} />
-                                    Export PDF
+                                    <span>Export PDF</span>
                                 </>
                             )}
                         </button>
+                    </div>
+                </div>
+            </header>
+
+            {/* Controls Section */}
+            <div className="page-controls-bar bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 w-full">
+                    {/* Batch Selector */}
+                    <div className="w-full md:w-80">
+                        <CustomDropdown
+                            options={batchOptions}
+                            value={selectedBatch}
+                            onChange={setSelectedBatch}
+                            placeholder="Select a Batch to View Leaderboard"
+                            icon={Layers}
+                        />
                     </div>
                 </div>
             </div>
@@ -176,13 +167,13 @@ const ReportGenerator = () => {
                     <Leaderboard batchId={selectedBatch} />
                 </div>
             ) : (
-                <div className="text-center py-24 bg-[#F1F3F4] dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                    <div className="bg-gray-50 dark:bg-[#111117]/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                        <Layers className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+                <div className="empty-state-container py-24">
+                    <div className="empty-state-icon">
+                        <Layers size={32} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Batch Selected</h3>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                        Please select a batch from the dropdown above to view the leaderboard and generate performance reports.
+                    <p className="empty-state-text">No Batch Selected</p>
+                    <p className="empty-state-subtext">
+                        Please select a batch from the dropdown above to view the leaderboard and generate reports.
                     </p>
                 </div>
             )}

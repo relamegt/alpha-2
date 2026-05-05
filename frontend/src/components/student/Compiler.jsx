@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import Editor, { useMonaco } from '@monaco-editor/react';
 import { useTheme } from '../../contexts/ThemeContext';
 import toast from 'react-hot-toast';
+import CustomDropdown from '../shared/CustomDropdown';
 
 const JUDGE0_API = import.meta.env.VITE_JUDGE0_API_URL || 'http://localhost:2358';
 
@@ -418,17 +419,13 @@ const Compiler = () => {
             {/* Quick Actions / Language Selector */}
             <div className="h-14 flex-shrink-0 bg-gray-50/50 dark:bg-[var(--color-bg-card)] flex items-center px-4 justify-between border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-4">
-                <div className="relative">
-                  <select
+                <div className="w-48">
+                  <CustomDropdown
+                    options={BASE_LANGS.map(l => ({ value: l.id, label: l.name }))}
                     value={activeTab.languageId}
-                    onChange={(e) => setTabLanguage(activeTab.id, e.target.value)}
-                    className="appearance-none bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-4 pr-10 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
-                  >
-                    {BASE_LANGS.map(lang => (
-                      <option key={lang.id} value={lang.id}>{lang.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    onChange={(val) => setTabLanguage(activeTab.id, val)}
+                    size="small"
+                  />
                 </div>
               </div>
 
@@ -675,15 +672,11 @@ const Compiler = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-500 dark:text-gray-400">Typography</label>
-                <select
+                <CustomDropdown
+                  options={CODE_FONTS.map(f => ({ value: f.id, label: f.label }))}
                   value={fontFamilyId}
-                  onChange={e => setFontFamilyId(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-primary-500/20 appearance-none"
-                >
-                  {CODE_FONTS.map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
-                  ))}
-                </select>
+                  onChange={setFontFamilyId}
+                />
               </div>
             </div>
 

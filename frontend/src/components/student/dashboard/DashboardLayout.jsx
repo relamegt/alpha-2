@@ -124,28 +124,21 @@ const DashboardLayout = () => {
                     <div className="flex items-center gap-6">
                         {/* Search Bar */}
                         <div className="hidden md:flex items-center relative group w-72" ref={searchRef}>
-                            <Search 
-                                size={18} 
-                                className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors z-10 ${
-                                    isSearchOpen ? 'text-primary-500' : 'text-gray-400'
-                                }`} 
-                            />
-                            <input 
-                                ref={inputRef}
-                                type="text" 
-                                placeholder="Search everything..." 
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setIsSearchOpen(true);
-                                }}
-                                onFocus={() => setIsSearchOpen(true)}
-                                className={`w-full pl-11 pr-12 py-2.5 rounded-xl text-sm outline-none transition-all ${
-                                    isDark 
-                                        ? 'bg-[var(--color-bg-card)] border border-gray-800 text-gray-200 focus:ring-2 focus:ring-primary-500/20' 
-                                        : 'bg-[#F1F3F4] text-gray-800 border border-transparent focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 shadow-sm placeholder:text-gray-500'
-                                }`}
-                            />
+                            <div className="page-search-wrapper w-full">
+                                <Search size={18} className="page-search-icon" />
+                                <input 
+                                    ref={inputRef}
+                                    type="text" 
+                                    placeholder="Search everything..." 
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setIsSearchOpen(true);
+                                    }}
+                                    onFocus={() => setIsSearchOpen(true)}
+                                    className="page-search-input"
+                                />
+                            </div>
                             <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
                                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border transition-colors ${
                                     isDark 
@@ -200,7 +193,7 @@ const DashboardLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className={`flex-1 ${isFullWidthPage ? '' : 'pt-2 pl-4 pr-8 pb-6'}`}>
+                <main className={`flex-1 ${isFullWidthPage ? '' : 'pt-4 pl-8 pr-8 pb-6'}`}>
                     <Outlet />
                 </main>
             </div>

@@ -104,88 +104,104 @@ const AnnouncementManager = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
-            <div className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-xl shadow-primary-500/5">
-                <div>
-                    <h1 className="text-4xl font-black dark:text-white tracking-tight flex items-center gap-4">
-                        <div className="p-3 bg-[var(--color-accent)] rounded-2xl text-white shadow-lg shadow-[var(--color-accent)]/20">
-                            <Megaphone className="w-8 h-8" />
-                        </div>
-                        Announcements
-                    </h1>
-                    <p className="text-gray-500 mt-2 font-medium">Keep your students updated with the latest news and alerts.</p>
-                </div>
-                <button 
-                    onClick={openCreate}
-                    className="btn-primary px-8 py-3 rounded-2xl flex items-center gap-2"
-                >
-                    <Plus className="w-6 h-6" />
-                    New Blast
-                </button>
-            </div>
-
-            <div className="relative max-w-xl">
-                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                    type="text"
-                    placeholder="Search announcements..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-4 border border-[var(--color-border-interactive)] rounded-2xl bg-white dark:bg-[var(--color-bg-card)] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-[var(--color-accent)]/30 shadow-sm transition-all"
-                />
-            </div>
-
-            <div className="space-y-4">
-                {filteredAnnouncements?.map(announcement => (
-                    <div key={announcement.id} className="bg-white dark:bg-[var(--color-bg-card)] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 flex items-center justify-between group transition-all hover:bg-gray-50 dark:hover:bg-primary-500/5">
-                        <div className="flex items-center gap-6">
-                            <div className={`w-3 h-12 rounded-full ${getTypeColor(announcement.type)} shadow-lg shadow-black/10`} />
-                            <div>
-                                <h4 className="text-lg font-bold dark:text-white">{announcement.title}</h4>
-                                <p className="text-sm text-gray-500 line-clamp-1 max-w-2xl">{announcement.content}</p>
-                                <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {new Date(announcement.createdAt).toLocaleString()}
-                                    </span>
-                                    {announcement.isGlobal && (
-                                         <span className="text-[10px] font-black uppercase text-primary-500 bg-primary-50 dark:bg-primary-500/10 px-2 py-0.5 rounded">Global Broadcast</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <button onClick={() => openEdit(announcement)} className="btn-secondary p-3 text-gray-400 hover:text-primary-500 border-transparent hover:border-primary-200">
-                                <Edit2 className="w-5 h-5" />
-                            </button>
-                            <button onClick={() => deleteMutation.mutate(announcement.id)} className="btn-secondary p-3 text-gray-400 hover:text-red-500 border-transparent hover:border-red-200">
-                                <Trash2 className="w-5 h-5" />
-                            </button>
-                        </div>
+        <div className="admin-page-wrapper">
+            <header className="page-header-container">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1">
+                        <h1 className="page-header-title">Announcements</h1>
+                        <p className="page-header-desc">Keep your students updated with the latest news, alerts, and platform updates.</p>
                     </div>
-                ))}
+                    <button 
+                        onClick={openCreate}
+                        className="btn-primary flex items-center justify-center gap-2"
+                    >
+                        <Plus className="w-5 h-5" />
+                        New Broadcast
+                    </button>
+                </div>
+            </header>
+
+            <div className="page-controls-bar">
+                <div className="page-search-wrapper w-full max-w-sm">
+                    <Search size={18} className="page-search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search announcements..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="page-search-input"
+                    />
+                </div>
+            </div>
+
+            <div className="table-wrapper">
+                <table className="admin-custom-table">
+                    <thead>
+                        <tr>
+                            <th>Announcement</th>
+                            <th>Type</th>
+                            <th>Broadcast Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredAnnouncements?.map(announcement => (
+                            <tr key={announcement.id}>
+                                <td className="title-td">
+                                    <div className="title-group">
+                                        <span className="main-title">{announcement.title}</span>
+                                        <span className="sub-description">{announcement.content?.slice(0, 80)}...</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${getTypeColor(announcement.type)}`} />
+                                        <span className="text-xs font-bold text-gray-500 uppercase">{announcement.type}</span>
+                                        {announcement.isGlobal && (
+                                            <span className="text-[9px] font-black uppercase text-primary-500 bg-primary-50 dark:bg-primary-500/10 px-1.5 py-0.5 rounded ml-1">Global</span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span className="text-xs text-gray-400">
+                                        {new Date(announcement.createdAt).toLocaleDateString()}
+                                    </span>
+                                </td>
+                                <td className="actions-td">
+                                    <div className="action-row">
+                                        <button onClick={() => openEdit(announcement)} className="icon-btn build" title="Edit">
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button onClick={() => deleteMutation.mutate(announcement.id)} className="icon-btn delete" title="Delete">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] rounded-[2.5rem] p-10 max-w-2xl w-full shadow-2xl space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-black dark:text-white tracking-tight">{editingAnnouncement ? 'Modify Broadcast' : 'Create New Blast'}</h2>
-                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
-                                <X className="w-6 h-6 dark:text-gray-400" />
+                <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+                    <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{editingAnnouncement ? 'Modify Broadcast' : 'Create New Blast'}</h2>
+                            <button onClick={() => setShowModal(false)} className="modal-close">
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="modal-body space-y-6">
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase ml-1">Announcement Title</label>
                                 <input 
                                     type="text" 
                                     required
                                     placeholder="Enter subject..."
-                                    className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 dark:text-white"
+                                    className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                                 />
@@ -213,13 +229,13 @@ const AnnouncementManager = () => {
                                     rows={5}
                                     required
                                     placeholder="What do you want to tell your students?..."
-                                    className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 dark:text-white"
+                                    className="w-full bg-[var(--color-bg-primary)] border-none rounded-2xl p-4 dark:text-white"
                                     value={formData.content}
                                     onChange={(e) => setFormData({...formData, content: e.target.value})}
                                 />
                             </div>
 
-                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                            <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-white/[0.02] rounded-2xl">
                                 <div>
                                     <h5 className="text-sm font-bold dark:text-white">Global Broadcast</h5>
                                     <p className="text-[10px] text-gray-400 font-bold uppercase">Visible to all registered students</p>
@@ -232,11 +248,12 @@ const AnnouncementManager = () => {
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-4 pt-6 border-t border-[var(--color-border-interactive)]">
-                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary px-8">Discard</button>
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Discard</button>
                                 <button 
                                     type="submit"
-                                    className="btn-primary px-10 py-3"
+                                    className="btn-primary"
+                                    disabled={createMutation.isLoading || updateMutation.isLoading}
                                 >
                                     {editingAnnouncement ? 'Update Broadcast' : 'Fire Announcement'}
                                 </button>
@@ -245,16 +262,18 @@ const AnnouncementManager = () => {
                     </div>
                 </div>
             )}
-        </div>
-    );
-};
+            </div>
+        );
+    };
+
+
+
+
+
+
+
+
+
+
 
 export default AnnouncementManager;
-
-
-
-
-
-
-
-

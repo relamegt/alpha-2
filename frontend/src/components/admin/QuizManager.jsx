@@ -144,93 +144,118 @@ const QuizManager = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2">
-                        <CheckSquare className="text-blue-500" />
-                        Quiz Manager
-                    </h1>
-                    <p className="text-sm text-gray-500">Manage interactive quizzes and assessments</p>
+        <div className="admin-page-wrapper transition-colors">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">Quiz Manager</h1>
+                        <p className="page-header-desc">Manage interactive quizzes and assessments</p>
+                    </div>
+                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                        <Plus size={18} />
+                        <span>Create New Quiz</span>
+                    </button>
                 </div>
-                <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                    <Plus size={18} />
-                    <span>Create New Quiz</span>
-                </button>
-            </div>
+            </header>
 
-            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="page-tabs-container">
+                <div className="page-search-wrapper w-full max-w-md">
+                    <Search className="page-search-icon" size={18} />
                     <input
                         type="text"
                         placeholder="Search quizzes..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="page-search-input"
                     />
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center py-20"><div className="spinner"></div></div>
+            ) : filteredQuizzes.length > 0 ? (
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Quiz Title</th>
+                                <th>Questions</th>
+                                <th>Difficulty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredQuizzes.map(q => (
+                                <tr key={q._id}>
+                                    <td className="title-td">
+                                        <div className="title-group">
+                                            <span className="main-title">{q.title}</span>
+                                            <span className="sub-description">{q.description?.slice(0, 80)}...</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className="text-xs font-bold text-gray-500">{q.quizQuestions?.length || 0} Qs</span>
+                                    </td>
+                                    <td>
+                                        <span className={`diff-badge ${q.difficulty || 'Easy'}`}>
+                                            {q.difficulty || 'Easy'}
+                                        </span>
+                                    </td>
+                                    <td className="actions-td">
+                                        <div className="action-row">
+                                            <button onClick={() => { 
+                                                setEditingQuiz(q); 
+                                                setFormData({
+                                                    ...q,
+                                                    type: 'quiz',
+                                                    quizQuestions: q.quizQuestions || []
+                                                }); 
+                                                setShowEditModal(true); 
+                                            }} className="icon-btn build" title="Edit">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => handleDelete(q._id, q.title)} className="icon-btn delete" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredQuizzes.map(q => (
-                        <div key={q._id} className="card group hover:border-blue-500/50 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 rounded-lg bg-blue-100/50 text-blue-600">
-                                    <List size={24} />
-                                </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => { 
-                                        setEditingQuiz(q); 
-                                        setFormData({
-                                            ...q,
-                                            type: 'quiz',
-                                            quizQuestions: q.quizQuestions || []
-                                        }); 
-                                        setShowEditModal(true); 
-                                    }} className="btn-secondary p-1.5 text-blue-600 border-transparent hover:border-blue-200">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDelete(q._id, q.title)} className="btn-secondary p-1.5 text-red-600 border-transparent hover:border-red-200">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">{q.title}</h3>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span className="flex items-center gap-1 font-semibold">{q.quizQuestions?.length || 0} Questions</span>
-                                <span className="flex items-center gap-1 font-mono uppercase text-[10px] tracking-widest">{q.difficulty}</span>
-                            </div>
-                        </div>
-                    ))}
+                <div className="empty-state-container">
+                    <div className="empty-state-icon">
+                        <Layers size={32} />
+                    </div>
+                    <p className="empty-state-text">No quizzes found</p>
+                    <p className="empty-state-subtext">Create engaging assessments for your students</p>
                 </div>
             )}
 
             {(showCreateModal || showEditModal) && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
-                            <h2 className="text-xl font-bold">{showCreateModal ? 'New Quiz' : 'Edit Quiz'}</h2>
-                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
+                    <div className="modal-content max-w-5xl" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{showCreateModal ? 'New Quiz' : 'Edit Quiz'}</h2>
+                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="modal-close">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="flex-1 overflow-y-auto p-8 space-y-8">
+                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="modal-body space-y-8">
                             <div className="grid grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Quiz Details</label>
-                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
-                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Meta</label>
-                                    <select value={formData.difficulty} onChange={e => setFormData({...formData, difficulty: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none">
+                                    <select value={formData.difficulty} onChange={e => setFormData({...formData, difficulty: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none">
                                         <option>Easy</option><option>Medium</option><option>Hard</option>
                                     </select>
-                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({...formData, points: parseInt(e.target.value)})} className="w-full px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({...formData, points: parseInt(e.target.value)})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                             </div>
 
@@ -249,24 +274,24 @@ const QuizManager = () => {
                                         </button>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-gray-500 uppercase">Question {qIdx + 1}</label>
-                                            <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none font-medium" />
+                                            <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-medium" />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             {q.options.map((opt, oIdx) => (
                                                 <div key={oIdx} className="flex items-center gap-2">
                                                     <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)} />
-                                                    <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none text-sm" />
+                                                    <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm" />
                                                 </div>
                                             ))}
                                         </div>
-                                        <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none text-xs italic" />
+                                        <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-xs italic" />
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-8 border-t border-[var(--color-border-interactive)]">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary px-6">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="btn-primary px-10">
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary">
                                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create Quiz' : 'Save Changes')}
                                 </button>
                             </div>
@@ -279,11 +304,3 @@ const QuizManager = () => {
 };
 
 export default QuizManager;
-
-
-
-
-
-
-
-

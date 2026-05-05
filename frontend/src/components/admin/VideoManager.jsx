@@ -12,7 +12,7 @@ const VideoManager = () => {
     const [filteredVideos, setFilteredVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -95,7 +95,7 @@ const VideoManager = () => {
             // Pick only editable fields to prevent sending junk (isSolved, createdAt, etc.) to backend
             const { title, type, difficulty, points, description, section, videoUrl, summary, summaryLink, resources, quizQuestions } = formData;
             const updatePayload = { title, type, difficulty, points, description, section, videoUrl, summary, summaryLink, resources, quizQuestions };
-            
+
             await videoService.update(editingVideo.id || editingVideo._id, updatePayload);
             toast.success('Video content updated');
             setShowEditModal(false);
@@ -148,115 +148,136 @@ const VideoManager = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold dark:text-white flex items-center gap-2">
-                        <Youtube className="text-red-500" />
-                        Video Manager
-                    </h1>
-                    <p className="text-sm text-gray-500">Manage educational video content</p>
+        <div className="admin-page-wrapper transition-colors">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="page-header-title">Video Manager</h1>
+                        <p className="page-header-desc">Manage educational video content and study materials</p>
+                    </div>
+                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                        <Plus size={18} />
+                        <span>Add Video Content</span>
+                    </button>
                 </div>
-                <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                    <Plus size={18} />
-                    <span>Add Video Content</span>
-                </button>
-            </div>
+            </header>
 
-            <div className="flex gap-4 items-center bg-white dark:bg-[var(--color-bg-card)] p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="page-tabs-container">
+                <div className="page-search-wrapper w-full max-w-md">
+                    <Search className="page-search-icon" size={18} />
                     <input
                         type="text"
                         placeholder="Search videos..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="page-search-input"
                     />
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center py-20"><div className="spinner"></div></div>
+            ) : filteredVideos.length > 0 ? (
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Video Title</th>
+                                <th>Difficulty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredVideos.map(v => (
+                                <tr key={v._id}>
+                                    <td className="title-td">
+                                        <div className="title-group">
+                                            <span className="main-title">{v.title}</span>
+                                            <span className="sub-description">{v.description?.slice(0, 80)}...</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={`diff-badge ${v.difficulty || 'Easy'}`}>
+                                            {v.difficulty || 'Easy'}
+                                        </span>
+                                    </td>
+                                    <td className="actions-td">
+                                        <div className="action-row">
+                                            <button onClick={() => {
+                                                setEditingVideo(v);
+                                                setFormData({
+                                                    ...v,
+                                                    type: 'video',
+                                                    summary: v.summary || { content: '' },
+                                                    summaryLink: v.summaryLink || '',
+                                                    resources: v.resources || [],
+                                                    quizQuestions: v.quizQuestions || []
+                                                });
+                                                setShowEditModal(true);
+                                            }} className="icon-btn build" title="Edit">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => handleDelete(v._id, v.title)} className="icon-btn delete" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredVideos.map(v => (
-                        <div key={v._id} className="card group hover:border-red-500/50 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-2 rounded-lg bg-red-100/50 text-red-600">
-                                    <PlayCircle size={24} />
-                                </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => { 
-                                        setEditingVideo(v); 
-                                        setFormData({
-                                            ...v,
-                                            type: 'video',
-                                            summary: v.summary || { content: '' },
-                                            summaryLink: v.summaryLink || '',
-                                            resources: v.resources || [],
-                                            quizQuestions: v.quizQuestions || []
-                                        }); 
-                                        setShowEditModal(true); 
-                                    }} className="btn-secondary p-1.5 text-blue-600 border-transparent hover:border-blue-200">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDelete(v._id, v.title)} className="btn-secondary p-1.5 text-red-600 border-transparent hover:border-red-200">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">{v.title}</h3>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span className="flex items-center gap-1"><Youtube size={12} /> {v.section || 'General'}</span>
-                                <span className="flex items-center gap-1 font-mono uppercase text-[10px] tracking-widest">{v.difficulty}</span>
-                            </div>
-                        </div>
-                    ))}
+                <div className="empty-state-container">
+                    <div className="empty-state-icon">
+                        <Youtube size={32} />
+                    </div>
+                    <p className="empty-state-text">No videos found</p>
+                    <p className="empty-state-subtext">Add educational content to your library</p>
                 </div>
             )}
 
             {(showCreateModal || showEditModal) && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[var(--color-bg-card)] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                            <h2 className="text-xl font-bold">{showCreateModal ? 'Add Video Content' : 'Edit Video Content'}</h2>
-                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
+                    <div className="modal-content max-w-4xl" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{showCreateModal ? 'Add Video Content' : 'Edit Video Content'}</h2>
+                            <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="modal-close">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="flex-1 overflow-y-auto p-6 space-y-6">
+                        <form onSubmit={showCreateModal ? handleCreate : handleUpdate} className="modal-body space-y-6 flex flex-col">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Title</label>
-                                    <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" />
+                                    <input required type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Section/Topic</label>
-                                    <input type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" placeholder="e.g. Recursion, DP" />
+                                    <input type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="e.g. Recursion, DP" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Video URL (YouTube/Direct)</label>
-                                    <input required type="text" value={formData.videoUrl} onChange={e => setFormData({...formData, videoUrl: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" placeholder="https://youtube.com/watch?v=..." />
+                                    <input required type="text" value={formData.videoUrl} onChange={e => setFormData({ ...formData, videoUrl: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="https://youtube.com/watch?v=..." />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-primary-600 flex items-center gap-1.5"><FileText size={14}/> Summary Link (Optional)</label>
-                                    <input type="text" value={formData.summaryLink} onChange={e => setFormData({...formData, summaryLink: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none" placeholder="https://docs.google.com/..." />
+                                    <label className="text-sm font-semibold text-primary-600 flex items-center gap-1.5"><FileText size={14} /> Summary Link (Optional)</label>
+                                    <input type="text" value={formData.summaryLink} onChange={e => setFormData({ ...formData, summaryLink: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="https://docs.google.com/..." />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Description</label>
-                                <textarea rows={2} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none resize-none" />
+                                <textarea rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none resize-none" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Summary Content (Optional Markdown)</label>
-                                <textarea rows={4} value={formData.summary?.content || ''} onChange={e => setFormData({...formData, summary: { content: e.target.value }})} className="w-full px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none resize-none" placeholder="Add study material or notes here..." />
+                                <textarea rows={4} value={formData.summary?.content || ''} onChange={e => setFormData({ ...formData, summary: { content: e.target.value } })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none resize-none" placeholder="Add study material or notes here..." />
                             </div>
 
                             {/* Quiz Questions Section */}
-                            <div className="space-y-4 pt-4 border-t border-[var(--color-border-interactive)]">
+                            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-md font-bold flex items-center gap-2 font-problem text-gray-800 dark:text-gray-200 border-l-4 border-primary-500 pl-3">
                                         Quiz Questions (Optional)
@@ -265,7 +286,7 @@ const VideoManager = () => {
                                         <Plus size={14} /> Add Question
                                     </button>
                                 </div>
-                                
+
                                 <div className="space-y-4">
                                     {formData.quizQuestions?.map((q, qIdx) => (
                                         <div key={qIdx} className="p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-3 relative group bg-gray-50/30 dark:bg-gray-800/10 transition-colors">
@@ -274,30 +295,29 @@ const VideoManager = () => {
                                             </button>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Question {qIdx + 1}</label>
-                                                <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
+                                                <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {q.options.map((opt, oIdx) => (
                                                     <div key={oIdx} className="flex items-center gap-2">
                                                         <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)} className="accent-primary-500 w-3 h-3" />
-                                                        <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none text-xs focus:border-primary-500 transition-colors" />
+                                                        <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-xs focus:border-primary-500 transition-colors" />
                                                     </div>
                                                 ))}
                                             </div>
-                                            <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-800 dark:bg-[#1c1c26] outline-none text-[10px] italic bg-transparent" />
+                                            <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-[10px] italic bg-transparent" />
                                         </div>
                                     ))}
                                     {(!formData.quizQuestions || formData.quizQuestions.length === 0) && (
-                                        <div className="text-center py-8 border-2 border-dashed border-[var(--color-border-interactive)] rounded-xl transition-colors">
+                                        <div className="text-center py-8 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl transition-colors">
                                             <p className="text-xs text-gray-400 italic font-medium">No quiz questions added. Click "Add Question" to create a mini-quiz for this video.</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-
-                            <div className="flex justify-end gap-3 mt-8">
-                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary px-6">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="btn-primary px-8">
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-primary">
                                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (showCreateModal ? 'Create Video Content' : 'Save Changes')}
                                 </button>
                             </div>
@@ -310,11 +330,3 @@ const VideoManager = () => {
 };
 
 export default VideoManager;
-
-
-
-
-
-
-
-

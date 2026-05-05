@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronRight, CheckCircle, Circle, ChevronDown, Search, X, LayoutGrid, FileText, Video as VideoIcon, Code2, HelpCircle, Trophy } from 'lucide-react';
+import { ChevronRight, CheckCircle, Circle, ChevronDown, Search, X, LayoutGrid, FileText, Video as VideoIcon, Code2, HelpCircle, Trophy, Monitor, Terminal as TerminalIcon } from 'lucide-react';
 import { CiCircleList } from 'react-icons/ci';
 import { LuFolderDot, LuFolderOpenDot } from "react-icons/lu";
 import problemService from '../../services/problemService';
 import courseService from '../../services/courseService';
 import contestService from '../../services/contestService';
+import courseContestService from '../../services/courseContestService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -32,7 +33,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     // Fetch Problems
     const { data: problemsData, isLoading: problemsLoading } = useQuery({
         queryKey: ['problems'],
-        queryFn: () => problemService.getAllProblems(),
+        queryFn: () => problemService.getAllContent(),
     });
     const problems = problemsData?.problems || [];
 
@@ -61,11 +62,11 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     });
     const batchContests = contestsData?.contests || [];
 
-    // Fetch Course Specific Contests
     const { data: courseContestsData, isLoading: courseContestsLoading } = useQuery({
         queryKey: ['course-contests', courseId],
-        queryFn: () => contestService.getContestsByCourse(courseId),
-        enabled: !!courseId
+        queryFn: () => courseContestService.getCourseContestsByCourse(courseId),
+        enabled: !!courseId,
+        staleTime: 0,
     });
     const courseContests = courseContestsData?.contests || [];
 
@@ -79,16 +80,20 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         enabled: shouldFetchFocus
     });
 
-    const loading = problemsLoading || (shouldFetchCourses && coursesLoading) || contestsLoading || courseContestsLoading || (shouldFetchFocus && focusLoading);
+    const listLoading = (shouldFetchCourses && coursesLoading) || courseContestsLoading || (shouldFetchFocus && focusLoading);
+    const loading = problemsLoading || listLoading; 
+    
+    // Decoupled loading state for main container - allows partial rendering
+    const isMainDataLoading = (shouldFetchCourses && coursesLoading) || (shouldFetchFocus && focusLoading);
     const [expandedSections, setExpandedSections] = useState(() => {
         try {
-            const saved = sessionStorage.getItem(`exp_sec_${courseId || 'default'}`);
+            const saved = localStorage.getItem(`exp_sec_${courseId || 'default'}`);
             return saved ? JSON.parse(saved) : {};
         } catch (e) { return {}; }
     });
     const [expandedSubsections, setExpandedSubsections] = useState(() => {
         try {
-            const saved = sessionStorage.getItem(`exp_sub_${courseId || 'default'}`);
+            const saved = localStorage.getItem(`exp_sub_${courseId || 'default'}`);
             return saved ? JSON.parse(saved) : {};
         } catch (e) { return {}; }
     });
@@ -100,11 +105,11 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
 
 
     useEffect(() => {
-        sessionStorage.setItem(`exp_sec_${courseId || 'default'}`, JSON.stringify(expandedSections));
+        localStorage.setItem(`exp_sec_${courseId || 'default'}`, JSON.stringify(expandedSections));
     }, [expandedSections, courseId]);
 
     useEffect(() => {
-        sessionStorage.setItem(`exp_sub_${courseId || 'default'}`, JSON.stringify(expandedSubsections));
+        localStorage.setItem(`exp_sub_${courseId || 'default'}`, JSON.stringify(expandedSubsections));
     }, [expandedSubsections, courseId]);
 
     // Tracks which section/subsection the user last clicked a problem from.
@@ -114,11 +119,11 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     const [difficulty, setDifficulty] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState(() => {
-        return sessionStorage.getItem('last_sidebar_category') || 'all';
+        return localStorage.getItem('last_sidebar_category') || 'all';
     });
 
     useEffect(() => {
-        sessionStorage.setItem('last_sidebar_category', activeCategory);
+        localStorage.setItem('last_sidebar_category', activeCategory);
     }, [activeCategory]);
 
     useEffect(() => {
@@ -164,16 +169,20 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             for (const course of courses) {
                 if (!course.sections) continue;
                 for (const section of course.sections) {
-                    if (!section.subsections) continue;
-                    for (const sub of section.subsections) {
+                    const allSubgroups = [
+                        ...(section.problemIds?.length || section.courseContestIds?.length ? [{ problemIds: section.problemIds, courseContestIds: section.courseContestIds, _id: section._id + '-core' }] : []),
+                        ...(section.subsections || [])
+                    ];
+                    if (!allSubgroups.length) continue;
+                    for (const sub of allSubgroups) {
                         let match = false;
                         if (problemId) {
                             match = sub.problemIds?.some(pid => 
                                 String(pid) === problemId || problemIdAliasMap[String(pid)] === problemId
                             );
                         } else if (contestSlug && contests.length) {
-                            match = sub.contestIds?.some(cid => {
-                                const cidStr = typeof cid === 'object' ? cid.toString() : cid;
+                            match = sub.courseContestIds?.some(cid => {
+                                const cidStr = String(cid?.$oid || cid);
                                 const contest = contests.find(c => String(c._id) === cidStr || String(c.id) === cidStr);
                                 if (contest) {
                                     return contest.slug === contestSlug || String(contest._id) === contestSlug || String(contest.id) === contestSlug;
@@ -222,8 +231,12 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             let found = false;
             for (const section of activeCourseSections) {
                 if (found) break;
-                if (section.subsections) {
-                    for (const sub of section.subsections) {
+                const allSubgroups = [
+                    ...(section.problemIds?.length || section.courseContestIds?.length ? [{ problemIds: section.problemIds, courseContestIds: section.courseContestIds, _id: section._id + '-core' }] : []),
+                    ...(section.subsections || [])
+                ];
+                if (allSubgroups.length > 0) {
+                    for (const sub of allSubgroups) {
                         let match = false;
                         if (problemId && problems.length) {
                             match = sub.problemIds?.some(pid => {
@@ -232,8 +245,8 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                 return pidStr === problemId || resolvedSlug === problemId;
                             });
                         } else if (contestSlug && contests.length) {
-                            match = sub.contestIds?.some(cid => {
-                                const cidStr = typeof cid === 'object' ? cid.toString() : cid;
+                            match = sub.courseContestIds?.some(cid => {
+                                const cidStr = String(cid?.$oid || cid);
                                 const contest = contests.find(c => String(c._id) === cidStr || String(c.id) === cidStr);
                                 if (contest) {
                                     return contest.slug === contestSlug || String(contest._id) === contestSlug || String(contest.id) === contestSlug;
@@ -270,7 +283,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             // Apply activeCategory filter to subProblems
             const filteredSubProblems = subProblems.filter(p => {
                 if (activeCategory === 'all') return true;
-                if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
+                if (activeCategory === 'articles') return p.type === 'material' || p.type === 'article';
                 if (activeCategory === 'videos') return p.type === 'video';
                 if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
                 if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -303,7 +316,8 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         }
 
         // Mode 2: Standard Tree View
-        if (!problems.length && !activeCourseSections.length) return null;
+        // Don't return null if only problems haven't loaded; sections/contests can still show
+        if (!activeCourseSections.length && !problems.length && !contests.length) return null;
         const problemMap = {};
         problems.forEach(p => {
             problemMap[p._id ? p._id.toString() : p.id] = p;
@@ -313,7 +327,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
 
         const filteredProblems = problems.filter(p => {
             if (activeCategory === 'all') return true;
-            if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
+            if (activeCategory === 'articles') return p.type === 'material';
             if (activeCategory === 'videos') return p.type === 'video';
             if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
             if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -333,7 +347,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     // Apply category filter
                     .filter(p => {
                         if (activeCategory === 'all') return true;
-                        if (activeCategory === 'articles') return (p.type === 'material' || p.type === 'article');
+                        if (activeCategory === 'articles') return p.type === 'material' || p.type === 'article';
                         if (activeCategory === 'videos') return p.type === 'video';
                         if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
                         if (activeCategory === 'quiz') return p.type === 'quiz';
@@ -343,23 +357,63 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     .filter(p => difficulty === 'All' || p.difficulty === difficulty)
                     .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
-                const subsectionContests = (subsection.contestIds || [])
+                const subsectionContests = (subsection.courseContestIds || [])
                     .map(cid => {
-                        const cidStr = typeof cid === 'object' ? cid.toString() : cid;
-                        return contests.find(c => (c._id === cidStr || c.id === cidStr));
+                        const cidStr = String(cid?.$oid || cid);
+                        return contests.find(c => (String(c._id) === cidStr || String(c.id) === cidStr));
                     })
                     .filter(c => !!c)
                     .filter(c => activeCategory === 'all' || activeCategory === 'contests')
-                    .filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()));
+                    .filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
                 return { 
                     ...subsection, 
                     problems: subsectionProblems,
                     contests: subsectionContests 
                 };
-            }).filter(sub => sub.problems.length > 0 || sub.contests.length > 0);
-            return { ...section, subsections: mappedSubsections };
-        }).filter(sec => sec.subsections.length > 0);
+            }).filter(sub => {
+                if (problemsLoading || courseContestsLoading) return true;
+                return sub.problems.length > 0 || sub.contests.length > 0;
+            });
+
+            const sectionProblems = (section.problemIds || [])
+                .map(pid => {
+                    const pidStr = typeof pid === 'object' ? pid.toString() : pid;
+                    categorizedProblemIds.add(pidStr);
+                    return problemMap[pidStr];
+                })
+                .filter(p => !!p)
+                .filter(p => {
+                    if (activeCategory === 'all') return true;
+                    if (activeCategory === 'articles') return p.type === 'material' || p.type === 'article';
+                    if (activeCategory === 'videos') return p.type === 'video';
+                    if (activeCategory === 'problems') return p.type === 'coding' || p.type === 'sql' || p.type === 'problem' || !p.type;
+                    if (activeCategory === 'quiz') return p.type === 'quiz';
+                    if (activeCategory === 'contests') return false;
+                    return true;
+                })
+                .filter(p => difficulty === 'All' || p.difficulty === difficulty)
+                .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
+            const sectionContests = (section.courseContestIds || [])
+                .map(cid => {
+                    const cidStr = String(cid?.$oid || cid);
+                    return contests.find(c => (String(c._id) === cidStr || String(c.id) === cidStr));
+                })
+                .filter(c => !!c)
+                .filter(c => activeCategory === 'all' || activeCategory === 'contests')
+                .filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
+
+            return { 
+                ...section, 
+                subsections: mappedSubsections,
+                problems: sectionProblems,
+                contests: sectionContests
+            };
+        }).filter(sec => {
+            if (problemsLoading || courseContestsLoading) return true;
+            return sec.subsections.length > 0 || sec.problems.length > 0 || sec.contests.length > 0;
+        });
 
         const uncategorized = courseId ? [] : filteredProblems.filter(p =>
             !categorizedProblemIds.has(p.id) &&
@@ -369,7 +423,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         );
 
         return { sections: mappedSections, uncategorized };
-    }, [problems, activeCourseSections, activeCategory, difficulty, searchQuery, subId, courseId, focusedData, focusLoading]);
+    }, [problems, activeCourseSections, activeCategory, difficulty, searchQuery, subId, courseId, focusedData, focusLoading, contests, problemsLoading]);
 
     // Auto-expand on search
     useEffect(() => {
@@ -410,7 +464,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         
         // Add categorized
         (structuredContent.sections || []).forEach(s => {
-            (s.subsections || []).forEach(sub => {
+            [s, ...(s.subsections || [])].forEach(sub => {
                 (sub.problems || []).forEach(p => {
                     const id = p._id || p.id;
                     if (!seen.has(id)) {
@@ -474,9 +528,9 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-full bg-[#F1F3F4] dark:bg-[#111117] overflow-hidden border-r border-gray-200 dark:border-gray-800 animate-pulse transition-colors">
+            <div className="flex flex-col h-full bg-white dark:bg-[#111117] overflow-hidden border-r border-gray-200 dark:border-gray-800 animate-pulse transition-colors">
                 {/* Header Skeleton */}
-                <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-[#F1F3F4] dark:bg-[#111117] z-10">
+                <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111117] z-10">
                     {/* Title row */}
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -494,7 +548,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     <div className="w-full h-8 bg-gray-100 dark:bg-[#111117] rounded-lg mb-3"></div>
 
                     {/* Difficulty filter skeleton */}
-                    <div className="flex gap-1 bg-gray-50 dark:bg-[#111117]/50 p-1 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <div className="flex gap-1 bg-gray-50 dark:bg-[#111117]/50 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
                         {[1, 2, 3, 4].map(i => (
                             <div key={i} className="flex-1 py-1.5 h-6 bg-gray-200 dark:bg-[#111117] rounded-md"></div>
                         ))}
@@ -535,7 +589,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     ];
 
     return (
-        <div className={`flex h-full bg-[#F1F3F4] dark:bg-[#111117] overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-[40px]' : ''}`}>
+<div className={`flex h-full bg-white dark:bg-[#111117] overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-[40px]' : ''}`}>
             {/* ── Collapsed Content Label ── */}
             {isCollapsed && (
                 <div 
@@ -553,7 +607,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             {/* ── Category Bar (Vertical) - Commented out as requested ── */}
             {/* 
             {!isCollapsed && (
-                <div className="w-[60px] shrink-0 bg-gray-50/50 dark:bg-[#0F1117] border-r border-gray-200 dark:border-gray-800 flex flex-col items-center py-4 gap-2 transition-colors">
+                <div className="w-[60px] shrink-0 bg-gray-50/50 dark:bg-[#0F1117] border-r border-gray-100 dark:border-gray-800 flex flex-col items-center py-4 gap-2 transition-colors">
                     {categories.map(cat => (
                         <button
                             key={cat.id}
@@ -581,7 +635,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             {!isCollapsed && (
                 <div className="flex flex-col flex-1 min-w-[240px] animate-in fade-in slide-in-from-left-2 duration-300">
                     {/* ── Header ─────────────────────────────────────────────── */}
-                    <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-[#F1F3F4] dark:bg-[#111117] z-10 transition-colors">
+                    <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111117] z-10 transition-colors">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2 min-w-0">
                                 <div className="shrink-0 p-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
@@ -636,7 +690,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     {/* ── List ────────────────────────────────────────────────── */}
                     <div 
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F3F4] dark:bg-[#111117] transition-colors pb-10 custom-thin-scrollbar"
+                        className="flex-1 overflow-y-auto overflow-x-hidden bg-white dark:bg-[#111117] transition-colors pb-10 custom-thin-scrollbar"
                     >
                         {structuredContent?.isSubView ? (
                             structuredContent.isLoading ? (
@@ -683,12 +737,16 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                                             active={isActive(item.id)}
                                                             indent="pl-5"
                                                             onClick={() => {
+                                                                if (item.type === 'practical') {
+                                                                    navigate(`/practical-workspace/${courseId || 'default'}/${item.id}`);
+                                                                    return;
+                                                                }
                                                                 if (courseId) {
                                                                     const c = courses.find(c => String(c._id) === courseId || c.slug === courseId);
                                                                     const cSlug = c?.slug || courseId;
-                                                                    navigate(`/workspace/${cSlug}/${subId}/${item.id}`);
+                                                                    navigate(`/workspace/${cSlug}/${subId}/${item.id}?type=${item.type || 'problem'}`);
                                                                 } else {
-                                                                    navigate(`/problems/${item.id}?subId=${subId}`);
+                                                                    navigate(`/problems/${item.id}?subId=${subId}&type=${item.type || 'problem'}`);
                                                                 }
                                                             }}
                                                         />
@@ -704,11 +762,27 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                 {structuredContent?.sections.map(section => {
                                     const isExpanded = expandedSections[section._id];
                                     
-                                    const activeSubIndex = section.subsections.findIndex(s => {
-                                        const pActive = (s.problems || []).some(p => isActive(p.id));
-                                        const cActive = (s.contests || []).some(c => contestSlug === c.slug || contestSlug === (c.id || c._id) || problemId === (c.id || c._id));
-                                        return pActive || cActive;
-                                    });
+                                    let overallActiveIndex = -1;
+                                    const pActiveIdx = (section.problems || []).findIndex(p => isActive(p.id));
+                                    if (pActiveIdx !== -1) overallActiveIndex = pActiveIdx;
+                                    else {
+                                        const cActiveIdx = (section.contests || []).findIndex(c => {
+                                            const idStr = String(c._id || c.id);
+                                            return contestSlug === c.slug || contestSlug === idStr || problemId === idStr;
+                                        });
+                                        if (cActiveIdx !== -1) overallActiveIndex = (section.problems?.length || 0) + cActiveIdx;
+                                        else {
+                                            const subActiveIdx = section.subsections.findIndex(s => {
+                                                const spActive = (s.problems || []).some(p => isActive(p.id));
+                                                const scActive = (s.contests || []).some(c => {
+                                                    const idStr = String(c._id || c.id);
+                                                    return contestSlug === c.slug || contestSlug === idStr || problemId === idStr;
+                                                });
+                                                return spActive || scActive;
+                                            });
+                                            if (subActiveIdx !== -1) overallActiveIndex = (section.problems?.length || 0) + (section.contests?.length || 0) + subActiveIdx;
+                                        }
+                                    }
 
                                     return (
                                         <div key={section._id} className="relative">
@@ -721,16 +795,92 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
 
                                             {isExpanded && (
                                                 <div className="relative pb-1">
+                                                    {/* Render Direct Section Problems */}
+                                                    {(section.problems || []).map((problem, pIdx) => {
+                                                        const totalSectItems = (section.problems?.length || 0) + (section.contests?.length || 0) + section.subsections.length;
+                                                        const isLastSectItem = (pIdx === totalSectItems - 1);
+                                                        const isUpperLineActive = overallActiveIndex !== -1 && pIdx <= overallActiveIndex;
+                                                        const isLowerLineActive = overallActiveIndex !== -1 && pIdx < overallActiveIndex;
+                                                        const isBranchActive = pIdx === overallActiveIndex;
+
+                                                        return (
+                                                            <div key={problem.id} className="relative">
+                                                                <div className={`absolute left-[26px] top-0 h-[18px] w-[1px] transition-colors ${isUpperLineActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />
+                                                                <div className={`absolute left-[26px] top-[18px] w-[20px] h-[1px] transition-colors ${isBranchActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />
+                                                                {!isLastSectItem && <div className={`absolute left-[26px] top-[18px] bottom-0 w-[1px] transition-colors ${isLowerLineActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />}
+                                                                <ProblemRow
+                                                                    problem={problem}
+                                                                    active={isActive(problem.id)}
+                                                                    indent="pl-[46px]"
+                                                                    onClick={() => {
+                                                                        clickedFromRef.current = { sectionId: section._id, subId: section._id };
+                                                                        if (problem.type === 'practical') {
+                                                                            navigate(`/practical-workspace/${courseId || 'default'}/${problem.id}`);
+                                                                            return;
+                                                                        }
+                                                                        if (courseId) {
+                                                                            const c = courses.find(c => String(c._id) === courseId || c.slug === courseId);
+                                                                            const cSlug = c?.slug || courseId;
+                                                                            const sSlug = section.slug || section._id || section.id;
+                                                                            navigate(`/workspace/${cSlug}/${sSlug}/${problem.id}?type=${problem.type || 'problem'}`);
+                                                                        } else {
+                                                                            navigate(`/problems/${problem.id}?subId=${section._id}&type=${problem.type || 'problem'}`);
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })}
+
+                                                    {/* Render Direct Section Contests */}
+                                                    {(section.contests || []).map((contest, cIdx) => {
+                                                        const trueIdx = (section.problems?.length || 0) + cIdx;
+                                                        const totalSectItems = (section.problems?.length || 0) + (section.contests?.length || 0) + section.subsections.length;
+                                                        const isLastSectItem = (trueIdx === totalSectItems - 1);
+                                                        const cActive = contestSlug === contest.slug || contestSlug === (contest.id || contest._id) || problemId === (contest.id || contest._id);
+                                                        const isUpperLineActive = overallActiveIndex !== -1 && trueIdx <= overallActiveIndex;
+                                                        const isLowerLineActive = overallActiveIndex !== -1 && trueIdx < overallActiveIndex;
+                                                        const isBranchActive = trueIdx === overallActiveIndex;
+
+                                                        return (
+                                                            <div key={contest.slug || contest.id || contest._id} className="relative">
+                                                                <div className={`absolute left-[26px] top-0 h-[18px] w-[1px] transition-colors ${isUpperLineActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />
+                                                                <div className={`absolute left-[26px] top-[18px] w-[20px] h-[1px] transition-colors ${isBranchActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />
+                                                                {!isLastSectItem && <div className={`absolute left-[26px] top-[18px] bottom-0 w-[1px] transition-colors ${isLowerLineActive ? 'bg-amber-600 dark:bg-amber-600/70 z-10' : 'bg-gray-200 dark:bg-gray-800'}`} />}
+                                                                <ContestRow
+                                                                    contest={contest}
+                                                                    active={cActive}
+                                                                    indent="pl-[46px]"
+                                                                    onClick={() => {
+                                                                        clickedFromRef.current = { sectionId: section._id, subId: section._id };
+                                                                        if (courseId) {
+                                                                            const sSlug = section.slug || section._id || section.id;
+                                                                            navigate(`/workspace/${courseId}/${sSlug}/contest/${contest.slug || contest.id || contest._id}`);
+                                                                        } else {
+                                                                            navigate(`/contests/${contest.id || contest._id}?mode=solo`);
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })}
+
+                                                    {/* Subsections Map */}
                                                     {section.subsections.map((sub, sIdx) => {
                                                         const isSubExpanded = expandedSubsections[sub._id];
-                                                        const isLastSub = sIdx === section.subsections.length - 1;
+                                                        const trueIdx = (section.problems?.length || 0) + (section.contests?.length || 0) + sIdx;
+                                                        const totalSectItems = (section.problems?.length || 0) + (section.contests?.length || 0) + section.subsections.length;
+                                                        const isLastSub = trueIdx === totalSectItems - 1;
                                                         
-                                                        const isUpperLineActive = activeSubIndex !== -1 && sIdx <= activeSubIndex;
-                                                        const isLowerLineActive = activeSubIndex !== -1 && sIdx < activeSubIndex;
-                                                        const isBranchActive = sIdx === activeSubIndex;
+                                                        const isUpperLineActive = overallActiveIndex !== -1 && trueIdx <= overallActiveIndex;
+                                                        const isLowerLineActive = overallActiveIndex !== -1 && trueIdx < overallActiveIndex;
+                                                        const isBranchActive = trueIdx === overallActiveIndex;
 
                                                         const activeProbIndex = (sub.problems || []).findIndex(p => isActive(p.id));
-                                                        const activeContestIndexOffset = (sub.contests || []).findIndex(c => contestSlug === c.slug || contestSlug === (c.id || c._id) || problemId === (c.id || c._id));
+                                                        const activeContestIndexOffset = (sub.contests || []).findIndex(c => {
+                                                            const idStr = String(c._id || c.id);
+                                                            return contestSlug === c.slug || contestSlug === idStr || problemId === idStr;
+                                                        });
                                                         
                                                         const totalProbs = sub.problems?.length || 0;
                                                         const activeItemIndex = activeProbIndex !== -1 ? activeProbIndex : (activeContestIndexOffset !== -1 ? totalProbs + activeContestIndexOffset : -1);
@@ -775,13 +925,17 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                                                                         indent="pl-[68px]"
                                                                                         onClick={() => {
                                                                                             clickedFromRef.current = { sectionId: section._id, subId: sub._id };
+                                                                                            if (problem.type === 'practical') {
+                                                                                                navigate(`/practical-workspace/${courseId || 'default'}/${problem.id}`);
+                                                                                                return;
+                                                                                            }
                                                                                             if (courseId) {
                                                                                                 const c = courses.find(c => String(c._id) === courseId || c.slug === courseId);
                                                                                                 const cSlug = c?.slug || courseId;
                                                                                                 const sSlug = sub.slug || (sub.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || sub._id;
-                                                                                                navigate(`/workspace/${cSlug}/${sSlug}/${problem.id}`);
+                                                                                                navigate(`/workspace/${cSlug}/${sSlug}/${problem.id}?type=${problem.type || 'problem'}`);
                                                                                             } else {
-                                                                                                navigate(`/problems/${problem.id}?subId=${sub._id}`);
+                                                                                                navigate(`/problems/${problem.id}?subId=${sub._id}&type=${problem.type || 'problem'}`);
                                                                                             }
                                                                                         }}
                                                                                     />
@@ -856,7 +1010,7 @@ const SectionHeader = ({ title, expanded, count, onClick, noToggle }) => {
         <button
             onClick={onClick}
             className={`w-full flex items-center gap-3 px-4 py-4 transition-all duration-200 border-b border-gray-50/50 dark:border-gray-800/30
-                ${expanded ? 'bg-[#F1F3F4] dark:bg-[#111117]' : 'bg-[#F1F3F4] dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e]'}
+                ${expanded ? 'bg-white dark:bg-[#111117]' : 'bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e]'}
                 ${!noToggle ? 'cursor-pointer' : 'cursor-default'}
             `}
         >
@@ -939,6 +1093,7 @@ const ProblemRow = ({ problem, active, indent, onClick }) => {
                     problem.type === 'video' ? <VideoIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
                     (problem.type === 'material' || problem.type === 'article') ? <FileText size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
                     problem.type === 'quiz' ? <HelpCircle size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
+                    (problem.type === 'practical' || problem.type === 'assignment' || problem.type === 'FULLSTACK_MERN') ? <TerminalIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
                     <Code2 size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} />
                 )}
             </div>
@@ -1013,11 +1168,3 @@ const ContestRow = ({ contest, active, indent, onClick }) => {
 };
 
 export default ProblemSidebar;
-
-
-
-
-
-
-
-

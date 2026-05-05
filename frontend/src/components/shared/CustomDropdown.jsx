@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 const CustomDropdown = ({
     options,
@@ -9,7 +9,8 @@ const CustomDropdown = ({
     className = '',
     icon: Icon,
     disabled = false,
-    size = 'default'
+    size = 'default',
+    width = 'w-full'
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -27,51 +28,54 @@ const CustomDropdown = ({
     }, []);
 
     return (
-        <div className={`relative ${className} ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`} ref={dropdownRef}>
+        <div className={`relative ${width} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={dropdownRef}>
             <button
                 type="button"
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
-                className={`w-full flex items-center justify-between ${size === 'small' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} bg-[#F1F3F4] dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 rounded-lg text-gray-700 dark:text-gray-300 hover:border-primary-500 dark:hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10 transition-all shadow-sm group`}
+                className={`custom-select-trigger ${width} ${size === 'small' ? 'custom-select-trigger-small' : ''}`}
             >
-                <div className="flex items-center gap-2 truncate">
-                    {Icon && <Icon size={16} className="text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors" />}
-                    <span className={`block truncate ${!selectedOption ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100 font-medium'}`}>
+                <div className="flex items-center gap-2.5 truncate">
+                    {Icon && <Icon size={size === 'small' ? 14 : 16} className="text-gray-400 dark:text-gray-500" />}
+                    <span className="truncate">
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                 </div>
-                <ChevronDown size={16} className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180 text-primary-500' : ''}`} />
+                <ChevronDown 
+                    size={size === 'small' ? 14 : 16} 
+                    className={`text-gray-400 dark:text-gray-500 transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 text-primary-500' : ''}`} 
+                />
             </button>
 
             {isOpen && (
-                <div className="absolute z-[200] w-full mt-2 bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 origin-top ring-1 ring-black/5">
-                    <ul className="p-1.5 space-y-0.5">
-                        {options.map((option) => (
-                            <li key={option.value}>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(option.value);
-                                        setIsOpen(false);
-                                    }}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between ${value === option.value
-                                        ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 font-medium'
-                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
-                                        }`}
-                                >
-                                    <span className="truncate">{option.label}</span>
-                                    {value === option.value && (
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                                    )}
-                                </button>
-                            </li>
-                        ))}
-                        {options.length === 0 && (
-                            <li className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500 text-center italic">
-                                No options available
-                            </li>
-                        )}
-                    </ul>
+                <div className="custom-select-options max-h-72 overflow-y-auto custom-thin-scrollbar">
+                    {options.map((option) => (
+                        <div
+                            key={option.value}
+                            onClick={() => {
+                                onChange(option.value);
+                                setIsOpen(false);
+                            }}
+                            className={`custom-select-option ${value === option.value ? 'selected' : ''}`}
+                        >
+                            <div className="flex items-center gap-3 flex-1 truncate">
+                                {option.icon && (
+                                    <span className="flex-shrink-0 opacity-70">
+                                        <option.icon size={16} />
+                                    </span>
+                                )}
+                                <span className="truncate">{option.label}</span>
+                            </div>
+                            {value === option.value && (
+                                <Check size={14} className="text-primary-500 flex-shrink-0" />
+                            )}
+                        </div>
+                    ))}
+                    {options.length === 0 && (
+                        <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center italic">
+                            No options available
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -79,11 +83,3 @@ const CustomDropdown = ({
 };
 
 export default CustomDropdown;
-
-
-
-
-
-
-
-

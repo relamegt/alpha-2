@@ -64,7 +64,7 @@ const ContestReports = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Contest Reports</h1>
 
             {/* Contest Selection */}
-            <div className="card mb-6">
+            <div className=" mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Contest</h2>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -111,21 +111,21 @@ const ContestReports = () => {
             {contestReport && (
                 <>
                     <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div className="card bg-gradient-to-br from-blue-50 to-blue-100">
+                        <div className=" bg-gradient-to-br from-blue-50 to-blue-100">
                             <h3 className="text-sm font-medium text-gray-600">Total Participants</h3>
                             <p className="text-3xl font-bold text-blue-600 mt-2">
                                 {contestReport.totalParticipants}
                             </p>
                         </div>
 
-                        <div className="card bg-gradient-to-br from-green-50 to-green-100">
+                        <div className=" bg-gradient-to-br from-green-50 to-green-100">
                             <h3 className="text-sm font-medium text-gray-600">Total Submissions</h3>
                             <p className="text-3xl font-bold text-green-600 mt-2">
                                 {contestReport.totalSubmissions}
                             </p>
                         </div>
 
-                        <div className="card bg-gradient-to-br from-purple-50 to-purple-100">
+                        <div className=" bg-gradient-to-br from-purple-50 to-purple-100">
                             <h3 className="text-sm font-medium text-gray-600">Problems</h3>
                             <p className="text-3xl font-bold text-purple-600 mt-2">
                                 {contestReport.problemCount}

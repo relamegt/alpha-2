@@ -273,11 +273,27 @@ process.on('SIGINT', shutdown);
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
+    if (error && error.message && error.message.includes('max number of clients')) {
+        console.warn('⚠️  Soft-caught Uncaught Exception (Redis Limit):', error.message);
+        return;
+    }
     console.error('❌ Uncaught Exception:', error);
     process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
+    // If reason is an error with http_code 400 or status 400, it's a client-side/service-level error
+    if (reason && (reason.http_code === 400 || reason.status === 400)) {
+        console.warn('⚠️  Soft-caught Unhandled Rejection (Client/Service Error):', reason.message || reason);
+        return;
+    }
+
+    // Handle Redis max clients error without crashing
+    if (reason && reason.message && reason.message.includes('max number of clients')) {
+        console.warn('⚠️  Soft-caught Unhandled Rejection (Redis Limit):', reason.message);
+        return;
+    }
+
     console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
 });

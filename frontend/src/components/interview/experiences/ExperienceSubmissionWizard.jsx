@@ -15,13 +15,15 @@ import {
   Globe,
   DollarSign
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import interviewExperienceService from '../../../services/interviewExperienceService';
 import toast from 'react-hot-toast';
+import CustomDropdown from '../../shared/CustomDropdown';
 
 const ExperienceSubmissionWizard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +83,7 @@ const ExperienceSubmissionWizard = () => {
       queryClient.invalidateQueries(['interview-experiences']);
       queryClient.invalidateQueries(['popular-companies']);
       toast.success('Interview Experience Shared Successfully!');
-      navigate('/dashboard/interview/experience');
+      navigate(location.pathname.includes('/admin') ? '/admin/interview-experience' : '/dashboard/interview/experience');
     } catch (error) {
       console.error(error);
       toast.error('Failed to submit. Please try again.');
@@ -164,28 +166,28 @@ const ExperienceSubmissionWizard = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Experience</label>
-                  <select 
+                  <CustomDropdown 
+                    options={[
+                      { value: '0-1 years', label: '0-1 years' },
+                      { value: '1-3 years', label: '1-3 years' },
+                      { value: '3-5 years', label: '3-5 years' },
+                      { value: '5+ years', label: '5+ years' }
+                    ]}
                     value={formData.experienceLevel}
-                    onChange={(e) => setFormData({...formData, experienceLevel: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm font-bold focus:outline-none focus:border-primary-500/50"
-                  >
-                    <option>0-1 years</option>
-                    <option>1-3 years</option>
-                    <option>3-5 years</option>
-                    <option>5+ years</option>
-                  </select>
+                    onChange={(val) => setFormData({...formData, experienceLevel: val})}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Difficulty</label>
-                  <select 
+                  <CustomDropdown 
+                    options={[
+                      { value: 'Easy', label: 'Easy' },
+                      { value: 'Medium', label: 'Medium' },
+                      { value: 'Hard', label: 'Hard' }
+                    ]}
                     value={formData.difficulty}
-                    onChange={(e) => setFormData({...formData, difficulty: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm font-bold focus:outline-none focus:border-primary-500/50"
-                  >
-                    <option>Easy</option>
-                    <option>Medium</option>
-                    <option>Hard</option>
-                  </select>
+                    onChange={(val) => setFormData({...formData, difficulty: val})}
+                  />
                 </div>
               </div>
             </div>
@@ -232,51 +234,54 @@ const ExperienceSubmissionWizard = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Round Type</label>
-                        <select 
+                        <CustomDropdown 
+                          options={[
+                            { value: 'Technical', label: 'Technical' },
+                            { value: 'HR', label: 'HR' },
+                            { value: 'Managerial', label: 'Managerial' },
+                            { value: 'Design', label: 'Design' }
+                          ]}
                           value={round.roundType}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const newRounds = [...formData.rounds];
-                            newRounds[index].roundType = e.target.value;
+                            newRounds[index].roundType = val;
                             setFormData({...formData, rounds: newRounds});
                           }}
-                          className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg py-2 px-3 text-[11px] font-bold"
-                        >
-                          <option>Technical</option>
-                          <option>HR</option>
-                          <option>Managerial</option>
-                          <option>Design</option>
-                        </select>
+                          size="small"
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Difficulty</label>
-                        <select 
+                        <CustomDropdown 
+                          options={[
+                            { value: 'Easy', label: 'Easy' },
+                            { value: 'Medium', label: 'Medium' },
+                            { value: 'Hard', label: 'Hard' }
+                          ]}
                           value={round.difficulty}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const newRounds = [...formData.rounds];
-                            newRounds[index].difficulty = e.target.value;
+                            newRounds[index].difficulty = val;
                             setFormData({...formData, rounds: newRounds});
                           }}
-                          className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg py-2 px-3 text-[11px] font-bold"
-                        >
-                          <option>Easy</option>
-                          <option>Medium</option>
-                          <option>Hard</option>
-                        </select>
+                          size="small"
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Mode</label>
-                        <select 
+                        <CustomDropdown 
+                          options={[
+                            { value: 'Remote', label: 'Remote' },
+                            { value: 'On-site', label: 'On-site' }
+                          ]}
                           value={round.mode}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const newRounds = [...formData.rounds];
-                            newRounds[index].mode = e.target.value;
+                            newRounds[index].mode = val;
                             setFormData({...formData, rounds: newRounds});
                           }}
-                          className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-lg py-2 px-3 text-[11px] font-bold"
-                        >
-                          <option>Remote</option>
-                          <option>On-site</option>
-                        </select>
+                          size="small"
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Duration (min)</label>
@@ -318,28 +323,28 @@ const ExperienceSubmissionWizard = () => {
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Final Outcome</label>
-                  <select 
+                  <CustomDropdown 
+                    options={[
+                      { value: 'Selected', label: 'Selected' },
+                      { value: 'Rejected', label: 'Rejected' },
+                      { value: 'Waitlisted', label: 'Waitlisted' }
+                    ]}
                     value={formData.outcome}
-                    onChange={(e) => setFormData({...formData, outcome: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm font-bold focus:outline-none focus:border-primary-500/50"
-                  >
-                    <option>Selected</option>
-                    <option>Rejected</option>
-                    <option>Waitlisted</option>
-                  </select>
+                    onChange={(val) => setFormData({...formData, outcome: val})}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Application Method</label>
-                  <select 
+                  <CustomDropdown 
+                    options={[
+                      { value: 'Job Portal', label: 'Job Portal' },
+                      { value: 'Referral', label: 'Referral' },
+                      { value: 'Campus', label: 'Campus' },
+                      { value: 'LinkedIn', label: 'LinkedIn' }
+                    ]}
                     value={formData.applyMethod}
-                    onChange={(e) => setFormData({...formData, applyMethod: e.target.value})}
-                    className="w-full bg-[var(--color-bg-input)] border border-gray-100 dark:border-gray-800 rounded-xl py-2.5 px-4 text-sm font-bold focus:outline-none focus:border-primary-500/50"
-                  >
-                    <option>Job Portal</option>
-                    <option>Referral</option>
-                    <option>Campus</option>
-                    <option>LinkedIn</option>
-                  </select>
+                    onChange={(val) => setFormData({...formData, applyMethod: val})}
+                  />
                 </div>
               </div>
 

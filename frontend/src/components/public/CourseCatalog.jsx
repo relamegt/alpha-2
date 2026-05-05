@@ -236,7 +236,14 @@ const CourseCatalog = () => {
                                     </div>
 
                                     <button 
-                                        onClick={() => navigate(`/courses/${course.id || course.slug}`)}
+                                        onClick={(e) => {
+                                            if (!course.userStatus?.isEnrolled && !course.isPaid) {
+                                                e.stopPropagation();
+                                                handleEnrollFree(course.id || course._id);
+                                            } else {
+                                                navigate(`/courses/${course.id || course.slug}`);
+                                            }
+                                        }}
                                         className={`w-full py-3 px-4 rounded-xl font-semibold text-sm tracking-wide transition-all ${course.userStatus?.isEnrolled ? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-primary-600/20 active:scale-95'}`}
                                     >
                                         {course.userStatus?.isEnrolled ? 'Continue Learning' : (course.isPaid ? 'View Details' : 'Enroll Now')}

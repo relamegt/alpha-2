@@ -17,6 +17,8 @@ import StatCard from './dashboard/StatCard';
 import RankScoreChart from './dashboard/RankScoreChart';
 import StreakCalendar from './dashboard/StreakCalendar';
 import MetricChart from './dashboard/MetricChart';
+import HeatmapChart from '../shared/HeatmapChart';
+import CustomDropdown from '../shared/CustomDropdown';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -205,15 +207,17 @@ const Dashboard = () => {
                                                 <div className="w-3 h-3 bg-purple-500/20 rounded flex items-center justify-center"><div className="w-1.5 h-1.5 bg-purple-500 rounded-sm" /></div> Score: {leaderboardStats?.score || 'N/A'}
                                             </div>
                                         </div>
-                                        <select 
+                                        <CustomDropdown
+                                            options={[
+                                                { value: 'week', label: 'This Week' },
+                                                { value: 'month', label: 'This Month' },
+                                                { value: 'year', label: 'This Year' }
+                                            ]}
                                             value={selectedRange}
-                                            onChange={(e) => setSelectedRange(e.target.value)}
-                                            className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 outline-none cursor-pointer hover:border-primary-500/50 transition-colors"
-                                        >
-                                            <option value="week">This Week</option>
-                                            <option value="month">This Month</option>
-                                            <option value="year">This Year</option>
-                                        </select>
+                                            onChange={(val) => setSelectedRange(val)}
+                                            size="small"
+                                            width="w-32"
+                                        />
                                     </div>
                                 </div>
                                 <RankScoreChart data={progress?.chartData || []} />
@@ -222,6 +226,15 @@ const Dashboard = () => {
                             <div className="lg:col-span-4 flex flex-col h-full">
                                 <StreakCalendar activeDates={progress?.activeDateStrings || []} />
                             </div>
+                        </div>
+
+                        {/* Activity Map (Heatmap) */}
+                        <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
+                            <HeatmapChart 
+                                data={dashboardData.userSubmissionsHeatMapData || {}} 
+                                streakDays={progress?.streakDays || 0}
+                                maxStreakDays={progress?.maxStreakDays || 0}
+                            />
                         </div>
 
                         {/* Sheets & Monthly Leaderboard Row */}
@@ -373,15 +386,17 @@ const Dashboard = () => {
                                             <div className="w-3 h-3 bg-purple-500/20 rounded flex items-center justify-center"><div className="w-1.5 h-1.5 bg-purple-500 rounded-sm" /></div> Score: {leaderboardStats?.score || 'N/A'}
                                         </div>
                                     </div>
-                                    <select 
+                                    <CustomDropdown
+                                        options={[
+                                            { value: 'week', label: 'Last 7 Days' },
+                                            { value: 'month', label: 'Last 30 Days' },
+                                            { value: 'year', label: 'Last 12 Months' }
+                                        ]}
                                         value={selectedRange}
-                                        onChange={(e) => setSelectedRange(e.target.value)}
-                                        className="bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 outline-none cursor-pointer hover:border-primary-500/50 transition-colors"
-                                    >
-                                        <option value="week">Last 7 Days</option>
-                                        <option value="month">Last 30 Days</option>
-                                        <option value="year">Last 12 Months</option>
-                                    </select>
+                                        onChange={(val) => setSelectedRange(val)}
+                                        size="small"
+                                        width="w-36"
+                                    />
                                 </div>
                             </div>
                             <RankScoreChart data={progress?.chartData || []} />
