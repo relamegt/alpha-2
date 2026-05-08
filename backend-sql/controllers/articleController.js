@@ -90,10 +90,26 @@ const deleteArticle = async (req, res) => {
   }
 };
 
+const bulkDeleteArticles = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ success: false, message: "IDs required" });
+    }
+    for (const id of ids) {
+      await Article.delete(id);
+    }
+    res.json({ success: true, message: `${ids.length} articles deleted` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createArticle,
   getAllArticles,
   getArticleById,
   updateArticle,
   deleteArticle,
+  bulkDeleteArticles,
 };

@@ -12,6 +12,7 @@ const ArticleManager = () => {
     const [filteredArticles, setFilteredArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
     
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
@@ -112,9 +113,36 @@ const ArticleManager = () => {
         try {
             await articleService.delete(id);
             toast.success('Deleted successfully');
+            setSelectedIds(prev => prev.filter(currId => currId !== id));
             fetchArticles();
         } catch (error) {
             toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Delete ${selectedIds.length} selected articles? This action cannot be undone.`)) return;
+        try {
+            await articleService.bulkDelete(selectedIds);
+            toast.success(`${selectedIds.length} articles deleted successfully`);
+            setSelectedIds([]);
+            fetchArticles();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredArticles.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredArticles.map(a => a._id));
         }
     };
 
@@ -126,10 +154,18 @@ const ArticleManager = () => {
                         <h1 className="page-header-title">Article Manager</h1>
                         <p className="page-header-desc">Manage reading materials and documentation</p>
                     </div>
-                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                        <Plus size={18} />
-                        <span>Create New Article</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                            <Plus size={18} />
+                            <span>Create New Article</span>
+                        </button>
+                        {selectedIds.length > 0 && (
+                            <button onClick={handleBulkDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center gap-2">
+                                <Trash2 size={18} />
+                                Delete ({selectedIds.length})
+                            </button>
+                        )}
+                    </div>
                 </header>
 
                 <div className="page-controls-bar">
@@ -152,6 +188,14 @@ const ArticleManager = () => {
                     <table className="admin-custom-table">
                         <thead>
                             <tr>
+                                <th className="w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filteredArticles.length > 0 && selectedIds.length === filteredArticles.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-gray-300 dark:bg-gray-800"
+                                    />
+                                </th>
                                 <th>Article Title</th>
                                 <th>Difficulty</th>
                                 <th>Actions</th>
@@ -159,7 +203,15 @@ const ArticleManager = () => {
                         </thead>
                         <tbody>
                             {filteredArticles.map(a => (
-                                <tr key={a._id}>
+                                <tr key={a._id} className={selectedIds.includes(a._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.includes(a._id)}
+                                            onChange={() => toggleSelect(a._id)}
+                                            className="rounded border-gray-300 dark:bg-gray-800"
+                                        />
+                                    </td>
                                     <td className="title-td">
                                         <div className="title-group">
                                             <span className="main-title">{a.title}</span>

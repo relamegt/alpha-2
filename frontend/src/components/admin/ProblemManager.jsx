@@ -511,6 +511,12 @@ const ProblemManager = () => {
                                 <Plus size={18} />
                                 <span>Create Problem</span>
                             </button>
+                            {selectedProblems.length > 0 && (
+                                <button onClick={handleBulkDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center gap-2">
+                                    <Trash2 size={18} />
+                                    <span>Delete ({selectedProblems.length})</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -553,6 +559,14 @@ const ProblemManager = () => {
                     <table className="admin-custom-table">
                         <thead>
                             <tr>
+                                <th className="w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filteredProblems.length > 0 && selectedProblems.length === filteredProblems.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-gray-300 dark:bg-gray-800"
+                                    />
+                                </th>
                                 <th>Title & Description</th>
                                 <th>Type</th>
                                 <th>Difficulty</th>
@@ -562,7 +576,15 @@ const ProblemManager = () => {
                         </thead>
                         <tbody>
                             {filteredProblems.map(p => (
-                                    <tr key={p._id}>
+                                    <tr key={p._id} className={selectedProblems.includes(p._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                                        <td>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedProblems.includes(p._id)}
+                                                onChange={() => toggleProblemSelection(p._id)}
+                                                className="rounded border-gray-300 dark:bg-gray-800"
+                                            />
+                                        </td>
                                         <td className="title-td">
                                             <div className="title-group">
                                                 <span className="main-title">{p.title}</span>

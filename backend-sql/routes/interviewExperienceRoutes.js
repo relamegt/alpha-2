@@ -11,6 +11,7 @@ router.get('/:id', optionalAuth, interviewExperienceController.getExperienceById
 // Protected routes
 router.post('/', protect, interviewExperienceController.createExperience);
 router.put('/:id', protect, interviewExperienceController.updateExperience);
+router.delete('/bulk', protect, interviewExperienceController.bulkDeleteExperiences);
 router.delete('/:id', protect, interviewExperienceController.deleteExperience);
 router.post('/:id/upvote', protect, interviewExperienceController.upvoteExperience);
 

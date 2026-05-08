@@ -132,11 +132,28 @@ const deleteProblem = async (req, res) => {
     }
 };
 
+// Bulk delete SQL problems
+const bulkDeleteProblems = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ success: false, message: 'IDs array required' });
+        }
+        for (const id of ids) {
+            await SqlProblem.delete(id);
+        }
+        res.json({ success: true, message: `${ids.length} SQL problems deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete SQL problems', error: error.message });
+    }
+};
+
 module.exports = {
     createProblem,
     bulkCreateProblems,
     getAllProblems,
     getProblemById,
     updateProblem,
-    deleteProblem
+    deleteProblem,
+    bulkDeleteProblems
 };

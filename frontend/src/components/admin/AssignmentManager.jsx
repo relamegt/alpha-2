@@ -12,6 +12,7 @@ export default function AssignmentManager() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [searchTerm, setSearchTerm]   = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,8 +35,34 @@ export default function AssignmentManager() {
     try {
       await apiClient.delete(`/assignments/${id}`);
       setAssignments(assignments.filter(a => a.id !== id));
+      setSelectedIds(prev => prev.filter(currId => currId !== id));
     } catch (err) {
       alert('Delete failed: ' + err.message);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} selected assignments? This action cannot be undone.`)) return;
+    try {
+      await apiClient.delete('/assignments/bulk', { data: { ids: selectedIds } });
+      setAssignments(assignments.filter(a => !selectedIds.includes(a.id)));
+      setSelectedIds([]);
+    } catch (err) {
+      alert('Bulk delete failed: ' + err.message);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = (filtered) => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map(a => a.id));
     }
   };
 
@@ -59,9 +86,16 @@ export default function AssignmentManager() {
             <h1 className="page-header-title">Assignment Lab Manager</h1>
             <p className="page-header-desc">Configure industry-grade practical projects with automated testing.</p>
           </div>
-          <button className="btn-primary" onClick={() => navigate('/admin/assignments/new')}>
-            <Plus size={18} /> New Assignment
-          </button>
+          <div className="flex items-center gap-3">
+            {selectedIds.length > 0 && (
+              <button className="btn-danger flex items-center gap-2" onClick={handleBulkDelete}>
+                <Trash2 size={18} /> Delete Selected ({selectedIds.length})
+              </button>
+            )}
+            <button className="btn-primary" onClick={() => navigate('/admin/assignments/new')}>
+              <Plus size={18} /> New Assignment
+            </button>
+          </div>
         </div>
       </header>
 
@@ -82,6 +116,14 @@ export default function AssignmentManager() {
         <table className="admin-custom-table">
           <thead>
             <tr>
+              <th className="w-10">
+                <input 
+                  type="checkbox" 
+                  checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                  onChange={() => toggleSelectAll(filtered)}
+                  className="rounded border-gray-300 dark:bg-gray-800"
+                />
+              </th>
               <th>Title & Description</th>
               <th>Environment</th>
               <th>Difficulty</th>
@@ -91,7 +133,15 @@ export default function AssignmentManager() {
           </thead>
           <tbody>
             {filtered.map(a => (
-              <tr key={a.id}>
+              <tr key={a.id} className={selectedIds.includes(a.id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                <td>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedIds.includes(a.id)}
+                    onChange={() => toggleSelect(a.id)}
+                    className="rounded border-gray-300 dark:bg-gray-800"
+                  />
+                </td>
                 <td className="title-td">
                   <div className="title-group">
                     <span className="main-title">{a.title}</span>
@@ -136,7 +186,7 @@ export default function AssignmentManager() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan="5" className="empty-state">
+                <td colSpan="6" className="empty-state">
                   No assignments found matching your criteria.
                 </td>
               </tr>

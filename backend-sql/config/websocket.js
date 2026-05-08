@@ -127,11 +127,20 @@ const notifyExecutionResult = (contestId, userId, result) => {
     });
 };
 
+const notifyViolationReset = (contestId, userId) => {
+    broadcastToContest(contestId, { 
+        type: 'violationReset', 
+        targetUserId: userId.toString(), 
+        timestamp: new Date().toISOString() 
+    });
+};
+
 module.exports = {
     initWebSocket,
     broadcastToContest,
     notifyLeaderboardUpdate,
     notifySubmission,
     notifyViolation,
-    notifyExecutionResult
+    notifyExecutionResult,
+    notifyViolationReset
 };

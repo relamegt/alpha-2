@@ -87,6 +87,22 @@ const jobController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  // Bulk delete jobs
+  bulkDeleteJobs: async (req, res, next) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ message: 'IDs must be an array' });
+      }
+      for (const id of ids) {
+        await Job.delete(id);
+      }
+      res.json({ success: true, message: `${ids.length} jobs deleted successfully` });
+    } catch (error) {
+      next(error);
+    }
   }
 };
 

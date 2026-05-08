@@ -190,6 +190,17 @@ exports.delete = async (req, res) => {
   }
 };
 
+exports.bulkDelete = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: 'IDs array required' });
+    await prisma.assignment.deleteMany({ where: { id: { in: ids } } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // ── Partial Update ─────────────────────────────────────────
 exports.update = async (req, res) => {
   try {

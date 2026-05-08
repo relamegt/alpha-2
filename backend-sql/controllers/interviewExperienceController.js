@@ -97,6 +97,21 @@ const interviewExperienceController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  bulkDeleteExperiences: async (req, res, next) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids)) {
+        return res.status(400).json({ message: 'IDs must be an array' });
+      }
+      for (const id of ids) {
+        await InterviewExperience.delete(id);
+      }
+      res.json({ success: true, message: `${ids.length} experiences deleted successfully` });
+    } catch (error) {
+      next(error);
+    }
   }
 };
 

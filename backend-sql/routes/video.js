@@ -10,5 +10,6 @@ router.get('/:id', protect, videoController.getVideoById);
 router.post('/', protect, restrictTo('admin', 'instructor'), validateProblemCreation, videoController.createVideo);
 router.put('/:id', protect, restrictTo('admin', 'instructor'), videoController.updateVideo);
 router.delete('/:id', protect, restrictTo('admin', 'instructor'), videoController.deleteVideo);
+router.delete('/bulk', protect, restrictTo('admin', 'instructor'), videoController.bulkDeleteVideos);
 
 module.exports = router;

@@ -449,7 +449,7 @@ const CourseAnalytics = () => {
                                     />
                                 </div>
                             </div>
-                            <RankScoreChart data={analytics.rangeData?.[rankRange]?.dailyHistory || []} />
+                            <RankScoreChart key={activeTab} data={analytics.rangeData?.[rankRange]?.dailyHistory || []} />
                         </div>
 
                         <div className="lg:col-span-3 flex flex-col h-full">
@@ -585,12 +585,69 @@ const CourseAnalytics = () => {
             )}
 
             {activeTab === 'metrics' && (
-                <div className="space-y-4 animate-in fade-in duration-500">
-                    <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm flex flex-col min-h-[440px]">
+                <div className="space-y-6 animate-in fade-in duration-500">
+                    {/* Rank & Score Stats Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div
+                            onClick={() => setPerformanceModal({
+                                isOpen: true,
+                                type: 'rank',
+                                title: 'Course Rank',
+                                subtitle: 'Track your ranking within this course over time'
+                            })}
+                            className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 min-h-[130px] relative overflow-hidden group flex flex-col justify-between cursor-pointer hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md"
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <Trophy size={14} className="text-primary-500" />
+                                    <h4 className="text-[17px] text-gray-400 font-medium">Course Rank</h4>
+                                </div>
+                                <AreaChartIcon size={14} className="text-primary-500 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div className="flex items-end justify-between">
+                                <p className="text-3xl text-gray-900 dark:text-white leading-none tracking-tight font-bold">
+                                    {analytics.stats.rank || 'Unranked'}
+                                </p>
+                                <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
+                                    Current rank
+                                </p>
+                            </div>
+                        </div>
+
+                        <div
+                            onClick={() => setPerformanceModal({
+                                isOpen: true,
+                                type: 'score',
+                                title: 'Course Score',
+                                subtitle: 'Track your points progression in this course'
+                            })}
+                            className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 min-h-[130px] relative overflow-hidden group flex flex-col justify-between cursor-pointer hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md"
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-primary-500/20 rounded flex items-center justify-center">
+                                        <div className="w-2 h-2 bg-primary-500 rounded-sm" />
+                                    </div>
+                                    <h4 className="text-[17px] text-gray-400 font-medium">Course Score</h4>
+                                </div>
+                                <AreaChartIcon size={14} className="text-primary-500 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div className="flex items-end justify-between">
+                                <p className="text-3xl text-gray-900 dark:text-white leading-none tracking-tight font-bold">
+                                    {analytics.stats.score?.toLocaleString() || '0'}
+                                </p>
+                                <p className="text-[11px] text-emerald-500 font-medium flex items-center gap-1">
+                                    Course points
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm flex flex-col h-[440px]">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="text-3xl text-gray-900 dark:text-white tracking-tight font-bold">Rank & Score progress</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Track your performance over time</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Detailed performance history and analytics</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
@@ -614,29 +671,81 @@ const CourseAnalytics = () => {
                                 />
                             </div>
                         </div>
-                        <RankScoreChart data={analytics.rangeData?.[rankRange]?.dailyHistory || analytics.dailyHistory || []} />
+                        <RankScoreChart key={activeTab} data={analytics.rangeData?.[rankRange]?.dailyHistory || []} />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <MetricChart
                             title="Quizzes Passed"
-                            data={analytics.rangeData?.month?.metrics?.quizzes || []}
+                            data={analytics.rangeData?.[quizMetricsRange]?.metrics?.quizzes || []}
                             color="#10b981"
+                            dropdown={
+                                <CustomDropdown
+                                    options={[
+                                        { value: 'week', label: 'Weekly' },
+                                        { value: 'month', label: 'Monthly' },
+                                        { value: 'year', label: 'Yearly' }
+                                    ]}
+                                    value={quizMetricsRange}
+                                    onChange={(val) => setQuizMetricsRange(val)}
+                                    size="small"
+                                    width="w-32"
+                                />
+                            }
                         />
                         <MetricChart
                             title="Videos Watched"
-                            data={analytics.rangeData?.month?.metrics?.videos || []}
+                            data={analytics.rangeData?.[videoMetricsRange]?.metrics?.videos || []}
                             color="#3b82f6"
+                            dropdown={
+                                <CustomDropdown
+                                    options={[
+                                        { value: 'week', label: 'Weekly' },
+                                        { value: 'month', label: 'Monthly' },
+                                        { value: 'year', label: 'Yearly' }
+                                    ]}
+                                    value={videoMetricsRange}
+                                    onChange={(val) => setVideoMetricsRange(val)}
+                                    size="small"
+                                    width="w-32"
+                                />
+                            }
                         />
                         <MetricChart
                             title="Problems Solved"
-                            data={analytics.rangeData?.month?.metrics?.problems || []}
+                            data={analytics.rangeData?.[problemMetricsRange]?.metrics?.problems || []}
                             color="#8b5cf6"
+                            dropdown={
+                                <CustomDropdown
+                                    options={[
+                                        { value: 'week', label: 'Weekly' },
+                                        { value: 'month', label: 'Monthly' },
+                                        { value: 'year', label: 'Yearly' }
+                                    ]}
+                                    value={problemMetricsRange}
+                                    onChange={(val) => setProblemMetricsRange(val)}
+                                    size="small"
+                                    width="w-32"
+                                />
+                            }
                         />
                         <MetricChart
                             title="Articles Read"
-                            data={analytics.rangeData?.month?.metrics?.articles || []}
+                            data={analytics.rangeData?.[articleMetricsRange]?.metrics?.articles || []}
                             color="#f59e0b"
+                            dropdown={
+                                <CustomDropdown
+                                    options={[
+                                        { value: 'week', label: 'Weekly' },
+                                        { value: 'month', label: 'Monthly' },
+                                        { value: 'year', label: 'Yearly' }
+                                    ]}
+                                    value={articleMetricsRange}
+                                    onChange={(val) => setArticleMetricsRange(val)}
+                                    size="small"
+                                    width="w-32"
+                                />
+                            }
                         />
 
                         <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-sm min-h-[450px]">

@@ -17,6 +17,7 @@ router.get('/user/saved', protect, controller.getSavedArticles);
 // Admin routes
 router.post('/', protect, restrictTo('admin'), controller.createArticle);
 router.put('/:id', protect, restrictTo('admin'), controller.updateArticle);
+router.delete('/bulk', protect, restrictTo('admin'), controller.bulkDeleteArticles);
 router.delete('/:id', protect, restrictTo('admin'), controller.deleteArticle);
 
 module.exports = router;

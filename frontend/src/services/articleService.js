@@ -20,6 +20,10 @@ const articleService = {
     delete: async (id) => {
         const res = await apiClient.delete(`/private-articles/${id}`);
         return res.data;
+    },
+    bulkDelete: async (ids) => {
+        const res = await apiClient.delete('/private-articles/bulk', { data: { ids } });
+        return res.data;
     }
 };
 

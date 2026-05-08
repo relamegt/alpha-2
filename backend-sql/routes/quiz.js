@@ -10,5 +10,6 @@ router.get('/:id', protect, quizController.getQuizById);
 router.post('/', protect, restrictTo('admin', 'instructor'), validateProblemCreation, quizController.createQuiz);
 router.put('/:id', protect, restrictTo('admin', 'instructor'), quizController.updateQuiz);
 router.delete('/:id', protect, restrictTo('admin', 'instructor'), quizController.deleteQuiz);
+router.delete('/bulk', protect, restrictTo('admin', 'instructor'), quizController.bulkDeleteQuizzes);
 
 module.exports = router;

@@ -189,7 +189,7 @@ const ContestJoin = () => {
 
     // ── main render ───────────────────────────────────────────────────────────
     return (
-        <div className="h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="h-screen bg-[var(--color-bg-primary)] dark:bg-black transition-colors flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-4">
                 <img
@@ -203,7 +203,7 @@ const ContestJoin = () => {
             </div>
 
             <div
-                className="bg-[#F1F3F4] dark:bg-[#111117] max-w-lg w-full rounded-2xl shadow-xl dark:shadow-none border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden transition-colors"
+                className="bg-[var(--color-bg-card)] dark:bg-[#0f0f0f] max-w-lg w-full rounded-2xl shadow-xl dark:shadow-none border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden transition-colors"
                 style={{ maxHeight: '85vh' }}
             >
                 {/* Banner */}
@@ -214,7 +214,7 @@ const ContestJoin = () => {
 
                 <div className="p-6 overflow-y-auto">
                     {/* Info row */}
-                    <div className="flex flex-col sm:flex-row gap-6 mb-8 p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                    <div className="flex flex-col sm:flex-row gap-6 mb-8 p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
                         <div className="flex-1 flex items-start gap-3">
                             <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
                                 <Calendar className="w-5 h-5" />
@@ -338,7 +338,7 @@ const ContestJoin = () => {
                                                 type="text" required
                                                 value={formData.name}
                                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-4 py-2 bg-[#F1F3F4] dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                className="input-field bg-[var(--color-bg-input)] dark:bg-black dark:text-gray-100 dark:border-gray-800"
                                                 placeholder="e.g. John Doe"
                                             />
                                         </div>
@@ -349,7 +349,7 @@ const ContestJoin = () => {
                                                     type="text" required
                                                     value={formData.rollNumber}
                                                     onChange={e => setFormData({ ...formData, rollNumber: e.target.value })}
-                                                    className="w-full px-4 py-2 bg-[#F1F3F4] dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                    className="input-field bg-[var(--color-bg-input)] dark:bg-black dark:text-gray-100 dark:border-gray-800"
                                                     placeholder="e.g. 21XJ1A0100"
                                                 />
                                             </div>
@@ -359,7 +359,7 @@ const ContestJoin = () => {
                                                     type="text" required
                                                     value={formData.branch}
                                                     onChange={e => setFormData({ ...formData, branch: e.target.value })}
-                                                    className="w-full px-4 py-2 bg-[#F1F3F4] dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                    className="input-field bg-[var(--color-bg-input)] dark:bg-black dark:text-gray-100 dark:border-gray-800"
                                                     placeholder="e.g. CSE"
                                                 />
                                             </div>

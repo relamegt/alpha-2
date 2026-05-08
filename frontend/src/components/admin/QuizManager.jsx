@@ -12,6 +12,7 @@ const QuizManager = () => {
     const [filteredQuizzes, setFilteredQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
     
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
@@ -111,9 +112,36 @@ const QuizManager = () => {
         try {
             await quizService.delete(id);
             toast.success('Deleted successfully');
+            setSelectedIds(prev => prev.filter(currId => currId !== id));
             fetchQuizzes();
         } catch (error) {
             toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Delete ${selectedIds.length} selected quizzes? This action cannot be undone.`)) return;
+        try {
+            await quizService.bulkDelete(selectedIds);
+            toast.success(`${selectedIds.length} quizzes deleted successfully`);
+            setSelectedIds([]);
+            fetchQuizzes();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredQuizzes.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredQuizzes.map(q => q._id));
         }
     };
 
@@ -151,10 +179,18 @@ const QuizManager = () => {
                         <h1 className="page-header-title">Quiz Manager</h1>
                         <p className="page-header-desc">Manage interactive quizzes and assessments</p>
                     </div>
-                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                        <Plus size={18} />
-                        <span>Create New Quiz</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                            <Plus size={18} />
+                            <span>Create New Quiz</span>
+                        </button>
+                        {selectedIds.length > 0 && (
+                            <button onClick={handleBulkDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center gap-2">
+                                <Trash2 size={18} />
+                                Delete ({selectedIds.length})
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -178,6 +214,14 @@ const QuizManager = () => {
                     <table className="admin-custom-table">
                         <thead>
                             <tr>
+                                <th className="w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filteredQuizzes.length > 0 && selectedIds.length === filteredQuizzes.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-gray-300 dark:bg-gray-800"
+                                    />
+                                </th>
                                 <th>Quiz Title</th>
                                 <th>Questions</th>
                                 <th>Difficulty</th>
@@ -186,7 +230,15 @@ const QuizManager = () => {
                         </thead>
                         <tbody>
                             {filteredQuizzes.map(q => (
-                                <tr key={q._id}>
+                                <tr key={q._id} className={selectedIds.includes(q._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.includes(q._id)}
+                                            onChange={() => toggleSelect(q._id)}
+                                            className="rounded border-gray-300 dark:bg-gray-800"
+                                        />
+                                    </td>
                                     <td className="title-td">
                                         <div className="title-group">
                                             <span className="main-title">{q.title}</span>

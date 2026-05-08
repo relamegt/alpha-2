@@ -12,6 +12,7 @@ const VideoManager = () => {
     const [filteredVideos, setFilteredVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
 
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
@@ -141,9 +142,36 @@ const VideoManager = () => {
         try {
             await videoService.delete(id);
             toast.success('Deleted successfully');
+            setSelectedIds(prev => prev.filter(currId => currId !== id));
             fetchVideos();
         } catch (error) {
             toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Delete ${selectedIds.length} selected videos? This action cannot be undone.`)) return;
+        try {
+            await videoService.bulkDelete(selectedIds);
+            toast.success(`${selectedIds.length} videos deleted successfully`);
+            setSelectedIds([]);
+            fetchVideos();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredVideos.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredVideos.map(v => v._id));
         }
     };
 
@@ -155,10 +183,18 @@ const VideoManager = () => {
                         <h1 className="page-header-title">Video Manager</h1>
                         <p className="page-header-desc">Manage educational video content and study materials</p>
                     </div>
-                    <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
-                        <Plus size={18} />
-                        <span>Add Video Content</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="btn-primary flex items-center gap-2">
+                            <Plus size={18} />
+                            <span>Add Video Content</span>
+                        </button>
+                        {selectedIds.length > 0 && (
+                            <button onClick={handleBulkDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center gap-2">
+                                <Trash2 size={18} />
+                                Delete ({selectedIds.length})
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -182,6 +218,14 @@ const VideoManager = () => {
                     <table className="admin-custom-table">
                         <thead>
                             <tr>
+                                <th className="w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filteredVideos.length > 0 && selectedIds.length === filteredVideos.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-gray-300 dark:bg-gray-800"
+                                    />
+                                </th>
                                 <th>Video Title</th>
                                 <th>Difficulty</th>
                                 <th>Actions</th>
@@ -189,7 +233,15 @@ const VideoManager = () => {
                         </thead>
                         <tbody>
                             {filteredVideos.map(v => (
-                                <tr key={v._id}>
+                                <tr key={v._id} className={selectedIds.includes(v._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.includes(v._id)}
+                                            onChange={() => toggleSelect(v._id)}
+                                            className="rounded border-gray-300 dark:bg-gray-800"
+                                        />
+                                    </td>
                                     <td className="title-td">
                                         <div className="title-group">
                                             <span className="main-title">{v.title}</span>

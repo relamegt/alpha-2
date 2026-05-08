@@ -73,27 +73,31 @@ class ContestSubmission {
         return !!submission;
     }
 
-    static async getOrCreateStartRecord(studentId, contestId) {
+    static async getStartRecord(studentId, contestId) {
         // Find the latest start record
         const latestStart = await prisma.contestSubmission.findFirst({
             where: { studentId: String(studentId), contestId: String(contestId), verdict: 'STARTED' },
             orderBy: { createdAt: 'desc' }
         });
 
-        if (latestStart) {
-            // Check if this attempt has been completed
-            const isCompleted = await prisma.contestSubmission.findFirst({
-                where: {
-                    studentId: String(studentId),
-                    contestId: String(contestId),
-                    verdict: 'COMPLETED',
-                    attemptNumber: latestStart.attemptNumber || 1
-                }
-            });
+        if (!latestStart) return null;
 
-            // Return latest start as the active one
-            return { ...latestStart, isCompleted: !!isCompleted, submittedAt: latestStart.createdAt };
-        }
+        // Check if this attempt has been completed
+        const isCompleted = await prisma.contestSubmission.findFirst({
+            where: {
+                studentId: String(studentId),
+                contestId: String(contestId),
+                verdict: 'COMPLETED',
+                attemptNumber: latestStart.attemptNumber || 1
+            }
+        });
+
+        return { ...latestStart, isCompleted: !!isCompleted, submittedAt: latestStart.createdAt };
+    }
+
+    static async getOrCreateStartRecord(studentId, contestId) {
+        const startRecord = await this.getStartRecord(studentId, contestId);
+        if (startRecord) return startRecord;
 
         // No start record yet? Create attempt 1
         const newRecord = await this.create({

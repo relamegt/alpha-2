@@ -2,12 +2,11 @@
 const Contest = require('../models/Contest');
 const Course = require('../models/Course');
 const Problem = require('../models/Problem');
-const ContestSubmission = require('../models/ContestSubmission');
 const User = require('../models/User');
 const { executeWithTestCases, validateCode } = require('../services/judge0Service');
 const { executeSqlWithTestCases } = require('../services/sqlJudgeService');
 const prisma = require('../config/db');
-const { notifyLeaderboardUpdate, notifySubmission, notifyViolation } = require('../config/websocket');
+const { notifyLeaderboardUpdate, notifySubmission, notifyViolation, notifyViolationReset } = require('../config/websocket');
 const { getRedis } = require('../config/redis');
 const redis = getRedis();
 const jwt = require('jsonwebtoken');
@@ -247,15 +246,12 @@ const getContestById = async (req, res) => {
         let hasSubmitted   = false;
 
         if (req.user.role === 'student') {
-            // BUG FIX: Use read-only getStartRecord — NOT getOrCreateStartRecord.
-            // getOrCreateStartRecord was creating a 'STARTED' submission record
-            // the moment a student opened the contest detail page (even just browsing),
-            // which polluted the leaderboard with students who never actually submitted.
-            // Start records are created only when the student clicks 'Start Contest'.
+            const ContestSubmission = require('../models/ContestSubmission');
             const startRecord = await ContestSubmission.getStartRecord(studentId, contestId);
             if (startRecord) currentAttempt = startRecord.attemptNumber || 1;
         }
 
+        const ContestSubmission = require('../models/ContestSubmission');
         hasSubmitted = await ContestSubmission.hasSubmittedContest(studentId, contest.id, currentAttempt);
 
         const effectiveStartTime = contest.startTime;
@@ -1376,8 +1372,17 @@ const unlockContestForUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'studentId is required' });
         }
 
-        // Fetch contest once — used for both auth check and time-window check
-        const contest = await Contest.findById(contestId);
+        // 1. Try to find as a Global Contest
+        let contest = await Contest.findById(contestId);
+        let isCourseContest = false;
+
+        // 2. If not found, try to find as a Course Contest
+        if (!contest) {
+            const CourseContest = require('../models/CourseContest');
+            contest = await CourseContest.findById(contestId);
+            if (contest) isCourseContest = true;
+        }
+
         if (!contest) {
             return res.status(404).json({ success: false, message: 'Contest not found' });
         }
@@ -1388,18 +1393,10 @@ const unlockContestForUser = async (req, res) => {
         }
 
         // Time-window check: contest must still be active (not ended)
+        // Note: CourseContests might not have endTime; if so, we skip this check or use a fallback.
         const now = new Date();
-        if (now > contest.endTime) {
+        if (contest.endTime && now > new Date(contest.endTime)) {
             return res.status(400).json({ success: false, message: 'Contest has already ended. Cannot unlock.' });
-        }
-        if (now < contest.startTime) {
-            return res.status(400).json({ success: false, message: 'Contest has not started yet.' });
-        }
-
-        // Verify the student actually has a final submission
-        const hasSubmitted = await ContestSubmission.hasSubmittedContest(studentId, contest.id);
-        if (!hasSubmitted) {
-            return res.status(400).json({ success: false, message: 'This student has not submitted the contest yet.' });
         }
 
         // Prevent concurrent unlock ops for the same student+contest
@@ -1411,25 +1408,36 @@ const unlockContestForUser = async (req, res) => {
         }
 
         try {
-            // Remove the final-submission marker so the student can continue
-            await ContestSubmission.removeContestCompletion(studentId, contest.id);
+            if (isCourseContest) {
+                const CourseContestSubmission = require('../models/CourseContestSubmission');
+                // Remove the final-submission marker
+                await CourseContestSubmission.removeContestCompletion(studentId, contest.id);
+                // Clear all violation records
+                await CourseContestSubmission.clearViolationLogs(studentId, contest.id);
+                // Invalidate cache
+                await CourseContestSubmission.invalidateCache(contest.id);
+            } else {
+                // Remove the final-submission marker
+                await ContestSubmission.removeContestCompletion(studentId, contest.id);
+                // Clear all violation records
+                await ContestSubmission.clearViolationLogs(studentId, contest.id);
+                // Invalidate cache
+                await ContestSubmission.invalidateCache(contest.id);
+            }
 
-            // Clear all violation records so the student starts fresh
-            // (otherwise the proctoring system sees old counts and auto-submits immediately)
-            await ContestSubmission.clearViolationLogs(studentId, contest.id);
-
-            // Clear any buffered violations in Redis
+            // Clear any buffered violations in Redis (Shared keyspace pattern)
             const violBufferKey = `viol:buffer:${studentId}:${contest.id}`;
             const violLockKey = `viol:lock:${studentId}:${contest.id}`;
             await redis.del(violBufferKey, violLockKey).catch(() => { });
 
-            // Invalidate leaderboard cache so the status updates immediately
-            await ContestSubmission.invalidateCache(contest.id);
+            // Notify via WebSocket so UI updates if they are watching the leaderboard
             notifyLeaderboardUpdate(contest.id);
+            // Signal the student's browser to reset their local proctoring state
+            notifyViolationReset(contest.id, studentId);
 
             res.json({
                 success: true,
-                message: 'Student has been unlocked and can now continue the contest.'
+                message: 'Student has been unlocked and violations have been reset to 0.'
             });
         } finally {
             await redis.del(unlockLockKey).catch(() => { });

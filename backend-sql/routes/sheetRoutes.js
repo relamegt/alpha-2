@@ -15,6 +15,7 @@ router.get('/user/stats', protect, sheetController.getUserStats);
 // Admin routes
 router.post('/', protect, adminOnly, sheetController.createSheet);
 router.put('/:sheetId', protect, adminOnly, sheetController.updateSheet);
+router.delete('/bulk', protect, adminOnly, sheetController.bulkDeleteSheets);
 router.delete('/:sheetId', protect, adminOnly, sheetController.deleteSheet);
 
 router.post('/:sheetId/sections', protect, adminOnly, sheetController.addSection);

@@ -8,6 +8,7 @@ router.post('/',                  protect, ctrl.create);
 router.get('/:id',                protect, ctrl.getOne);
 router.patch('/:id',              protect, ctrl.update);
 router.delete('/:id',             protect, ctrl.delete);
+router.delete('/bulk',            protect, ctrl.bulkDelete);
 router.post('/:id/publish-github',protect, ctrl.publishToGithub);
 router.get('/:id/template',       protect, ctrl.getTemplate);   // IDE pulls this
 router.post('/:id/submit/inline', protect, ctrl.submitInline);  // inline submit

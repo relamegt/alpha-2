@@ -14,6 +14,7 @@ const SqlProblemManager = () => {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
     
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
@@ -118,9 +119,36 @@ const SqlProblemManager = () => {
         try {
             await sqlProblemService.delete(id);
             toast.success('Deleted successfully');
+            setSelectedIds(prev => prev.filter(currId => currId !== id));
             fetchProblems();
         } catch (error) {
             toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Delete ${selectedIds.length} selected SQL problems? This action cannot be undone.`)) return;
+        try {
+            await sqlProblemService.bulkDelete(selectedIds);
+            toast.success(`${selectedIds.length} SQL problems deleted successfully`);
+            setSelectedIds([]);
+            fetchProblems();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredProblems.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredProblems.map(p => p._id));
         }
     };
 
@@ -196,6 +224,12 @@ const SqlProblemManager = () => {
                             <Plus size={16} />
                             Create Problem
                         </button>
+                        {selectedIds.length > 0 && (
+                            <button onClick={handleBulkDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center gap-2">
+                                <Trash2 size={16} />
+                                Delete ({selectedIds.length})
+                            </button>
+                        )}
                     </div>
                 </div>
             </header>
@@ -220,6 +254,14 @@ const SqlProblemManager = () => {
                     <table className="admin-custom-table">
                         <thead>
                             <tr>
+                                <th className="w-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={filteredProblems.length > 0 && selectedIds.length === filteredProblems.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-gray-300 dark:bg-gray-800"
+                                    />
+                                </th>
                                 <th>Problem Title</th>
                                 <th>Difficulty</th>
                                 <th>Points</th>
@@ -228,7 +270,15 @@ const SqlProblemManager = () => {
                         </thead>
                         <tbody>
                             {filteredProblems.map(p => (
-                                <tr key={p._id}>
+                                <tr key={p._id} className={selectedIds.includes(p._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.includes(p._id)}
+                                            onChange={() => toggleSelect(p._id)}
+                                            className="rounded border-gray-300 dark:bg-gray-800"
+                                        />
+                                    </td>
                                     <td className="title-td">
                                         <div className="title-group">
                                             <span className="main-title">{p.title}</span>

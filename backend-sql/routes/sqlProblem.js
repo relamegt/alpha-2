@@ -17,5 +17,6 @@ router.post('/', protect, restrictTo('admin', 'instructor'), validateProblemCrea
 router.post('/bulk', protect, restrictTo('admin', 'instructor'), upload.single('file'), sqlProblemController.bulkCreateProblems);
 router.put('/:id', protect, restrictTo('admin', 'instructor'), sqlProblemController.updateProblem);
 router.delete('/:id', protect, restrictTo('admin', 'instructor'), sqlProblemController.deleteProblem);
+router.delete('/bulk', protect, restrictTo('admin', 'instructor'), sqlProblemController.bulkDeleteProblems);
 
 module.exports = router;

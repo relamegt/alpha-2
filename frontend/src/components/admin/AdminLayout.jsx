@@ -103,6 +103,29 @@ const AdminSidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, isHead
                     ))}
                 </div>
             )}
+
+            {/* Flyout for collapsed state */}
+            {isCollapsed && hasSubItems && (
+                <div className="fixed left-20 ml-1 mt-[-40px] w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
+                    <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl py-2 overflow-hidden animate-in slide-in-from-left-2 duration-200">
+                        <div className="px-4 py-2 mb-1 border-b border-gray-50 dark:border-gray-800/50">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</span>
+                        </div>
+                        {subItems.map((item, idx) => (
+                            <Link
+                                key={idx}
+                                to={item.to}
+                                className={`flex items-center px-4 py-2 text-[13px] font-medium transition-all ${location.pathname === item.to
+                                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-500/10'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-primary-500/10'
+                                    }`}
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -213,7 +236,7 @@ const AdminLayout = () => {
                     </button>
                     <div className="relative" ref={profileRef}>
                         {isProfileOpen && (
-                            <div className="absolute bottom-full left-0 mb-2 w-64 bg-white/95 dark:bg-[var(--color-bg-sidebar)] backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 z-50">
+                            <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-[var(--color-bg-sidebar)] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 z-50 animate-in slide-in-from-bottom-2">
                                 <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white font-semibold shrink-0 shadow-lg shadow-primary-600/20">

@@ -553,6 +553,12 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
             case 'newSubmission': break; // Optional: toast notification
             case 'violation': toast.error(`Violation detected: ${data.violation?.type}`); break;
             case 'contestEnded': handleContestEnd(); break;
+            case 'violationReset':
+                if (String(data.targetUserId) === String(user?._id || user?.userId || user?.id)) {
+                    toast.success('Your contest access has been unlocked and violations reset!');
+                    resetViolations();
+                }
+                break;
             case 'executionResult':
                 console.log('[WS] Received executionResult:', data);
                 if (String(data.targetUserId) === String(user?._id || user?.userId || user?.id)) {
@@ -1588,7 +1594,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                                 ) : null}
                                 <button
                                     onClick={() => navigate(`/contests/${contest.slug || contestId}/leaderboard`)}
-                                    className="btn btn-primary flex items-center gap-1.5 h-8 px-4 text-xs rounded-lg font-bold"
+                                    className="btn-secondary flex items-center gap-1.5 h-8 px-4 text-xs font-bold shadow-sm"
                                 >
                                     <Trophy size={14} />
                                     View Leaderboard
@@ -1826,7 +1832,10 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                     )}
 
                     {!isPractice && !isSolo && (
-                        <button onClick={() => setShowLeaderboard(true)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#23232e] rounded-lg transition-colors">
+                        <button 
+                            onClick={() => setShowLeaderboard(true)} 
+                            className="btn-secondary !px-4 !py-1.5 !rounded-lg !text-[11px] font-bold shadow-sm flex items-center gap-2 h-9"
+                        >
                             <Layout size={14} /> Leaderboard
                         </button>
                     )}
@@ -1834,7 +1843,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                         <button
                             onClick={() => setShowFinishModal(true)}
                             disabled={finishing || timeRemaining <= 0}
-                            className="btn-primary flex items-center gap-2 px-4 py-1.5 text-xs"
+                            className="btn-primary !px-4 !py-1.5 !rounded-lg !text-[11px] font-bold shadow-sm flex items-center gap-2 h-9"
                         >
                             <CheckCircle size={14} />
                             <span>Finish Contest</span>
@@ -1856,7 +1865,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                                         navigate(isSolo ? `/workspace/${contest?.courseId || ''}` : `${basePath}/contests`);
                                     }
                                 }}
-                                className="group flex items-center gap-2 px-3 py-1.5 bg-[#F1F3F4] dark:bg-[#111117] hover:bg-red-50 dark:hover:bg-red-950/20 text-red-400 hover:text-red-600 border border-red-100 dark:border-red-900/30 hover:border-red-300 rounded-lg transition-all duration-200 text-xs font-bold shadow-sm"
+                                className="group flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-200 dark:border-gray-800 hover:border-red-200 dark:hover:border-red-900/50 rounded-xl transition-all duration-200 text-[11px] font-bold shadow-sm h-9"
                             >
                                 <IoCloseCircleOutline size={16} className="group-hover:scale-110 transition-transform" />
                                 {isSolo ? 'Exit Contest' : 'Exit Practice'}

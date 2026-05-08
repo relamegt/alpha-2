@@ -20,6 +20,10 @@ const videoService = {
     delete: async (id) => {
         const res = await apiClient.delete(`/videos/${id}`);
         return res.data;
+    },
+    bulkDelete: async (ids) => {
+        const res = await apiClient.delete('/videos/bulk', { data: { ids } });
+        return res.data;
     }
 };
 

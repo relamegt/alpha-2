@@ -82,7 +82,7 @@ const RankScoreChart = ({ data = [] }) => {
                                     />
                                 ))}
                             </Bar>
-    
+
                             <Bar 
                                 dataKey="rank" 
                                 radius={[2, 2, 2, 2]} 

@@ -10,7 +10,7 @@
     :root {
         /* Light mode (Finmap-inspired clean neutral white) */
         --color-bg-primary: #FAFAFA;
-        --color-bg-card: #ededede7;
+        --color-bg-card: #FFFFFF;
         --color-bg-surface: #F4F4F5;
         --color-bg-input: #F3F4F6;
         --color-bg-hover: #EDE9FE;
@@ -467,8 +467,9 @@
 
     /* Standardized Dropdown & Select styles */
     .dropdown-menu {
-        @apply absolute z-[500] bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] py-2 transition-all duration-200;
+        @apply absolute z-[500] bg-white dark:bg-[#0d0d12] rounded-2xl border border-gray-200 dark:border-gray-800/60 py-2 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)];
         animation: animate-in 0.2s ease-out, fade-in 0.2s ease-out, slide-in-from-top-2 0.2s ease-out;
+        opacity: 1 !important;
     }
 
     .dropdown-item {
@@ -581,6 +582,14 @@
     from { transform: translateX(-1rem); }
     to { transform: translateX(0); }
 }
+@keyframes slide-in-from-right-2 {
+    from { transform: translateX(0.5rem); }
+    to { transform: translateX(0); }
+}
+@keyframes slide-in-from-right-4 {
+    from { transform: translateX(1rem); }
+    to { transform: translateX(0); }
+}
 @keyframes zoom-in-95 {
     from { transform: scale(0.95); }
     to { transform: scale(1); }
@@ -614,6 +623,12 @@
 }
 .slide-in-from-left-4 {
     animation-name: slide-in-from-left-4;
+}
+.slide-in-from-right-2 {
+    animation-name: slide-in-from-right-2;
+}
+.slide-in-from-right-4 {
+    animation-name: slide-in-from-right-4;
 }
 .zoom-in-95 {
     animation-name: zoom-in-95;

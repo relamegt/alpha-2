@@ -12,6 +12,7 @@ router.get('/:jobId', protect, jobController.getJobById);
 router.post('/batch', protect, adminOnly, jobController.storeJobs);
 router.post('/', protect, adminOnly, jobController.createJob);
 router.put('/:jobId', protect, adminOnly, jobController.updateJob);
+router.delete('/bulk', protect, adminOnly, jobController.bulkDeleteJobs);
 router.delete('/:jobId', protect, adminOnly, jobController.deleteJob);
 
 module.exports = router;
