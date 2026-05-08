@@ -45,6 +45,7 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import submissionService from "../../services/submissionService";
 import problemService from "../../services/problemService";
+import courseService from "../../services/courseService";
 import useCodeExecution from "../../hooks/useCodeExecution";
 import contestService from "../../services/contestService";
 import courseContestService from "../../services/courseContestService";
@@ -63,6 +64,7 @@ import AIChatPanel from '../AIChatPanel';
 import axios from "axios";
 import InlineEditor from "./assignments/InlineEditor/InlineEditor";
 import LaunchIDEButton from "./assignments/IDELauncher/LaunchIDEButton";
+import ThemeToggle from "../shared/ThemeToggle";
 
 // —"—"—" Description Cleaner & Parser —"—"—"
 const extractInputFormat = (desc) => {
@@ -116,113 +118,30 @@ const cleanDescription = (desc) => {
 };
 
 const MarkdownComponents = {
-  h1: ({ children }) => (
-    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-5 mb-3 pb-2 border-b border-gray-200 dark:border-gray-800">
-      {children}
-    </h1>
-  ),
-  h2: ({ children }) => (
-    <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2">
-      {children}
-    </h2>
-  ),
-  h3: ({ children }) => (
-    <h3 className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-1.5 leading-snug">
-      {children}
-    </h3>
-  ),
-  p: ({ children }) => (
-    <p className="text-gray-700 dark:text-gray-300 text-[13.5px] leading-6 mb-3 whitespace-pre-wrap break-words">
-      {children}
-    </p>
-  ),
-  ul: ({ children }) => (
-    <ul className="text-gray-700 dark:text-gray-300 text-[13px] list-disc list-outside ml-4 mb-3 space-y-0.5">
-      {children}
-    </ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="text-gray-700 dark:text-gray-300 text-[13px] list-decimal list-outside ml-4 mb-3 space-y-0.5">
-      {children}
-    </ol>
-  ),
-  li: ({ children }) => (
-    <li className="pl-1 leading-6 break-words">{children}</li>
-  ),
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-primary-400 dark:border-gray-500 pl-4 pr-2 py-1 italic text-gray-500 dark:text-gray-400 text-[13px] my-3 bg-primary-50/50 dark:bg-[#23232e] rounded-r">
-      {children}
-    </blockquote>
-  ),
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-primary-600 dark:text-primary-400 hover:underline break-all"
-    >
-      {children}
-    </a>
-  ),
-  img: ({ src, alt }) => (
-    <img
-      src={src}
-      alt={alt}
-      className="max-w-full rounded-xl border border-gray-200 dark:border-gray-700 my-4 shadow-sm"
-    />
-  ),
-  hr: () => (
-    <hr className="border-0 border-t border-gray-200 dark:border-gray-800 my-4" />
-  ),
-  table: (props) => (
-    <div className="my-4 w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
-      <table
-        className="w-full text-[12px] border-collapse text-left"
-        {...props}
-      />
-    </div>
-  ),
-  thead: (props) => (
-    <thead
-      className="bg-primary-50 dark:bg-primary-900/30 text-gray-900 dark:text-gray-100"
-      {...props}
-    />
-  ),
-  tr: (props) => (
-    <tr
-      className="border-t border-gray-200 dark:border-gray-800 even:bg-gray-50/50 dark:even:bg-gray-800/30"
-      {...props}
-    />
-  ),
-  tbody: (props) => <tbody className="bg-white dark:bg-[#111117]" {...props} />,
-  th: ({ children }) => (
-    <th className="px-3 py-2 font-semibold border-r border-primary-100 dark:border-primary-900 last:border-r-0 text-[11px] whitespace-nowrap">
-      {children}
-    </th>
-  ),
-  td: ({ children }) => (
-    <td className="px-3 py-2 border-r border-gray-100 dark:border-gray-800 last:border-r-0 align-top text-gray-700 dark:text-gray-300 text-[11px]">
-      {children}
-    </td>
-  ),
+  hr: (props) => <hr className="border-0 border-t border-[var(--color-border-interactive)] my-6" {...props} />,
+  h1: (props) => <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-6 border-b border-gray-100 dark:border-gray-800 pb-2 leading-tight">{props.children}</h1>,
+  h2: (props) => <h2 className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4 leading-tight">{props.children}</h2>,
+  h3: (props) => <h3 className="text-[15px] sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-white leading-snug mt-6 mb-3 break-words">{props.children}</h3>,
+  p: (props) => <p className="text-gray-700 dark:text-gray-300 text-[15px] sm:text-[15px] lg:text-[16px] leading-7 mb-4 whitespace-pre-wrap break-words">{props.children}</p>,
+  ul: (props) => <ul className="text-gray-700 dark:text-gray-300 text-[13px] sm:text-[15px] lg:text-[16px] list-disc list-outside ml-5 mb-4 space-y-2">{props.children}</ul>,
+  ol: (props) => <ol className="text-gray-700 dark:text-gray-300 text-[13px] sm:text-[15px] lg:text-[16px] list-decimal list-outside ml-5 mb-4 space-y-2">{props.children}</ol>,
+  li: (props) => <li className="pl-1 leading-7 break-words whitespace-pre-wrap">{props.children}</li>,
+  blockquote: (props) => <blockquote className="border-l-4 border-indigo-500 pl-4 pr-3 py-2 italic text-gray-500 dark:text-gray-400 text-[13px] sm:text-[14px] my-5 bg-gray-50 dark:bg-gray-800/30 rounded-r shadow-sm">{props.children}</blockquote>,
+  a: ({ href, ...props }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium transition-colors break-all">{props.children}</a>,
+  table: (props) => <div className="my-6 w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
+  thead: (props) => <thead className="bg-gray-50 dark:bg-zinc-900/50 text-gray-900 dark:text-gray-100" {...props} />,
+  tr: (props) => <tr className="border-t border-gray-100 dark:border-gray-800 even:bg-gray-50/50 dark:even:bg-zinc-900/20" {...props} />,
+  tbody: (props) => <tbody className="bg-transparent" {...props} />,
+  th: (props) => <th className="px-4 py-3 font-bold border-r border-indigo-100 dark:border-indigo-900/30 last:border-r-0 text-[12px] uppercase tracking-wider">{props.children}</th>,
+  td: (props) => <td className="px-4 py-3 border-r border-gray-100 dark:border-gray-800 last:border-r-0 align-top text-gray-700 dark:text-gray-300 text-[14px] leading-relaxed">{props.children}</td>,
   code: ({ inline, className, children }) => {
-    const content = String(children).replace(/\n$/, "");
-    const match = /language-(\w+)/.exec(className || "");
-    if (inline || (!match && !content.includes("\n"))) {
-      return (
-        <code className="bg-primary-50 dark:bg-[#23232e] text-primary-700 dark:text-gray-200 px-1.5 py-0.5 rounded text-[12px] font-mono border border-primary-100 dark:border-gray-700 inline break-all">
-          {children}
-        </code>
-      );
+    const content = String(children).replace(/\n$/, '');
+    const isMultiLine = content.includes('\n');
+    if (inline || !isMultiLine) {
+      return <code className="bg-gray-100 dark:bg-gray-800/50 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded text-[12px] sm:text-[13px] font-mono border border-gray-200/50 dark:border-gray-700/50 inline break-all whitespace-normal">{children}</code>;
     }
-    return (
-      <div className="my-3 rounded-lg overflow-hidden bg-[#111117] border border-zinc-800">
-        <div className="p-3 overflow-x-auto text-[12px] font-mono text-gray-200">
-          {children}
-        </div>
-      </div>
-    );
-  },
+    return <div className="my-5 rounded-xl overflow-hidden bg-gray-900 dark:bg-[#0c0c0e] border border-gray-800 shadow-xl"><div className="p-4 sm:p-5 overflow-x-auto text-[12px] sm:text-[13px] font-mono text-gray-300 leading-relaxed">{children}</div></div>;
+  }
 };
 
 // ─── Success Pop — Lottie coin + light particles ─────────────────────────────────
@@ -1473,12 +1392,31 @@ const CodeEditor = () => {
   }, []);
 
   // ── layout widths ──
-  const [sidebarW, setSidebarW] = useState(20);
+  const [sidebarW, setSidebarW] = useState(() => {
+    const saved = localStorage.getItem("alphalearn_sidebar_width");
+    return saved ? parseFloat(saved) : 20;
+  });
   const [descW, setDescW] = useState(38);
   const [editorTopH, setEditorTopH] = useState(65);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(() => {
+    const saved = localStorage.getItem("alphalearn_sidebar_show");
+    return saved !== null ? saved === "true" : true;
+  });
   const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
   const actuallyShowSidebar = showSidebar;
+
+  const handleToggleSidebar = useCallback(() => {
+    setShowSidebar((prev) => !prev);
+  }, []);
+
+  // Persist sidebar state
+  useEffect(() => {
+    localStorage.setItem("alphalearn_sidebar_show", showSidebar);
+  }, [showSidebar]);
+
+  useEffect(() => {
+    localStorage.setItem("alphalearn_sidebar_width", sidebarW);
+  }, [sidebarW]);
 
   // ── problem data ──
   const [isResizing, setIsResizing] = useState(false);
@@ -1507,8 +1445,22 @@ const CodeEditor = () => {
     queryKey: ["problem", problemId, typeFromUrl],
     queryFn: () => problemService.getProblemById(problemId, typeFromUrl),
     enabled: !!problemId,
+    placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000, // 5 mins
   });
+
+  const { data: coursesData } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => courseService.getAllCourses(),
+    enabled: !!courseId,
+  });
+
+  const activeCourse = useMemo(() => {
+    if (!coursesData?.courses || !courseId) return null;
+    return coursesData.courses.find(
+      (c) => String(c._id) === courseId || c.slug === courseId,
+    );
+  }, [coursesData, courseId]);
   const rawProb =
     problemResult?.problem ||
     problemResult?.article ||
@@ -2278,11 +2230,6 @@ const CodeEditor = () => {
   // If sidebar is shown, it takes `sidebarW` %. If hidden, it takes fixed `COLLAPSED_SIDEBAR_WIDTH` px.
   // Desc takes `descW` %.
   // Right panel (Editor) takes REST.
-  const containerStyle = {
-    gridTemplateColumns: showSidebar
-      ? `${sidebarW}% ${descW}% 1fr`
-      : `40px ${descW}% 1fr`,
-  };
 
   // ─── Result data ───────────────────────────────────────────────────────────
   // Unified single result object (prefer submitResult then runResult)
@@ -2442,24 +2389,19 @@ const CodeEditor = () => {
       {/* ── Workspace Header ── */}
       <div className="h-12 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111117] flex items-center justify-between px-4 shrink-0 transition-colors z-[300]">
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#23232e] transition-all"
-          >
-            <ArrowLeft size={18} />
-          </button>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold truncate max-w-[200px]">
-              {problem?.title || "Problem"}
+            <h1 className="text-sm font-bold truncate max-w-[400px]">
+              {courseId ? (activeCourse?.title || "Course") : (problem?.title || "Workspace")}
             </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle size="sm" />
           {courseId && (
             <button
               onClick={() =>
-                window.open(`/courses/${courseId}/leaderboard`, "_blank")
+                navigate(`/dashboard/courses/${courseId}/analytics/leaderboard`)
               }
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all shadow-sm"
             >
@@ -2492,28 +2434,42 @@ const CodeEditor = () => {
                   top: 0,
                 }
               : {
-                  width: actuallyShowSidebar ? `${sidebarW}%` : "60px",
+                  width: actuallyShowSidebar ? `${sidebarW}%` : "40px",
                   transition: isResizing
                     ? "none"
                     : "width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
                 }
           }
-          className={`flex flex-col shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111117] z-[200] transition-transform duration-300 ease-in-out ${isMobile && !showSidebar ? "-translate-x-full" : "translate-x-0"}`}
+          className={`flex flex-col shrink-0 border-r border-gray-200 dark:border-gray-800 bg-[var(--color-bg-sidebar)] dark:bg-[#111117] z-[260] transition-transform duration-300 ease-in-out ${isMobile && !showSidebar ? "-translate-x-full" : "translate-x-0"}`}
         >
           <div className="flex-1 overflow-hidden flex flex-col relative h-full">
-            <ProblemSidebar
-              isCollapsed={!actuallyShowSidebar}
-              onToggle={() => setShowSidebar(!showSidebar)}
-            />
+            {/* ── Collapsed CONTENT Label ── */}
+            {!isMobile && !actuallyShowSidebar && (
+              <div 
+                onClick={() => handleToggleSidebar()}
+                className="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+              >
+                <div className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap text-[10px] font-bold tracking-[0.35em] text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 uppercase transition-colors select-none">
+                  CONTENT
+                </div>
+              </div>
+            )}
+
+            <div className={`flex-1 flex flex-col overflow-hidden h-full ${!actuallyShowSidebar && !isMobile ? 'hidden' : 'flex'}`}>
+              <ProblemSidebar
+                isCollapsed={!actuallyShowSidebar}
+                onToggle={handleToggleSidebar}
+              />
+            </div>
           </div>
 
-          {/* Toggle Tab — vertically centered on right edge, matching contest style */}
+          {/* Toggle Tab — vertically centered on right edge, matching reference style */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setShowSidebar(!showSidebar);
+              handleToggleSidebar();
             }}
-            className={`absolute -right-[12px] top-1/2 -translate-y-1/2 z-50 w-[12px] h-12 bg-white dark:bg-[#111117] border border-l-0 ${isDark ? "border-[#282833]" : "border-gray-200"} rounded-r-md shadow-sm flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors`}
+            className={`absolute -right-[12px] top-1/2 -translate-y-1/2 z-[300] w-[12px] h-12 bg-[var(--color-bg-sidebar)] dark:bg-[#111117] border border-l-0 ${isDark ? "border-[#282833]" : "border-gray-200"} rounded-r-md shadow-sm flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors`}
             title={actuallyShowSidebar ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             <div className="flex flex-col items-center justify-center gap-0.5 opacity-60 group-hover:opacity-100">
@@ -2538,7 +2494,7 @@ const CodeEditor = () => {
           <DragHandleH onMouseDown={(e) => startDrag("sidebar", e)} />
         )}
 
-        {isActuallyLoading && problemId ? (
+        {isActuallyLoading && !problem && problemId ? (
           <div
             className={`flex-1 flex overflow-hidden animate-pulse ${isMobile ? "flex-col" : "flex-row"}`}
           >
@@ -3330,6 +3286,7 @@ const CodeEditor = () => {
                     isAdmin={user?.role === "admin"}
                     hasViewedEditorial={hasViewedEditorial}
                     onUnlockEditorial={() => setHasViewedEditorial(true)}
+                    isCompact={true}
                     onUpdateLinks={async (editorialLink, videoUrl) => {
                       await problemService.updateProblem(problemId, {
                         editorialLink,
@@ -3345,7 +3302,7 @@ const CodeEditor = () => {
 
                 {/* ── Submissions ── */}
                 {leftTab === "submissions" && (
-                  <SubmissionsTab problemId={problemId} />
+                  <SubmissionsTab problemId={problemId} onCopyCode={setCode} />
                 )}
               </div>
             </div>
@@ -3426,7 +3383,7 @@ const CodeEditor = () => {
                       <Settings size={16} />
                     </button>
 
-                    <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 transition-colors">
+                    <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-300 dark:border-gray-700 rounded-lg p-0.5 transition-colors">
                       <button
                         onClick={handleRun}
                         disabled={isExecuting}
@@ -4464,6 +4421,7 @@ const CodeEditor = () => {
                               ...problem,
                               editorialLink: problem.readmeUrl || problem.templateFiles?.repoUrl
                             }} 
+                            isCompact={true}
                           />
                         ) : (
                           <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={MarkdownComponents}>
@@ -4768,37 +4726,21 @@ const CodeEditor = () => {
                               </div>
                             ) : (
                               <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 text-[13.5px] leading-6">
-                                {problem.summaryLink || problem.articleLink ? (
-                                  <EditorialRenderer
-                                    problem={{
-                                      ...problem,
-                                      editorialLink:
-                                        problem.summaryLink ||
-                                        problem.articleLink,
-                                    }}
-                                    isAdmin={false}
-                                    hideVideo={true}
-                                    hasViewedEditorial={true}
-                                  />
-                                ) : problem.summary || problem.article ? (
-                                  <ReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkBreaks]}
-                                    components={MarkdownComponents}
-                                  >
-                                    {(() => {
-                                      const s =
-                                        problem.summary || problem.article;
-                                      if (!s) return "";
-                                      return typeof s === "object"
-                                        ? s.content || ""
-                                        : s;
-                                    })()}
-                                  </ReactMarkdown>
-                                ) : (
-                                  <p className="text-gray-400 italic">
-                                    No summary provided.
-                                  </p>
-                                )}
+                                <EditorialRenderer
+                                  problem={{
+                                    ...problem,
+                                    editorialLink: problem.summaryLink || problem.articleLink
+                                  }}
+                                  content={(() => {
+                                    const s = problem.summary || problem.article;
+                                    if (!s) return "";
+                                    return typeof s === "object" ? s.content || "" : s;
+                                  })()}
+                                  isAdmin={false}
+                                  hideVideo={true}
+                                  hasViewedEditorial={true}
+                                  isCompact={true}
+                                />
                               </div>
                             )}
                           </div>
@@ -5475,6 +5417,7 @@ const CodeEditor = () => {
                         isAdmin={user?.role === "admin"}
                         hasViewedEditorial={true}
                         onUnlockEditorial={() => setHasViewedEditorial(true)}
+                        isCompact={true}
                         onUpdateLinks={async (
                           newEditorialLink,
                           newVideoUrl,

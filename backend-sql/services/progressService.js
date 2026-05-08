@@ -49,8 +49,16 @@ class ProgressService {
             let coinsEarned = 0;
 
             if (!isAlreadyCompleted && isFirstSolveCheck && !content.isContestProblem) {
-                // HIGH - User Requirement: No points for videos and articles
-                const allowedTypes = [CONTENT_TYPES.PROBLEM, CONTENT_TYPES.SQL, CONTENT_TYPES.QUIZ, CONTENT_TYPES.PRACTICAL, CONTENT_TYPES.ASSIGNMENT];
+                // Award points for all course content types to ensure rank reflects full progress
+                const allowedTypes = [
+                    CONTENT_TYPES.PROBLEM, 
+                    CONTENT_TYPES.SQL, 
+                    CONTENT_TYPES.QUIZ, 
+                    CONTENT_TYPES.PRACTICAL, 
+                    CONTENT_TYPES.ASSIGNMENT,
+                    CONTENT_TYPES.VIDEO,
+                    CONTENT_TYPES.ARTICLE
+                ];
                 if (allowedTypes.includes(contentType)) {
                     coinsEarned = content.points || 0;
                 }

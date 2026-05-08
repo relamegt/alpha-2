@@ -103,10 +103,10 @@ const NotificationDropdown = ({ basePath = '/dashboard' }) => {
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "relative p-2 rounded-xl transition-all duration-300",
+                    "relative p-2 rounded-xl transition-all duration-300 border border-gray-300 dark:border-gray-800",
                     isOpen 
-                        ? "bg-primary-50 dark:bg-primary-500/10 text-primary-600" 
-                        : "text-gray-400 hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-[#111117]"
+                        ? "bg-primary-50 dark:bg-primary-500/10 text-primary-600 border-primary-200 dark:border-primary-500/30" 
+                        : "text-gray-400 hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-[#111117] hover:border-primary-200 dark:hover:border-primary-500/30"
                 )}
             >
                 <Bell size={20} />

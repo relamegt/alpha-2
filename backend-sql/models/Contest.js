@@ -51,18 +51,31 @@ class Contest {
     }
 
     static async findById(idOrSlug) {
+        if (!idOrSlug || idOrSlug === 'undefined' || idOrSlug === 'null') return null;
+        
         let contest = null;
-        try {
-            contest = await prisma.contest.findUnique({
-                where: { id: idOrSlug },
-                include: { problems: true }
-            });
-        } catch (e) {}
+        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrSlug);
+
+        if (isUUID) {
+            try {
+                contest = await prisma.contest.findUnique({
+                    where: { id: idOrSlug },
+                    include: { problems: true }
+                });
+            } catch (e) {
+                console.error('[Contest.findById] UUID lookup error:', e.message);
+            }
+        }
+
         if (!contest) {
-            contest = await prisma.contest.findUnique({
-                where: { slug: String(idOrSlug) },
-                include: { problems: true }
-            });
+            try {
+                contest = await prisma.contest.findUnique({
+                    where: { slug: String(idOrSlug) },
+                    include: { problems: true }
+                });
+            } catch (e) {
+                console.error('[Contest.findById] Slug lookup error:', e.message);
+            }
         }
         return contest;
     }

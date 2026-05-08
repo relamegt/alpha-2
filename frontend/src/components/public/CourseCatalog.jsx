@@ -175,7 +175,7 @@ const CourseCatalog = () => {
                                         <img 
                                             src={course.thumbnailUrl} 
                                             alt={course.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
@@ -204,7 +204,7 @@ const CourseCatalog = () => {
                                 {/* Content */}
                                 <div className="p-6 space-y-4">
                                     <div className="space-y-2">
-                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors min-h-[3.5rem] flex items-center leading-snug">
                                             {course.title}
                                         </h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 min-h-[40px]">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Sparkles, X, Zap, Lock, Brain, Bug,
@@ -320,15 +320,15 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
                     key={i}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="bg-zinc-800/70 border-l-2 border-l-emerald-500 border border-zinc-700/50 rounded-xl p-4 space-y-3"
+                    className="bg-gray-50 dark:bg-zinc-800/70 border-l-2 border-l-emerald-500 border border-gray-200 dark:border-zinc-700/50 rounded-xl p-4 space-y-3"
                 >
                     <div className="flex items-center justify-between">
                         <SeverityBadge severity={bug.severity} />
                         {bug.line && <span className="text-[10px] font-bold text-zinc-500">Line {bug.line}</span>}
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Problem</p>
-                        <p className="text-sm text-zinc-300">{bug.diagnosis}</p>
+                        <p className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Problem</p>
+                        <p className="text-sm text-gray-700 dark:text-zinc-300">{bug.diagnosis}</p>
                     </div>
                     <div className="p-3.5 bg-emerald-500/8 border border-emerald-500/25 rounded-xl">
                         <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1.5">✅ Fix</p>
@@ -341,9 +341,9 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
         {fixIndex < aiResult.bugs.length - 1 ? (
             <button
                 onClick={() => setFixIndex(p => p + 1)}
-                className="w-full btn-secondary py-3.5"
+                className="w-full btn-secondary py-2 text-xs"
             >
-                Next issue <ChevronRight size={16} />
+                Next issue <ChevronRight size={14} />
             </button>
         ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 pt-2">
@@ -355,7 +355,7 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
                 </div>
                 <button
                     onClick={onShowSolution}
-                    className="w-full btn-primary py-3.5"
+                    className="w-full btn-primary py-2 text-xs"
                 >
                     View full optimized solution →
                 </button>
@@ -390,65 +390,65 @@ const Stage4 = ({ aiResult, onReset, isCodingType }) => {
                         icon={Clock}
                         label="Time"
                         value={aiResult.fullSolution.timeComplexity}
-                        color="bg-blue-500/10 border-blue-500/25 text-blue-300"
+                        color="bg-blue-500/10 border-blue-500/25 text-blue-600 dark:text-blue-300"
                     />
                     <ComplexityBadge
                         icon={Database}
                         label="Space"
                         value={aiResult.fullSolution.spaceComplexity}
-                        color="bg-purple-500/10 border-purple-500/25 text-purple-300"
+                        color="bg-purple-500/10 border-purple-500/25 text-purple-600 dark:text-purple-300"
                     />
                 </div>
             )}
 
             {/* Code Block */}
             <div className="relative group">
-                <div className="flex items-center gap-2 px-4 py-2.5 bg-zinc-950 border-x border-t border-zinc-700 rounded-t-xl">
-                    <Code2 size={13} className="text-zinc-500" />
-                    <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Solution</span>
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-zinc-950 border-x border-t border-gray-200 dark:border-zinc-700 rounded-t-xl">
+                    <Code2 size={13} className="text-gray-400 dark:text-zinc-500" />
+                    <span className="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Solution</span>
                     <button
                         onClick={handleCopy}
-                        className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+                        className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
                     >
                         {copied
-                            ? <><CheckCircle size={12} className="text-emerald-400" /> Copied</>
+                            ? <><CheckCircle size={12} className="text-emerald-500" /> Copied</>
                             : <><Copy size={12} /> Copy</>
                         }
                     </button>
                 </div>
-                <pre className="bg-zinc-950 border border-zinc-700 rounded-b-xl p-4 overflow-x-auto text-zinc-100 font-mono text-xs leading-relaxed max-h-80 custom-scrollbar">
+                <pre className="bg-gray-100 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-b-xl p-4 overflow-x-auto text-gray-800 dark:text-zinc-100 font-mono text-xs leading-relaxed max-h-80 custom-scrollbar">
                     <code>{aiResult.fullSolution.code}</code>
                 </pre>
             </div>
 
             {/* Explanation */}
             <div className="space-y-2">
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Explanation</p>
-                <p className="text-sm text-zinc-300 leading-relaxed bg-zinc-800/40 border border-zinc-700/40 rounded-xl p-4">
+                <p className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Explanation</p>
+                <p className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed bg-gray-50 dark:bg-zinc-800/40 border border-gray-200 dark:border-zinc-700/40 rounded-xl p-4">
                     {aiResult.fullSolution.explanation}
                 </p>
             </div>
 
             {/* Key Takeaways */}
             <div className="space-y-2">
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Key Takeaways</p>
+                <p className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Key Takeaways</p>
                 {aiResult.fullSolution.keyTakeaways.map((t, i) => (
-                    <div key={i} className="flex gap-3 p-3.5 bg-zinc-800/40 border-l-2 border-l-violet-500 border border-zinc-700/40 rounded-xl">
-                        <span className="text-[11px] font-black text-violet-400 shrink-0 mt-0.5">0{i + 1}</span>
-                        <p className="text-sm text-zinc-200 leading-relaxed">{t}</p>
+                    <div key={i} className="flex gap-3 p-3.5 bg-gray-50 dark:bg-zinc-800/40 border-l-2 border-l-violet-500 border border-gray-200 dark:border-zinc-700/40 rounded-xl">
+                        <span className="text-[11px] font-black text-violet-600 dark:text-violet-400 shrink-0 mt-0.5">0{i + 1}</span>
+                        <p className="text-sm text-gray-700 dark:text-zinc-200 leading-relaxed">{t}</p>
                     </div>
                 ))}
             </div>
 
-            <div className="pt-4 border-t border-zinc-800 flex flex-col items-center gap-3">
-                <p className="text-[11px] text-zinc-600 italic text-center">
+            <div className="pt-4 border-t border-gray-200 dark:border-zinc-800 flex flex-col items-center gap-3">
+                <p className="text-[11px] text-gray-500 dark:text-zinc-600 italic text-center">
                     "Understanding the approach matters more than memorizing code"
                 </p>
                 <button
                     onClick={onReset}
-                    className="btn-secondary py-2 px-4"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg transition-colors"
                 >
-                    <RotateCcw size={15} /> Ask another question
+                    <RotateCcw size={13} /> Ask another question
                 </button>
             </div>
         </motion.div>
@@ -457,11 +457,48 @@ const Stage4 = ({ aiResult, onReset, isCodingType }) => {
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodingType }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [userQuestion, setUserQuestion] = useState('');
-    const [currentStage, setCurrentStage] = useState(1);
-    const [aiResult, setAiResult] = useState(null);
-    const [fixIndex, setFixIndex] = useState(0);
+    const [isOpen, setIsOpen] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_open');
+        return saved === 'true';
+    });
+    const [aiResult, setAiResult] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_result');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [currentStage, setCurrentStage] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_stage');
+        return saved ? parseInt(saved) : 1;
+    });
+    const [fixIndex, setFixIndex] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_fix_index');
+        return saved ? parseInt(saved) : 0;
+    });
+    const [userQuestion, setUserQuestion] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_question');
+        return saved || '';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('ai_chat_open', isOpen);
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (aiResult) localStorage.setItem('ai_chat_result', JSON.stringify(aiResult));
+        else localStorage.removeItem('ai_chat_result');
+    }, [aiResult]);
+
+    useEffect(() => {
+        localStorage.setItem('ai_chat_stage', currentStage);
+    }, [currentStage]);
+
+    useEffect(() => {
+        localStorage.setItem('ai_chat_fix_index', fixIndex);
+    }, [fixIndex]);
+
+    useEffect(() => {
+        localStorage.setItem('ai_chat_question', userQuestion);
+    }, [userQuestion]);
+
     const [showSolutionModal, setShowSolutionModal] = useState(false);
     const queryClient = useQueryClient();
 
@@ -522,9 +559,9 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-[60] btn-primary px-5 py-3 rounded-full flex items-center gap-2"
+                className="fixed bottom-6 right-6 z-[60] bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg shadow-violet-500/20 transition-all active:scale-95 text-sm font-medium"
             >
-                <Sparkles size={16} />
+                <Sparkles size={14} />
                 AI Tutor
             </button>
         );
@@ -539,41 +576,40 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: '100%', opacity: 0 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-                className="fixed right-0 top-0 h-full w-full md:w-[22rem] bg-zinc-900 border-l border-zinc-800 shadow-2xl z-[1000] flex flex-col"
+                className="fixed right-0 top-0 h-full w-full md:w-[22rem] bg-white dark:bg-[var(--color-bg-sidebar)] border-l border-gray-200 dark:border-zinc-800 shadow-2xl z-[1000] flex flex-col"
             >
                 {/* Header */}
-                <div className="px-4 py-3.5 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between shrink-0">
+                <div className="px-4 py-3.5 bg-gray-50 dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
                             <Sparkles size={14} className="text-white" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-zinc-100 leading-none">AI Tutor</p>
-                            <p className="text-[10px] text-zinc-500 mt-0.5">Powered by Gemma 4</p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-zinc-100 leading-none">AI Tutor</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         {aiResult && <StageIndicator current={currentStage - 1} total={totalStages} />}
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-zinc-500 hover:text-zinc-200 transition-colors p-1 rounded-lg hover:bg-zinc-800"
+                            className="text-gray-400 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
                         >
-                            <X size={18} />
+                            <X size={16} />
                         </button>
                     </div>
                 </div>
 
                 {/* Credits Bar */}
-                <div className="px-4 py-2 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between shrink-0">
+                <div className="px-4 py-2 bg-gray-50 dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
                     {loadingCredits ? (
-                        <Loader2 className="animate-spin text-zinc-600 mx-auto" size={13} />
+                        <Loader2 className="animate-spin text-gray-400 dark:text-zinc-600 mx-auto" size={13} />
                     ) : (
                         <>
-                            <p className="text-[11px] text-zinc-500">
-                                <span className="font-bold text-violet-400">{creditsData?.credits ?? 0}</span>
+                            <p className="text-[11px] text-gray-500 dark:text-zinc-500">
+                                <span className="font-bold text-violet-600 dark:text-violet-400">{creditsData?.credits ?? 0}</span>
                                 {creditsData?.credits === 'Unlimited' ? '' : ' / 30 credits'} left
                             </p>
-                            <div className="w-24 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="w-24 h-1 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-violet-500 rounded-full transition-all"
                                     style={{
@@ -602,9 +638,9 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                                     onChange={(e) => setUserQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleAsk()}
                                     placeholder="Describe your doubt… e.g. Why is my submission wrong?"
-                                    className="w-full bg-zinc-800/60 border border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 rounded-xl p-3.5 text-sm text-zinc-100 outline-none min-h-[110px] resize-none placeholder:text-zinc-600 transition-all"
+                                    className="w-full bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 rounded-xl p-3.5 text-sm text-gray-900 dark:text-zinc-100 outline-none min-h-[110px] resize-none placeholder:text-gray-400 dark:placeholder:text-zinc-600 transition-all"
                                 />
-                                <p className="text-[10px] text-zinc-600 text-right">Ctrl + Enter to submit</p>
+                                <p className="text-[10px] text-gray-400 dark:text-zinc-600 text-right">Ctrl + Enter to submit</p>
                             </div>
 
                             {creditsData?.credits !== 'Unlimited' && creditsData?.credits <= 0 ? (
@@ -621,9 +657,9 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                                 <button
                                     onClick={handleAsk}
                                     disabled={!userQuestion.trim()}
-                                    className="w-full btn-primary py-3.5"
+                                    className="w-full btn-primary py-2 text-xs"
                                 >
-                                    <Zap size={16} className="fill-current" />
+                                    <Zap size={14} className="fill-current" />
                                     {labels.analyzeBtn}
                                 </button>
                             )}
@@ -638,14 +674,14 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                         <div className="flex flex-col items-center justify-center py-16 gap-6">
                             <div className="relative">
                                 <div className="absolute inset-0 bg-violet-500/20 blur-2xl animate-pulse rounded-full" />
-                                <div className="relative w-16 h-16 rounded-2xl bg-zinc-800 border border-violet-500/30 flex items-center justify-center">
-                                    <Brain size={32} className="text-violet-400 animate-pulse" />
+                                <div className="relative w-16 h-16 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-violet-500/30 flex items-center justify-center">
+                                    <Brain size={32} className="text-violet-600 dark:text-violet-400 animate-pulse" />
                                 </div>
                             </div>
                             <div className="text-center space-y-1.5">
-                                <p className="font-bold text-zinc-100">{labels.thinkingLabel}</p>
-                                <p className="text-xs text-zinc-500">{labels.thinkingSubLabel}</p>
-                                <p className="text-[10px] text-zinc-600">This may take up to 60 seconds</p>
+                                <p className="font-bold text-gray-900 dark:text-zinc-100">{labels.thinkingLabel}</p>
+                                <p className="text-xs text-gray-500 dark:text-zinc-500">{labels.thinkingSubLabel}</p>
+                                <p className="text-[10px] text-gray-400 dark:text-zinc-600">This may take up to 60 seconds</p>
                             </div>
                             <div className="flex gap-1">
                                 {[0, 1, 2].map(i => (

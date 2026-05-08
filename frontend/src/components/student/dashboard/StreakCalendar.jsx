@@ -10,33 +10,33 @@ import {
     isSameDay, 
     addMonths, 
     subMonths,
-    isToday
+    isToday,
+    addDays
 } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { RiFireFill } from "react-icons/ri";
 
-const StreakCalendar = ({ activeDates = [] }) => {
+const StreakCalendar = ({ activeDates = [], minHeight = "320px" }) => {
     const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
     const renderHeader = () => {
         return (
-            <div className="flex items-center justify-between mb-6">
-                <h4 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-widest">
+            <div className="flex items-center justify-between mb-4">
+                <button 
+                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 transition-all active:scale-90 border border-gray-300 dark:border-gray-800"
+                >
+                    <ChevronLeft size={14} />
+                </button>
+                <h4 className="text-[14px] font-black text-gray-900 dark:text-white tracking-tight">
                     {format(currentMonth, 'MMMM yyyy')}
                 </h4>
-                <div className="flex gap-2">
-                    <button 
-                        onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-                    <button 
-                        onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
-                    >
-                        <ChevronRight size={16} />
-                    </button>
-                </div>
+                <button 
+                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 transition-all active:scale-90 border border-gray-300 dark:border-gray-800"
+                >
+                    <ChevronRight size={14} />
+                </button>
             </div>
         );
     };
@@ -44,10 +44,12 @@ const StreakCalendar = ({ activeDates = [] }) => {
     const renderDays = () => {
         const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
         return (
-            <div className="grid grid-cols-7 mb-2">
+            <div className="grid grid-cols-7 mb-4">
                 {days.map((day, i) => (
-                    <div key={i} className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-widest">
-                        {day}
+                    <div key={i} className="flex justify-center">
+                        <div className="w-7 h-5 flex items-center justify-center text-[10px] font-black uppercase tracking-tighter text-gray-500">
+                            {day}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -56,14 +58,14 @@ const StreakCalendar = ({ activeDates = [] }) => {
 
     const renderCells = () => {
         const monthStart = startOfMonth(currentMonth);
-        const monthEnd = endOfMonth(monthStart);
         const startDate = startOfWeek(monthStart);
-        const endDate = endOfWeek(monthEnd);
 
-        const calendarDays = eachDayOfInterval({
-            start: startDate,
-            end: endDate,
-        });
+        const calendarDays = [];
+        let day = startDate;
+        for (let i = 0; i < 42; i++) {
+            calendarDays.push(day);
+            day = addDays(day, 1);
+        }
 
         return (
             <div className="grid grid-cols-7 gap-1">
@@ -71,21 +73,22 @@ const StreakCalendar = ({ activeDates = [] }) => {
                     const isActive = activeDates.some(ad => isSameDay(new Date(ad), day));
                     const isCurrentMonth = isSameMonth(day, monthStart);
                     const isTodayDate = isToday(day);
+                    const isSelected = isSameDay(day, new Date());
 
                     return (
                         <div 
                             key={i} 
                             className={`
-                                aspect-square flex items-center justify-center text-[12px] font-semibold rounded-xl transition-all relative
-                                ${!isCurrentMonth ? 'text-gray-300 dark:text-[#2a2a35]' : 'text-gray-700 dark:text-gray-300'}
-                                ${isActive ? 'bg-primary-500/20 border border-primary-500/50 text-primary-700 dark:text-white font-bold' : ''}
-                                ${isTodayDate && !isActive ? 'border border-primary-500/50 text-primary-600 dark:text-white bg-primary-500/5' : ''}
-                                hover:bg-gray-50 dark:hover:bg-white/5 cursor-default
+                                aspect-square flex items-center justify-center text-[13px] rounded-lg transition-all relative
+                                ${!isCurrentMonth ? 'text-gray-400 dark:text-gray-700 opacity-40' : 'text-gray-900 dark:text-white font-bold'}
+                                ${isSelected ? 'border-2 border-primary-500' : ''}
+                                ${!isActive && !isSelected && isCurrentMonth ? 'hover:bg-gray-100 dark:hover:bg-white/5' : ''}
                             `}
                         >
-                            {format(day, 'd')}
-                            {isTodayDate && (
-                                <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+                            {isActive ? (
+                                <RiFireFill className="text-primary-500 animate-in zoom-in duration-300" size={18} />
+                            ) : (
+                                <span>{format(day, 'd')}</span>
                             )}
                         </div>
                     );
@@ -95,20 +98,24 @@ const StreakCalendar = ({ activeDates = [] }) => {
     };
 
     return (
-        <div className="h-full flex flex-col">
-            <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl p-8 flex-1 shadow-sm flex flex-col">
-                <div className="mb-8">
-                    <h3 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Streak</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-1">Consistency is the key to mastery</p>
+        <div className="h-full flex flex-col" style={{ minHeight }}>
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-5 flex-1 shadow-sm flex flex-col transition-all hover:shadow-xl hover:shadow-primary-500/5">
+                <div className="mb-2">
+                    <h3 className="text-3xl text-gray-900 dark:text-white tracking-tight font-bold">Streak</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+                        An exciting exercise is waiting for you
+                    </p>
                 </div>
-                {renderHeader()}
-                {renderDays()}
-                {renderCells()}
+                
+                <div className="bg-gray-50/50 dark:bg-black/40 border border-gray-200 dark:border-gray-800 rounded-2xl px-2 py-2 flex-1 flex flex-col justify-center">
+                    {renderHeader()}
+                    {renderDays()}
+                    {renderCells()}
+                </div>
             </div>
         </div>
     );
 };
-
 
 export default StreakCalendar;
 

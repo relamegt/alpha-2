@@ -128,6 +128,7 @@ class CourseLeaderboard {
             studentId: e.studentId,
             name: `${e.student.firstName} ${e.student.lastName}`.trim(),
             username: e.username || e.student.username || e.student.email.split('@')[0],
+            score: e.overallScore,
             overallScore: e.overallScore,
             externalScores: getRatings(e.student.externalProfiles),
             lastUpdated: e.lastUpdated
@@ -139,6 +140,7 @@ class CourseLeaderboard {
                     studentId: s.id,
                     name: `${s.firstName} ${s.lastName}`.trim(),
                     username: s.username || s.email.split('@')[0],
+                    score: 0,
                     overallScore: 0,
                     externalScores: getRatings(s.externalProfiles),
                     lastUpdated: null

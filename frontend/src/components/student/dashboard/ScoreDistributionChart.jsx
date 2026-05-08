@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const COLORS = {
     'hackerrank': '#10B981',      // Green
@@ -14,6 +15,7 @@ const COLORS = {
 };
 
 const ScoreDistributionChart = ({ leaderboardDetails }) => {
+    const { isDark } = useTheme();
     const data = useMemo(() => {
         const result = [];
 
@@ -44,9 +46,9 @@ const ScoreDistributionChart = ({ leaderboardDetails }) => {
 
     if (data.length === 0) {
         return (
-            <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mt-6 h-64 flex flex-col items-center justify-center text-center">
+            <div className="bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mt-6 h-64 flex flex-col items-center justify-center text-center">
                 <div className="bg-gray-50 dark:bg-[#111117]/50 rounded-full w-12 h-12 flex items-center justify-center mb-3">
-                    <span className="text-xl">🥧</span>
+                    <span className="text-xl">📊</span>
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No score data available</p>
             </div>
@@ -56,8 +58,8 @@ const ScoreDistributionChart = ({ leaderboardDetails }) => {
     const isMobile = window.innerWidth < 768;
 
     return (
-        <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mt-6 transition-all">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Score Distribution</h3>
+        <div className="bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mt-6 transition-all">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Score Distribution</h3>
             <div className="h-[300px] sm:h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -79,7 +81,7 @@ const ScoreDistributionChart = ({ leaderboardDetails }) => {
                                 if (active && payload && payload.length) {
                                     const data = payload[0];
                                     return (
-                                        <div className="bg-[#F1F3F4] dark:bg-gray-800 p-3 border border-gray-100 dark:border-gray-700 shadow-xl rounded-xl text-xs">
+                                        <div className="bg-white dark:bg-[#1a1a24] p-3 border border-gray-100 dark:border-gray-800 shadow-xl rounded-xl text-xs">
                                             <p className="text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold mb-1 tracking-wider">{data.name}</p>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: data.payload.fill }}></div>
@@ -98,9 +100,11 @@ const ScoreDistributionChart = ({ leaderboardDetails }) => {
                             verticalAlign={isMobile ? "bottom" : "middle"}
                             align={isMobile ? "center" : "right"}
                             wrapperStyle={{ 
-                                fontSize: '11px', 
-                                fontWeight: 500,
-                                paddingTop: isMobile ? '20px' : '0'
+                                fontSize: '10px', 
+                                fontWeight: 700,
+                                paddingTop: isMobile ? '20px' : '0',
+                                textTransform: 'uppercase',
+                                color: isDark ? '#9CA3AF' : '#6B7280'
                             }}
                             iconType="circle"
                         />

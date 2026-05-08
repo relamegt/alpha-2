@@ -9,12 +9,20 @@ const { codeExecutionLimiter } = require('../middleware/rateLimiter');
 const Contest = require('../models/Contest');
 
 const resolveContestSlug = async (req, res, next, contestId) => {
-    if (contestId && contestId !== 'global' && contestId !== 'all' && !/^[0-9a-fA-F]{24}$/.test(contestId)) {
+    // Skip resolution for special values or invalid strings
+    if (!contestId || contestId === 'undefined' || contestId === 'null' || contestId === 'global' || contestId === 'all') {
+        return next();
+    }
+
+    // If it's a UUID or a MongoDB ObjectId (24 hex chars), it's likely already an ID.
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(contestId);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(contestId);
+
+    // If it's not an ID format, resolve it to get the canonical UUID
+    if (!isUUID && !isMongoId) {
         try {
-            // Check standard contests
             let contest = await Contest.findById(contestId);
             if (!contest) {
-                // Check course contests
                 const CourseContest = require('../models/CourseContest');
                 contest = await CourseContest.findById(contestId);
             }
@@ -22,9 +30,11 @@ const resolveContestSlug = async (req, res, next, contestId) => {
             if (contest) {
                 req.params.contestId = contest.id.toString();
             } else {
+                // Only return 404 if it's clearly a slug attempt and not found
                 return res.status(404).json({ success: false, message: 'Contest not found' });
             }
         } catch (error) {
+            console.error('[resolveContestSlug] Error:', error);
             return res.status(500).json({ success: false, message: 'Server error resolving contest' });
         }
     }

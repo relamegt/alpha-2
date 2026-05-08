@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     ChevronDown, ChevronUp, Play, BookOpen,
     CheckCircle2, Circle, Clock, Award,
@@ -13,14 +13,29 @@ import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
 import courseService from '../../services/courseService';
 import problemService from '../../services/problemService';
+import publicService from '../../services/publicService';
+import toast from 'react-hot-toast';
+
+const loadRazorpay = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 const CourseOverview = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const [expandedSections, setExpandedSections] = useState({});
+    const [expandedSubsections, setExpandedSubsections] = useState({});
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [rating, setRating] = useState(5);
+    const [isEnrolling, setIsEnrolling] = useState(false);
+    const queryClient = useQueryClient();
 
     const { data: allCoursesData, isLoading: allLoading } = useQuery({
         queryKey: ['allCourses'],
@@ -54,13 +69,95 @@ const CourseOverview = () => {
 
     const isEnrolled = useMemo(() => {
         if (user?.role === 'admin' || user?.role === 'instructor') return true;
-        return assignedCourseIds.includes(course?._id);
+        const enrolled = assignedCourseIds.includes(course?._id);
+        console.log('Enrollment check:', { courseId: course?._id, assignedCourseIds, enrolled });
+        return enrolled;
     }, [user, assignedCourseIds, course]);
+
+    const handleEnrollFree = async () => {
+        if (!user) {
+            toast.error('Please login to enroll');
+            navigate('/login');
+            return;
+        }
+
+        setIsEnrolling(true);
+        try {
+            await publicService.enrollFree(course._id || course.id);
+            toast.success('Successfully enrolled!');
+            // Update cache without refreshing
+            queryClient.invalidateQueries(['dashboard', user?.role]);
+        } catch (error) {
+            toast.error(error.message || 'Enrollment failed');
+        } finally {
+            setIsEnrolling(false);
+        }
+    };
+
+    const handlePurchase = async () => {
+        if (!user) {
+            toast.error('Please login to purchase');
+            navigate('/login');
+            return;
+        }
+
+        setIsEnrolling(true);
+        try {
+            const res = await loadRazorpay();
+            if (!res) {
+                toast.error('Razorpay SDK failed to load. Are you online?');
+                return;
+            }
+
+            const order = await publicService.createOrder(course._id || course.id);
+            
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_placeholder',
+                amount: order.amount,
+                currency: order.currency,
+                name: 'AlphaKnowledge',
+                description: `Enrollment for ${course.title}`,
+                orderid: order.id,
+                handler: async (response) => {
+                    try {
+                        await publicService.verifyPayment({
+                            razorpay_orderid: response.razorpay_orderid,
+                            razorpay_paymentid: response.razorpay_paymentid,
+                            razorpay_signature: response.razorpay_signature,
+                            courseId: course._id || course.id
+                        });
+                        toast.success('Payment successful! You are now enrolled.');
+                        queryClient.invalidateQueries(['dashboard', user?.role]);
+                    } catch (error) {
+                        toast.error(error.message || 'Payment verification failed');
+                    }
+                },
+                prefill: {
+                    name: `${user.firstName} ${user.lastName}`,
+                    email: user.email,
+                },
+                theme: {
+                    color: '#6366f1',
+                },
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+        } catch (error) {
+            toast.error(error.message || 'Failed to initiate purchase');
+        } finally {
+            setIsEnrolling(false);
+        }
+    };
 
     const problemsSolved = useMemo(() => new Set(dashboardData?.dashboard?.progress?.problemsSolved || []), [dashboardData]);
 
     const toggleSection = (sectionId) => {
         setExpandedSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+    };
+
+    const toggleSubsection = (subId) => {
+        setExpandedSubsections(prev => ({ ...prev, [subId]: !prev[subId] }));
     };
 
     const handleRateCourse = async () => {
@@ -74,7 +171,7 @@ const CourseOverview = () => {
         }
     };
 
-    if (dashLoading || problemsLoading || allLoading) {
+    if (allLoading || (dashLoading && !dashboardData) || (problemsLoading && !problemsData)) {
         return (
             <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -135,7 +232,7 @@ const CourseOverview = () => {
                             <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold text-gray-700 dark:text-gray-300">
                                 <div className="flex items-center gap-1.5 bg-primary-600/20 text-primary-600 dark:text-primary-400 px-3 py-1.5 rounded-lg border border-primary-500/20">
                                     <Star size={12} className="fill-current" />
-                                    <span>{course.averageRating ? Number(course.averageRating).toFixed(1) : '5.0'} ({course.ratingCount || '1'} Ratings)</span>
+                                    <span>{course.averageRating ? Number(course.averageRating).toFixed(1) : '5.0'} ({course.ratingCount || 0} Reviews)</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 bg-primary-600/10 text-primary-600 dark:text-primary-400 px-3 py-1.5 rounded-lg border border-primary-500/10">
                                     <Users size={12} />
@@ -173,7 +270,18 @@ const CourseOverview = () => {
 
                         {/* Curriculum / Course Content */}
                         <section className="space-y-4 pt-4">
-                            <h2 className="text-xl font-medium text-gray-900 dark:text-white tracking-tight">Course Content</h2>
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-medium text-gray-900 dark:text-white tracking-tight">Course Content</h2>
+                                <button 
+                                    onClick={() => {
+                                        setExpandedSections({});
+                                        setExpandedSubsections({});
+                                    }}
+                                    className="text-xs text-primary-500 hover:underline font-medium"
+                                >
+                                    Collapse All
+                                </button>
+                            </div>
                             
                             <div className="space-y-2">
                                 {course.sections?.map((section, sIdx) => {
@@ -193,25 +301,45 @@ const CourseOverview = () => {
                                                 <ChevronDown size={18} className={`text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                                             </button>
 
-                                            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                 <div className="px-4 pb-4 space-y-1">
-                                                    {section.subsections?.map((subsection, subIdx) => {
-                                                        const cSlug = course.slug || course._id;
-                                                        const sSlug = subsection.slug || (subsection.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || subsection._id;
+                                                     {section.subsections?.map((subsection, subIdx) => {
+                                                        const isSubExpanded = expandedSubsections[subsection._id] ?? false;
 
                                                         return (
-                                                            <div
-                                                                key={subsection._id}
-                                                                onClick={() => window.open(`/workspace/${cSlug}/${sSlug}`, '_blank', 'noopener,noreferrer')}
-                                                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all cursor-pointer group"
-                                                            >
-                                                                <FileText size={16} className="text-gray-400 group-hover:text-primary-500" />
-                                                                <div className="flex-1 text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-500 transition-colors">
-                                                                    {subsection.title}
+                                                            <div key={subsection._id} className="space-y-1">
+                                                                <div
+                                                                    onClick={() => toggleSubsection(subsection._id)}
+                                                                    className={`flex items-center gap-3 p-3 rounded-xl transition-all group hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer`}
+                                                                >
+                                                                    <Layout size={16} className={`text-primary-500`} />
+                                                                    <div className={`flex-1 text-sm font-bold text-gray-900 dark:text-white transition-colors`}>
+                                                                        {subsection.title}
+                                                                    </div>
+                                                                    <ChevronDown size={14} className={`text-gray-400 transition-transform ${isSubExpanded ? 'rotate-180' : ''}`} />
+                                                                </div>
+                                                                
+                                                                {/* Subsection Items (Outline) */}
+                                                                <div className={`ml-9 space-y-1 pb-2 transition-all overflow-hidden ${isSubExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                                    {((problemsData?.problems || []).filter(p => (subsection.problemIds || []).includes(p._id) || (subsection.problemIds || []).includes(p.id))).map((item) => (
+                                                                        <div key={item._id || item.id} className="flex items-center gap-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+                                                                            {item.type === 'video' ? <Video size={12} /> : 
+                                                                             item.type === 'material' ? <FileText size={12} /> : 
+                                                                             item.type === 'quiz' ? <HelpCircle size={12} /> : 
+                                                                             <Code2 size={12} />}
+                                                                            <span>{item.title}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                    {(subsection.contestIds || []).map((contestId) => (
+                                                                        <div key={contestId} className="flex items-center gap-2 py-1 text-xs text-gray-500 dark:text-gray-400">
+                                                                            <Trophy size={12} />
+                                                                            <span>Practice Contest</span>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         );
-                                                    })}
+                                                     })}
                                                 </div>
                                             </div>
                                         </div>
@@ -224,7 +352,7 @@ const CourseOverview = () => {
                     {/* Right Column (Sticky) */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-24 bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm relative">
-                            {/* Static Ambient Glow - Mimicking CodeTyper effect */}
+                            {/* Static Ambient Glow */}
                             <div className="absolute inset-0 z-0 pointer-events-none opacity-40 dark:opacity-60" 
                                  style={{
                                      background: `radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.20), transparent 70%)`
@@ -269,10 +397,11 @@ const CourseOverview = () => {
                                         </>
                                     ) : (
                                         <button 
-                                            onClick={() => alert("Please contact your instructor to enroll.")}
-                                            className="w-full btn-primary"
+                                            onClick={course.isPaid ? handlePurchase : handleEnrollFree}
+                                            disabled={isEnrolling}
+                                            className="w-full btn-primary disabled:opacity-50"
                                         >
-                                            Request Enrollment
+                                            {isEnrolling ? 'Processing...' : (course.isPaid ? `Buy Now - ₹${course.price}` : 'Enroll Now (Free)')}
                                         </button>
                                     )}
                                 </div>

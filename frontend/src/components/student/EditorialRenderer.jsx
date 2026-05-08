@@ -7,13 +7,28 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import {
     FaSpinner, FaCheck, FaCopy, FaChevronLeft, FaChevronRight,
-    FaPause, FaPlay, FaYoutube
+    FaPause, FaPlay, FaYoutube, FaImage
 } from 'react-icons/fa';
-import { ChevronDown, ChevronRight, Timer, Code2, Terminal, BookOpen, ExternalLink, Lock } from 'lucide-react';
+import { 
+    ChevronDown, 
+    ChevronRight, 
+    Timer, 
+    Code2, 
+    Terminal, 
+    BookOpen, 
+    ExternalLink, 
+    Lock,
+    X
+} from 'lucide-react';
 import problemService from '../../services/problemService';
 import { useTheme } from '../../contexts/ThemeContext';
 import SecureVideoPlayer from '../shared/SecureVideoPlayer';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
+function cn(...inputs) {
+    return twMerge(clsx(inputs));
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -35,21 +50,218 @@ const toRawGithubUrl = (url) => {
     return u;
 };
 
+const convertToDirectUrl = (url) => {
+    if (!url) return '';
+    let cleanUrl = url.trim();
+
+    if (cleanUrl.includes('drive.google.com')) {
+        const fileIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch) {
+            const fileId = fileIdMatch[1] || fileIdMatch[2];
+            return `https://drive.google.com/uc?export=view&id=${fileId}`;
+        }
+    }
+
+    if (cleanUrl.includes('github.com') && !cleanUrl.includes('raw.githubusercontent.com')) {
+        if (cleanUrl.includes('/blob/')) {
+            return cleanUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+        }
+    }
+
+    if (cleanUrl.includes('dropbox.com') && !cleanUrl.includes('dl=1')) {
+        return cleanUrl.replace('dl=0', 'dl=1').replace(/\?.*/, '') + '?dl=1';
+    }
+
+    return cleanUrl;
+};
+
+const loadAsDataUrl = async (url) => {
+    const response = await fetch(url, { mode: 'cors', method: 'GET', headers: { 'Accept': 'image/*,*/*;q=0.8' } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    if (blob.size === 0) throw new Error('Empty response');
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('FileReader failed'));
+        reader.readAsDataURL(blob);
+    });
+};
+
+const SecureImage = ({ src, alt, className, style, onLoad, ...props }) => {
+    const [imageSrc, setImageSrc] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+    const onLoadRef = React.useRef(onLoad);
+    useEffect(() => { onLoadRef.current = onLoad; });
+
+    useEffect(() => {
+        let mounted = true;
+        const loadImage = async () => {
+            try {
+                setIsLoading(true);
+                setHasError(false);
+                if (!src) throw new Error('No source');
+                const processedSrc = convertToDirectUrl(src);
+                const result = await loadAsDataUrl(processedSrc);
+                if (mounted) {
+                    setImageSrc(result);
+                    setIsLoading(false);
+                    onLoadRef.current?.();
+                }
+            } catch (error) {
+                if (mounted) {
+                    setHasError(true);
+                    setIsLoading(false);
+                    onLoadRef.current?.();
+                }
+            }
+        };
+        loadImage();
+        return () => { mounted = false; };
+    }, [src]);
+
+    const preventAction = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
+
+    if (isLoading) {
+        return (
+            <div className={cn("flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800 w-full min-h-[200px]", className)}>
+                <FaSpinner className="animate-spin h-6 w-6 text-indigo-600" />
+            </div>
+        );
+    }
+
+    if (hasError) {
+        return (
+            <div className="my-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl flex items-center space-x-3 w-full">
+                <FaImage className="w-5 h-5 text-red-500" />
+                <p className="text-red-700 dark:text-red-400 font-medium">Image unavailable</p>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className="relative group w-full h-full flex justify-center items-center select-none"
+            onContextMenu={preventAction}
+            onDragStart={preventAction}
+        >
+            <div
+                className="absolute inset-0 z-20 bg-transparent w-full h-full"
+                onContextMenu={preventAction}
+                onDragStart={preventAction}
+            />
+            <img
+                {...props}
+                src={imageSrc}
+                alt={alt || "Secure Content"}
+                className={cn(
+                    "rounded-xl border-[2px] dark:border-[3.2px] border-indigo-500 shadow-lg shadow-[#6961b5]/20 w-full sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2 h-auto pointer-events-none select-none",
+                    className
+                )}
+                style={{
+                    ...style,
+                    maxHeight: '500px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    userSelect: 'none',
+                    WebkitUserDrag: 'none'
+                }}
+                draggable={false}
+            />
+        </div>
+    );
+};
+
+const ImageCarousel = ({ images }) => {
+    const [current, setCurrent] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [isCurrentLoaded, setIsCurrentLoaded] = useState(false);
+    const length = images.length;
+
+    useEffect(() => { setIsCurrentLoaded(false); }, [current]);
+
+    useEffect(() => {
+        let interval;
+        if (isPlaying && length > 1 && isCurrentLoaded) {
+            interval = setInterval(() => { setCurrent((prev) => (prev === length - 1 ? 0 : prev + 1)); }, 3500);
+        }
+        return () => clearInterval(interval);
+    }, [length, isPlaying, isCurrentLoaded]);
+
+    const nextSlide = () => setCurrent(current === length - 1 ? 0 : current + 1);
+    const prevSlide = () => setCurrent(current === 0 ? length - 1 : current - 1);
+    const togglePlay = () => setIsPlaying(!isPlaying);
+
+    const handleImageLoad = (index) => { if (index === current) setIsCurrentLoaded(true); };
+
+    if (!Array.isArray(images) || images.length === 0) return null;
+
+    return (
+        <div className="w-full aspect-video max-w-3xl mx-auto my-6 flex flex-col rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 shadow-md select-none bg-black">
+            <div className="relative w-full h-full flex-1 overflow-hidden group">
+                {images.map((imgSrc, index) => {
+                    const isVisible = index === current;
+                    const isNext = index === (current + 1) % length;
+                    const isPrev = index === (current - 1 + length) % length;
+                    if (!isVisible && !isNext && !isPrev) return null;
+                    return (
+                        <div key={index} className={`absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+                            <SecureImage 
+                                src={imgSrc} alt={`Slide ${index + 1}`} onLoad={() => handleImageLoad(index)}
+                                className="!w-full !h-full !object-fill !max-w-none !rounded-none !border-0 !shadow-none !m-0 !p-0"
+                                style={{ objectFit: 'fill', width: '100%', height: '100%', maxHeight: 'none' }} 
+                            />
+                        </div>
+                    );
+                })}
+            </div>
+            <div className="h-8 bg-gray-100 dark:bg-[#121214] border-t border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 z-30 relative">
+                <div className="w-12 hidden sm:block"></div>
+                <div className="flex items-center justify-center gap-4 sm:gap-6 flex-1">
+                    <button onClick={prevSlide} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors p-1" title="Previous Slide"><FaChevronLeft className="w-3.5 h-3.5" /></button>
+                    <button onClick={togglePlay} className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title={isPlaying ? "Pause" : "Play"}>{isPlaying ? <FaPause className="w-3.5 h-3.5" /> : <FaPlay className="w-3.5 h-3.5 ml-0.5" />}</button>
+                    <button onClick={nextSlide} className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors p-1" title="Next Slide"><FaChevronRight className="w-3.5 h-3.5" /></button>
+                </div>
+                <div className="w-12 text-right"><span className="text-xs font-semibold text-gray-500 dark:text-gray-400 font-mono">{current + 1}/{length}</span></div>
+            </div>
+        </div>
+    );
+};
+
 // ──────────────────────────────────────────────────────────────────────────────
 // CODE BLOCK VIEWER
 // ──────────────────────────────────────────────────────────────────────────────
-const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, onTabChange, isDark }) => {
+const CodeBlockViewer = React.memo(({
+    blocks,
+    id,
+    complexity,
+    activeTabState,
+    onTabChange
+}) => {
     const [viewMode, setViewMode] = useState('code');
     const [isComplexityOpen, setIsComplexityOpen] = useState(false);
     const [localCopied, setLocalCopied] = useState(false);
     const copyTimeoutRef = React.useRef(null);
 
     const { normalizedBlocks, languages, outputContent, currentLang } = React.useMemo(() => {
-        if (!blocks || blocks.length === 0) return { normalizedBlocks: [], languages: [], outputContent: '', currentLang: '' };
+        if (!blocks || blocks.length === 0) {
+            return { normalizedBlocks: [], languages: [], outputContent: '', currentLang: '' };
+        }
         const norm = blocks.map(b => ({ ...b, language: b.language || 'Code' }));
         const langs = norm.map(b => b.language);
         const lang = activeTabState && langs.includes(activeTabState) ? activeTabState : langs[0];
-        return { normalizedBlocks: norm, languages: langs, currentLang: lang, outputContent: norm.find(b => b.output)?.output || '' };
+
+        return {
+            normalizedBlocks: norm,
+            languages: langs,
+            currentLang: lang,
+            outputContent: norm.find(b => b.output)?.output || ''
+        };
     }, [blocks, activeTabState]);
 
     if (!blocks || blocks.length === 0) return null;
@@ -58,9 +270,11 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
     const hasComplexity = complexity?.time || complexity?.space;
 
     const handleCopy = () => {
-        const text = viewMode === 'output'
-            ? outputContent
-            : normalizedBlocks.find(b => b.language === currentLang)?.code || '';
+        const text =
+            viewMode === 'output'
+                ? outputContent
+                : normalizedBlocks.find(b => b.language === currentLang)?.code || '';
+
         navigator.clipboard.writeText(text).then(() => {
             if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
             setLocalCopied(true);
@@ -69,23 +283,28 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
     };
 
     return (
-        <div className={`my-5 w-full rounded-xl border border-zinc-800 bg-[#111117] overflow-hidden ${!isDark ? 'shadow-lg' : ''}`}>
-            {/* Header */}
-            <div className="flex items-center justify-between h-10 px-3 bg-[#111117] border-b border-zinc-800 select-none">
-                <div className="flex items-center gap-3">
-                    <div className="flex gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+        <div className="my-6 sm:my-8 w-full rounded-lg sm:rounded-xl border border-zinc-800 bg-[#0a0a0f] overflow-hidden shadow-lg">
+            <div className="flex items-center justify-between h-9 sm:h-12 px-2 sm:px-4 bg-[#18181b] border-b border-zinc-800 select-none">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="flex gap-1 sm:gap-1.5">
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500" />
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-500" />
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500" />
                     </div>
                     {hasOutput && (
                         <div className="flex items-center p-0.5 bg-zinc-900 rounded-lg border border-zinc-700/50">
                             {['code', 'output'].map(mode => {
                                 const active = viewMode === mode;
                                 return (
-                                    <button key={mode} onClick={() => setViewMode(mode)}
-                                        className={`px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md flex items-center gap-1 transition-colors ${active ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                        {mode === 'code' ? <Code2 className="w-3 h-3" /> : <Terminal className="w-3 h-3" />}
+                                    <button
+                                        key={mode}
+                                        onClick={() => setViewMode(mode)}
+                                        className={cn(
+                                            "px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold uppercase rounded-md flex items-center gap-1 sm:gap-1.5 transition-colors",
+                                            active ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+                                        )}
+                                    >
+                                        {mode === 'code' ? <Code2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <Terminal className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                         {mode}
                                     </button>
                                 );
@@ -93,19 +312,27 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
                         </div>
                     )}
                 </div>
-                <button onClick={handleCopy} className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] text-zinc-400 hover:text-white transition">
+                <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs text-zinc-400 hover:text-white transition"
+                >
                     {localCopied ? <FaCheck className="text-emerald-500" /> : <FaCopy />}
-                    <span>{localCopied ? 'Copied' : 'Copy'}</span>
+                    <span className="hidden sm:inline">{localCopied ? 'Copied' : 'Copy'}</span>
                 </button>
             </div>
 
-            {/* Language Tabs */}
             {viewMode === 'code' && (
-                <div className="bg-[#111117] border-b border-zinc-800 px-4">
-                    <div className="flex gap-x-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                <div className="bg-[#121214] border-b border-zinc-800 px-4">
+                    <div className="flex gap-x-4 overflow-x-auto no-scrollbar">
                         {languages.map(lang => (
-                            <button key={lang} onClick={() => languages.length > 1 && onTabChange(lang)}
-                                className={`py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${currentLang === lang ? 'border-primary-500 text-zinc-100' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}>
+                            <button
+                                key={lang}
+                                onClick={() => languages.length > 1 && onTabChange(lang)}
+                                className={cn(
+                                    "py-2 text-xs font-medium border-b-2 transition-colors",
+                                    currentLang === lang ? "border-indigo-500 text-zinc-100" : "border-transparent text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 disabled:cursor-default"
+                                )}
+                            >
                                 {lang === 'cpp' ? 'C++' : lang === 'py' ? 'Python' : lang}
                             </button>
                         ))}
@@ -113,18 +340,32 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
                 </div>
             )}
 
-            {/* Content */}
-            <div className="relative bg-[#111117]">
-                <div style={{ maxHeight: '340px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'none' }}>
+            <div className="relative bg-[#0a0a0f]">
+                <div
+                    style={{
+                        maxHeight: '380px',
+                        overflowX: 'auto',
+                        overflowY: 'auto',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
+                    }}
+                >
+                    <style>{`div::-webkit-scrollbar { display: none; }`}</style>
                     {viewMode === 'code' && normalizedBlocks.map(block => (
-                        <div key={block.language} style={{ display: block.language === currentLang ? 'block' : 'none', minWidth: 'max-content' }}>
+                        <div
+                            key={block.language}
+                            style={{ display: block.language === currentLang ? 'block' : 'none', minWidth: 'max-content' }}
+                        >
                             <SyntaxHighlighter
                                 style={vscDarkPlus}
                                 language={block.language.toLowerCase()}
-                                showLineNumbers wrapLines={false}
-                                customStyle={{ background: 'transparent', margin: 0, padding: '1rem', fontSize: '13px', lineHeight: '1.5', minWidth: '100%' }}
+                                showLineNumbers
+                                wrapLines={false}
+                                customStyle={{ background: 'transparent', margin: 0, padding: '1rem', fontSize: '13px', lineHeight: '1.5', minWidth: '100%', caretColor: '#9CDCFE' }}
                                 lineNumberStyle={{ minWidth: '2.5em', paddingRight: '1em', color: '#52525b', userSelect: 'none' }}
-                            >{block.code}</SyntaxHighlighter>
+                            >
+                                {block.code}
+                            </SyntaxHighlighter>
                         </div>
                     ))}
                     {viewMode === 'output' && (
@@ -135,23 +376,28 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
                 </div>
             </div>
 
-            {/* Complexity */}
             {viewMode === 'code' && hasComplexity && (
-                <div className="border-t border-zinc-800 bg-[#111117]">
-                    <button onClick={() => setIsComplexityOpen(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-zinc-400 hover:text-zinc-200 transition">
-                        <span className="flex items-center gap-2"><Timer className="w-3.5 h-3.5 text-zinc-500" />Complexity Analysis</span>
-                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isComplexityOpen ? 'rotate-180' : ''}`} />
+                <div className="border-t border-zinc-800 bg-[#121214]">
+                    <button
+                        onClick={() => setIsComplexityOpen(v => !v)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-xs text-zinc-400 hover:text-zinc-200 transition"
+                    >
+                        <span className="flex items-center gap-2">
+                            <Timer className="w-3.5 h-3.5 text-zinc-500" />
+                            Complexity Analysis
+                        </span>
+                        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", isComplexityOpen && "rotate-180")} />
                     </button>
                     {isComplexityOpen && (
-                        <div className="px-5 pb-4 pt-2 border-t border-zinc-800/50 space-y-2.5 text-[13px]">
+                        <div className="px-5 pb-5 pt-3 border-t border-zinc-800/50 space-y-3 text-[13px]">
                             {complexity.time && (
-                                <div className="grid grid-cols-[80px_1fr] gap-3 items-start">
+                                <div className="grid grid-cols-[96px_1fr] gap-4 items-start">
                                     <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Time</span>
                                     <span className="text-zinc-300 leading-relaxed">{complexity.time.replace(/`/g, '')}</span>
                                 </div>
                             )}
                             {complexity.space && (
-                                <div className="grid grid-cols-[80px_1fr] gap-3 items-start">
+                                <div className="grid grid-cols-[96px_1fr] gap-4 items-start">
                                     <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Space</span>
                                     <span className="text-zinc-300 leading-relaxed">{complexity.space.replace(/`/g, '')}</span>
                                 </div>
@@ -164,43 +410,60 @@ const CodeBlockViewer = React.memo(({ blocks, id, complexity, activeTabState, on
     );
 });
 
-// ──────────────────────────────────────────────────────────────────────────────
-// MARKDOWN COMPONENTS (AlphaKnowledge theme — light gray bg context)
-// ──────────────────────────────────────────────────────────────────────────────
-const MarkdownComponents = {
-    h1: ({ children }) => <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-5 mb-3 pb-2 border-b border-gray-100 dark:border-gray-800">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-1.5 leading-snug">{children}</h3>,
-    p: ({ children }) => <p className="text-gray-700 dark:text-gray-300 text-[13.5px] leading-6 mb-3 whitespace-pre-wrap break-words">{children}</p>,
-    ul: ({ children }) => <ul className="text-gray-700 dark:text-gray-300 text-[13px] list-disc list-outside ml-4 mb-3 space-y-0.5">{children}</ul>,
-    ol: ({ children }) => <ol className="text-gray-700 dark:text-gray-300 text-[13px] list-decimal list-outside ml-4 mb-3 space-y-0.5">{children}</ol>,
-    li: ({ children }) => <li className="pl-1 leading-6 break-words">{children}</li>,
-    blockquote: ({ children }) => <blockquote className="border-l-4 border-primary-400 dark:border-gray-500 pl-4 pr-2 py-1 italic text-gray-500 dark:text-gray-400 text-[13px] my-3 bg-primary-50/50 dark:bg-[#23232e] rounded-r">{children}</blockquote>,
-    a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">{children}</a>,
-    hr: () => <hr className="border-0 border-t border-[var(--color-border-interactive)] my-4" />,
-    table: (props) => <div className="my-4 w-full overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
-    thead: (props) => <thead className="bg-primary-50 dark:bg-primary-900/30 text-gray-900 dark:text-gray-100" {...props} />,
-    tr: (props) => <tr className="border-t border-[var(--color-border-interactive)] even:bg-gray-50/50 dark:even:bg-gray-800/30" {...props} />,
-    tbody: (props) => <tbody className="bg-[#F1F3F4] dark:bg-[#111117]" {...props} />,
-    th: ({ children }) => <th className="px-3 py-2 font-semibold border-r border-primary-100 dark:border-primary-900 last:border-r-0 text-[12px] whitespace-nowrap">{children}</th>,
-    td: ({ children }) => <td className="px-3 py-2 border-r border-gray-200 dark:border-gray-800 last:border-r-0 align-top text-gray-700 dark:text-gray-300 text-[12px]">{children}</td>,
+const getMarkdownComponents = (isCompact) => ({
+    hr: (props) => <hr className="border-0 border-t border-[var(--color-border-interactive)] my-4 sm:my-6" {...props} />,
+    h1: (props) => <h1 className={cn(
+        "font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-2 leading-tight mt-6 sm:mt-8 mb-4 sm:mb-6",
+        isCompact ? "text-base sm:text-lg lg:text-xl" : "text-lg sm:text-xl lg:text-3xl"
+    )}>{props.children}</h1>,
+    h2: (props) => <h2 className={cn(
+        "font-bold text-gray-900 dark:text-white mt-6 sm:mt-8 mb-3 sm:mb-4 leading-tight",
+        isCompact ? "text-[14px] sm:text-base lg:text-lg" : "text-base sm:text-lg lg:text-2xl"
+    )}>{props.children}</h2>,
+    h3: (props) => <h3 className={cn(
+        "font-semibold text-gray-900 dark:text-white leading-snug mt-4 sm:mt-6 mb-2 sm:mb-3 break-words",
+        isCompact ? "text-[13px] sm:text-[14px] lg:text-base" : "text-[15px] sm:text-lg lg:text-xl"
+    )}>{props.children}</h3>,
+    p: (props) => <p className={cn(
+        "text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words mb-4 leading-relaxed",
+        isCompact ? "text-[12px] sm:text-[12px] lg:text-[13px]" : "text-[15px] sm:text-[15px] lg:text-[16px]"
+    )}>{props.children}</p>,
+    ul: (props) => <ul className={cn(
+        "text-gray-700 dark:text-gray-300 list-disc list-outside ml-4 sm:ml-5 mb-4 space-y-1",
+        isCompact ? "text-[11px] sm:text-[12px] lg:text-[13px]" : "text-[13px] sm:text-[15px] lg:text-[16px]"
+    )}>{props.children}</ul>,
+    ol: (props) => <ol className={cn(
+        "text-gray-700 dark:text-gray-300 list-decimal list-outside ml-4 sm:ml-5 mb-4 space-y-1",
+        isCompact ? "text-[11px] sm:text-[12px] lg:text-[13px]" : "text-[13px] sm:text-[15px] lg:text-[16px]"
+    )}>{props.children}</ol>,
+    li: (props) => <li className="pl-1 leading-relaxed break-words whitespace-pre-wrap">{props.children}</li>,
+    blockquote: (props) => <blockquote className={cn(
+        "border-l-4 border-indigo-500 pl-4 pr-3 py-2 italic text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/30 rounded-r my-4",
+        isCompact ? "text-[11px] sm:text-[12px]" : "text-[13px] sm:text-[14px]"
+    )}>{props.children}</blockquote>,
+    a: ({ href, ...props }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium transition-colors break-all">{props.children}</a>,
+    table: (props) => <div className="my-6 w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
+    thead: (props) => <thead className="bg-gray-50 dark:bg-zinc-900/50 text-gray-900 dark:text-gray-100" {...props} />,
+    tr: (props) => <tr className="border-t border-gray-100 dark:border-gray-800 even:bg-gray-50/50 dark:even:bg-zinc-900/20" {...props} />,
+    tbody: (props) => <tbody className="bg-transparent" {...props} />,
+    th: (props) => <th className="px-4 py-3 font-bold border-r border-indigo-100 dark:border-indigo-900/30 last:border-r-0 text-[12px] uppercase tracking-wider">{props.children}</th>,
+    td: (props) => <td className="px-4 py-3 border-r border-gray-100 dark:border-gray-800 last:border-r-0 align-top text-gray-700 dark:text-gray-300 text-[14px] leading-relaxed">{props.children}</td>,
     code: ({ inline, className, children }) => {
         const content = String(children).replace(/\n$/, '');
-        const match = /language-(\w+)/.exec(className || '');
-        if (inline || (!match && !content.includes('\n'))) {
-            return <code className="bg-primary-50 dark:bg-[#23232e] text-primary-700 dark:text-gray-200 px-1.5 py-0.5 rounded text-[12px] font-mono border border-primary-100 dark:border-gray-700 inline break-all">{children}</code>;
+        const isMultiLine = content.includes('\n');
+        if (inline || !isMultiLine) {
+            return <code className={cn(
+                "bg-gray-100 dark:bg-gray-800/50 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded font-mono border border-gray-200/50 dark:border-gray-700/50 inline break-all whitespace-normal",
+                isCompact ? "text-[10px] sm:text-[11px]" : "text-[12px] sm:text-[13px] lg:text-[14px]"
+            )}>{children}</code>;
         }
-        return (
-            <div className="my-3 rounded-lg overflow-hidden bg-[#111117] border border-zinc-800">
-                <div className="p-3 overflow-x-auto text-[12px] font-mono text-gray-200">{children}</div>
-            </div>
-        );
+        return <div className="my-4 rounded-xl overflow-hidden bg-gray-900 dark:bg-[#0c0c0e] border border-gray-800 shadow-xl"><div className={cn(
+            "p-3 sm:p-4 overflow-x-auto font-mono text-gray-300 leading-relaxed",
+            isCompact ? "text-[10px] sm:text-[11px]" : "text-[12px] sm:text-[13px] lg:text-[14px]"
+        )}>{children}</div></div>;
     }
-};
+});
 
-// ──────────────────────────────────────────────────────────────────────────────
-// UNIVERSAL PARSER (same logic as provided code)
-// ──────────────────────────────────────────────────────────────────────────────
 const universalParse = (markdown) => {
     const lines = markdown.split('\n');
     const result = { title: '', sections: [] };
@@ -217,11 +480,12 @@ const universalParse = (markdown) => {
             }
         };
 
+        const isOutputHeader = (line) => !!line.match(/^(\*\*Output:?\*\*|### Output|Output:|Output\s*-|\*OUTPUT)/i);
+
         while (i < blockLines.length) {
             const line = blockLines[i];
             const trimmedLine = line.trim();
 
-            // Carousel
             if (trimmedLine === '<carousel>') {
                 flushText();
                 const images = [];
@@ -235,20 +499,25 @@ const universalParse = (markdown) => {
                 i++; continue;
             }
 
-            // Table
-            if (trimmedLine.startsWith('|') && i + 1 < blockLines.length && blockLines[i + 1].trim().match(/^\|?[\s-]*:?---+:?[\s-|]*$/)) {
+            if (trimmedLine.startsWith('|') && i + 1 < blockLines.length &&
+                blockLines[i + 1].trim().match(/^\|?[\s-]*:?---+:?[\s-|]*$/)) {
                 flushText();
-                let tableMd = '';
-                while (i < blockLines.length && blockLines[i].trim().startsWith('|')) { tableMd += blockLines[i] + '\n'; i++; }
-                elements.push({ type: 'text', content: '\n' + tableMd + '\n', id: `${prefix}taprimary-${elements.length}` });
+                let tableMd = "";
+                while (i < blockLines.length && blockLines[i].trim().startsWith('|')) {
+                    tableMd += blockLines[i] + "\n";
+                    i++;
+                }
+                elements.push({ type: 'text', content: "\n" + tableMd + "\n", id: `${prefix}table-${elements.length}` });
                 continue;
             }
 
-            // Inline image
-            const imgM = line.match(/<img\s+src=["']([^"']+)["'][^>]*\/?>/i);
-            if (imgM) { flushText(); elements.push({ type: 'image', src: imgM[1], id: `${prefix}img-${elements.length}` }); i++; continue; }
+            const imgM = line.match(/<img\s+src=["']([^"']+)["'][^>]*(?:style=["']([^"']+)["'])?[^>]*\/?>/i);
+            if (imgM) {
+                flushText();
+                elements.push({ type: 'image', src: imgM[1], style: imgM[2] || '', id: `${prefix}img-${elements.length}` });
+                i++; continue;
+            }
 
-            // Code blocks
             if (trimmedLine.startsWith('```')) {
                 flushText();
                 const codeGroup = [];
@@ -260,50 +529,59 @@ const universalParse = (markdown) => {
                     let lang = blockLines[i].substring(3).trim() || 'Code';
                     i++;
                     let codeContent = '';
-                    while (i < blockLines.length && !blockLines[i].trim().startsWith('```')) { codeContent += blockLines[i] + '\n'; i++; }
+                    while (i < blockLines.length && !blockLines[i].trim().startsWith('```')) {
+                        codeContent += blockLines[i] + '\n';
+                        i++;
+                    }
                     if (i < blockLines.length) i++;
                     codeGroup.push({ language: lang, code: codeContent.trim(), output: null });
                     let peek = i;
                     while (peek < blockLines.length && blockLines[peek].trim() === '') peek++;
-                    if (peek < blockLines.length && blockLines[peek].trim().startsWith('```')) { i = peek; continue; }
-                    else break;
+                    if (peek < blockLines.length && blockLines[peek].trim().startsWith('```')) {
+                        i = peek; continue;
+                    } else break;
                 }
 
-                // Output capturing
                 let k = i;
                 while (k < blockLines.length && blockLines[k].trim() === '') k++;
+
                 if (k < blockLines.length && (blockLines[k].match(/^### Output/i) || blockLines[k].match(/^Output:/i))) {
                     let outputLines = [];
                     k++;
                     while (k < blockLines.length) {
-                        const tLine = blockLines[k].trim();
-                        if (tLine.match(/^#+\s*(Time|Space) Complexity/i) || tLine.match(/^##+\s/) || tLine.startsWith('```') || tLine === '') break;
-                        outputLines.push(blockLines[k]);
+                        const line = blockLines[k];
+                        const tLine = line.trim();
+                        if (tLine.match(/^#+\s*(Time|Space) Complexity/i) || tLine.match(/^##+\s/) || tLine.startsWith('```') || tLine.startsWith('---') || tLine === '') break;
+                        outputLines.push(line);
                         k++;
                     }
                     const finalOutput = outputLines.join('\n').trim();
                     if (finalOutput) { codeGroup.forEach(c => c.output = finalOutput); i = k; }
                 }
 
-                // Complexity
                 while (i < blockLines.length) {
                     const tCl = blockLines[i].trim();
                     if (tCl.match(/^#+\s*Time Complexity/i)) {
                         i++; let t = '';
-                        while (i < blockLines.length && !blockLines[i].trim().startsWith('#') && blockLines[i].trim() !== '') { t += blockLines[i] + '\n'; i++; }
+                        while (i < blockLines.length && !blockLines[i].trim().startsWith('#') && blockLines[i].trim() !== '') {
+                            t += blockLines[i] + '\n'; i++;
+                        }
                         complexity.time = t.trim();
                     } else if (tCl.match(/^#+\s*Space Complexity/i)) {
                         i++; let s = '';
-                        while (i < blockLines.length && !blockLines[i].trim().startsWith('#') && blockLines[i].trim() !== '') { s += blockLines[i] + '\n'; i++; }
+                        while (i < blockLines.length && !blockLines[i].trim().startsWith('#') && blockLines[i].trim() !== '') {
+                            s += blockLines[i] + '\n'; i++;
+                        }
                         complexity.space = s.trim();
                     } else if (tCl === '') { i++; }
                     else break;
                 }
+
                 elements.push({ type: 'code', code: codeGroup, complexity, id: blockId });
                 continue;
             }
 
-            if (!line.match(/^#+\s*(Time|Space) Complexity/i)) {
+            if (!line.match(/^#+\s*(Time|Space) Complexity/i) && !isOutputHeader(line)) {
                 if (line.startsWith('# ') && !result.title) result.title = line.substring(2);
                 else currentText += line + '\n';
             }
@@ -326,12 +604,18 @@ const universalParse = (markdown) => {
         let buffer = [];
 
         const saveApproach = () => {
-            if (currentApp) { currentApp.content = parseBlockLines(buffer, `app-${currentApp.id}-`); approaches.push(currentApp); }
+            if (currentApp) {
+                currentApp.content = parseBlockLines(buffer, `app-${currentApp.id}-`);
+                approaches.push(currentApp);
+            }
         };
 
         for (let line of approachLines) {
-            if (line.trim().startsWith('## ')) { saveApproach(); buffer = []; currentApp = { name: line.substring(3).trim(), id: `approach-${approaches.length}` }; }
-            else buffer.push(line);
+            if (line.trim().startsWith('## ')) {
+                saveApproach();
+                buffer = [];
+                currentApp = { name: line.substring(3).trim(), id: `approach-${approaches.length}` };
+            } else { buffer.push(line); }
         }
         saveApproach();
         result.sections.push({ type: 'approaches', items: approaches });
@@ -347,16 +631,19 @@ const universalParse = (markdown) => {
 
 // ──────────────────────────────────────────────────────────────────────────────
 // MAIN EDITORIAL RENDERER COMPONENT
-// Props:
-//   problem        – full problem object with editorialLink, videoUrl, editorial
-//   isAdmin        – if true, show edit buttons for editorial/video URL
-//   onUpdateLinks  – callback(editorialLink, videoUrl) when admin saves
 // ──────────────────────────────────────────────────────────────────────────────
-//   hasViewedEditorial – true if student already unlocked
-//   onUnlockEditorial  – callback to trigger parent to update state
-// ──────────────────────────────────────────────────────────────────────────────
-const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedEditorial, onUnlockEditorial, hideVideo = false }) => {
+const EditorialRenderer = ({ 
+    problem, 
+    content, 
+    isAdmin = false, 
+    onUpdateLinks, 
+    hasViewedEditorial,
+    onUnlockEditorial, 
+    hideVideo = false,
+    isCompact = false
+}) => {
     const { isDark } = useTheme();
+    const components = getMarkdownComponents(isCompact);
     const [parsedContent, setParsedContent] = useState(null);
     const [fetchError, setFetchError] = useState(null);
     const [fetchLoading, setFetchLoading] = useState(false);
@@ -364,47 +651,57 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
     const [expandedSections, setExpandedSections] = useState({});
     const [unlocking, setUnlocking] = useState(false);
 
-    // Admin edit state
     const [editMode, setEditMode] = useState(false);
     const [draftEditorialLink, setDraftEditorialLink] = useState('');
     const [draftVideoUrl, setDraftVideoUrl] = useState('');
     const [saving, setSaving] = useState(false);
 
-    const editorialLink = problem?.editorialLink || '';
-    const videoUrl = problem?.videoUrl || '';
+    const editorialLink = problem?.editorialLink || problem?.editorial_link || '';
+    const videoUrl = problem?.youtubeLink || problem?.videoUrl || problem?.youtube_link || problem?.video_link || '';
     const youtubeId = getYouTubeId(videoUrl);
+    const legacyEditorial = problem?.editorial;
 
-    // Fetch + parse GitHub markdown
     useEffect(() => {
-        if (!editorialLink) { setParsedContent(null); return; }
+        if (content) {
+            setParsedContent(universalParse(content));
+            setFetchLoading(false);
+            return;
+        }
+
+        if (!editorialLink) {
+            if (legacyEditorial) {
+                let generatedContent = "";
+                if (legacyEditorial.approach) generatedContent += `## Approach\n\n${legacyEditorial.approach}\n\n`;
+                if (legacyEditorial.complexity) generatedContent += `## Complexity\n\n${legacyEditorial.complexity}\n\n`;
+                if (legacyEditorial.solution) generatedContent += `## Solution\n\n\`\`\`cpp\n${legacyEditorial.solution}\n\`\`\``;
+                setParsedContent(universalParse(generatedContent));
+            } else {
+                setParsedContent(null);
+            }
+            setFetchLoading(false);
+            return;
+        }
+
         let cancelled = false;
         const fetchContent = async () => {
-            setFetchLoading(true);
-            setFetchError(null);
+            setFetchLoading(true); setFetchError(null);
             try {
                 const rawUrl = toRawGithubUrl(editorialLink);
                 const res = await fetch(rawUrl);
                 if (!res.ok) throw new Error(`Failed to fetch (HTTP ${res.status})`);
                 const text = await res.text();
                 if (!cancelled) setParsedContent(universalParse(text));
-            } catch (e) {
-                if (!cancelled) setFetchError(e.message);
-            } finally {
-                if (!cancelled) setFetchLoading(false);
-            }
+            } catch (e) { if (!cancelled) setFetchError(e.message); }
+            finally { if (!cancelled) setFetchLoading(false); }
         };
         fetchContent();
         return () => { cancelled = true; };
-    }, [editorialLink]);
+    }, [editorialLink, content, legacyEditorial]);
 
     const handleAdminSave = async () => {
         setSaving(true);
-        try {
-            await onUpdateLinks?.(draftEditorialLink.trim(), draftVideoUrl.trim());
-            setEditMode(false);
-        } finally {
-            setSaving(false);
-        }
+        try { await onUpdateLinks?.(draftEditorialLink.trim(), draftVideoUrl.trim()); setEditMode(false); }
+        finally { setSaving(false); }
     };
 
     const toggleSection = (id) => setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
@@ -413,26 +710,16 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
         switch (block.type) {
             case 'text':
                 return (
-                    <div key={block.id} className="prose prose-gray max-w-none mb-4">
-                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={MarkdownComponents}>{block.content}</ReactMarkdown>
+                    <div key={block.id} className="prose dark:prose-invert max-w-none mb-4">
+                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
+                            {block.content}
+                        </ReactMarkdown>
                     </div>
                 );
-            case 'image':
-                return <img key={block.id} src={block.src} alt="editorial" className={`max-w-full rounded-xl border border-gray-200 my-4 ${!isDark ? 'shadow-sm' : ''}`} />;
-            case 'code':
-                return (
-                    <CodeBlockViewer
-                        key={block.id}
-                        blocks={block.code}
-                        id={block.id}
-                        complexity={block.complexity}
-                        activeTabState={codeTabStates[block.id]}
-                        onTabChange={(val) => setCodeTabStates(prev => ({ ...prev, [block.id]: val }))}
-                        isDark={isDark}
-                    />
-                );
-            default:
-                return null;
+            case 'carousel': return <ImageCarousel key={block.id} images={block.images} />;
+            case 'image': return <SecureImage key={block.id} src={block.src} alt="article" className="max-w-full my-4" />;
+            case 'code': return <CodeBlockViewer key={block.id} blocks={block.code} id={block.id} complexity={block.complexity} activeTabState={codeTabStates[block.id]} onTabChange={(val) => setCodeTabStates(prev => ({ ...prev, [block.id]: val }))} />;
+            default: return null;
         }
     };
 
@@ -481,7 +768,6 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
         </div>
     );
 
-    // ── No editorial at all ───────────────────────────────────────────────────
     if (!editorialLink && !videoUrl && !problem?.editorial?.approach) {
         return (
             <div className="p-6">
@@ -489,7 +775,6 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                 <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-600">
                     <BookOpen size={40} className="opacity-20 mb-3" />
                     <p className="text-sm">Editorial not available yet.</p>
-                    {isAdmin && <p className="text-xs mt-1 text-gray-300 dark:text-gray-500">Use the panel above to add a GitHub editorial link.</p>}
                 </div>
             </div>
         );
@@ -507,33 +792,19 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
         }
     };
 
-    // ── Lock Screen ───────────────────────────────────────────────────────────
     if (!isAdmin && !hasViewedEditorial) {
         return (
             <div className="p-6 h-full flex flex-col items-center justify-center py-20 animate-fade-in relative overflow-hidden">
-                {!isDark && <div className="absolute inset-0 bg-gradient-to-br from-primary-50/20 to-rose-50/20 dark:from-primary-900/10 dark:to-rose-900/10 pointer-events-none" />}
                 <div className="relative z-10 flex flex-col items-center max-w-sm text-center">
-                    <div className={`w-16 h-16 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-700 rounded-2xl flex items-center justify-center mb-5 text-primary-500 ${!isDark ? 'shadow-xl' : ''}`}>
+                    <div className="w-16 h-16 bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-700 rounded-2xl flex items-center justify-center mb-5 text-primary-500 shadow-xl">
                         <Lock size={28} />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">View Code Editorial</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
                         Are you sure you want to view the editorial? You <strong className="text-gray-800 dark:text-gray-200">will not earn any AlphaCoins</strong> for solving this problem after unlocking the explanation.
                     </p>
-                    <button
-                        onClick={handleUnlock}
-                        disabled={unlocking}
-                        className="btn-primary w-full flex items-center justify-center gap-2 py-3 px-6 font-bold"
-                    >
+                    <button onClick={handleUnlock} disabled={unlocking} className="btn-primary w-full flex items-center justify-center gap-2 py-3 px-6 font-bold">
                         {unlocking ? <FaSpinner className="animate-spin" /> : 'Yes, Reveal Editorial'}
-                    </button>
-                    <button
-                        onClick={() => {
-                            // If needed, we can trigger switching back to description tab, but doing nothing keeps them here
-                        }}
-                        className="mt-3 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 font-semibold transition-colors"
-                    >
-                        I want to keep trying
                     </button>
                 </div>
             </div>
@@ -544,22 +815,16 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
         <div className="p-5 space-y-4">
             {isAdmin && <AdminPanel />}
 
-            {/* ── YouTube video FIRST (if present) ───────────────────────── */}
             {!hideVideo && youtubeId && (
                 <div className="mb-2">
                     <div className="flex items-center gap-2 mb-3">
                         <FaYoutube className=" w-4.5 h-4.5 text-red-500" />
                         <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Video Explanation</h3>
                     </div>
-                    <SecureVideoPlayer 
-                        url={draftVideoUrl || videoUrl || `https://www.youtube.com/watch?v=${youtubeId}`} 
-                        title="Video Explanation" 
-                    />
+                    <SecureVideoPlayer url={videoUrl || `https://www.youtube.com/watch?v=${youtubeId}`} title="Video Explanation" />
                 </div>
             )}
 
-
-            {/* ── GitHub Editorial (fetched markdown) ────────────────────── */}
             {editorialLink && (
                 <>
                     {fetchLoading && (
@@ -568,45 +833,37 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                             <span className="text-sm">Loading editorial…</span>
                         </div>
                     )}
-
                     {fetchError && (
-                        <div className="p-4 bg-red-50 dark:bg-[#111117]/20 border border-red-200 dark:border-red-900/50 rounded-xl text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-xl text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
                             <span className="font-semibold shrink-0">Error:</span>
                             <span>{fetchError}</span>
-                            <a href={editorialLink} target="_blank" rel="noopener noreferrer"
-                                className="ml-auto shrink-0 text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
-                                <ExternalLink size={12} /> Open
-                            </a>
                         </div>
                     )}
-
                     {!fetchLoading && !fetchError && parsedContent && (
                         <div className="space-y-5">
                             {parsedContent.sections.map((section, idx) => {
-                                if (section.type === 'standard') {
-                                    return <div key={idx}>{section.content.map(renderBlock)}</div>;
-                                }
+                                if (section.type === 'standard') return <div key={idx}>{section.content.map(renderBlock)}</div>;
                                 if (section.type === 'approaches') {
                                     return (
                                         <div key={idx} className="space-y-3">
                                             {section.items.map((approach, aIdx) => (
-                                                <div key={approach.id} className="border border-primary-200/60 dark:border-primary-900/50 rounded-xl overflow-hidden bg-transparent transition-colors">
+                                                <div key={approach.id} className="border border-indigo-200/60 dark:border-indigo-900/50 rounded-xl overflow-hidden bg-transparent transition-colors">
                                                     <div onClick={() => toggleSection(approach.id)}
-                                                        className="cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-colors select-none">
+                                                        className="cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors select-none">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-7 h-7 rounded-lg bg-transparent border border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-xs">
+                                                            <div className="w-7 h-7 rounded-lg bg-transparent border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
                                                                 {aIdx + 1}
                                                             </div>
                                                             <h3 className="text-[13.5px] font-semibold text-gray-900 dark:text-gray-100 leading-snug">{approach.name}</h3>
                                                         </div>
                                                         {expandedSections[approach.id]
-                                                            ? <ChevronDown className="w-4 h-4 text-primary-600 dark:text-primary-400 rotate-180 transition-transform" />
+                                                            ? <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400 rotate-180 transition-transform" />
                                                             : <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
                                                     </div>
                                                     <AnimatePresence>
                                                         {expandedSections[approach.id] && (
                                                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                                                                <div className="px-5 pb-4 border-t border-primary-100 bg-transparent">
+                                                                <div className="px-5 pb-4 border-t border-indigo-100 dark:border-indigo-900/50 bg-transparent">
                                                                     {approach.content.map(renderBlock)}
                                                                 </div>
                                                             </motion.div>
@@ -624,19 +881,12 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
                 </>
             )}
 
-            {/* ── Fallback: legacy text-only editorial ───────────────────── */}
             {!editorialLink && problem?.editorial?.approach && (
                 <div className="space-y-4">
-                    <div className={`bg-[#F1F3F4] dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-xl p-5 transition-colors ${!isDark ? 'shadow-sm' : ''}`}>
+                    <div className="bg-gray-50 dark:bg-zinc-900/30 border border-gray-100 dark:border-zinc-800 rounded-xl p-5 shadow-sm">
                         <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2 text-sm">Approach</h3>
                         <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{problem.editorial.approach}</p>
                     </div>
-                    {problem.editorial.complexity && (
-                        <div className="bg-gray-50 dark:bg-[#111117]/50 border border-gray-100 dark:border-gray-800 rounded-xl p-4 transition-colors">
-                            <h3 className="text-xs font-bold text-gray-700 dark:text-gray-400 uppercase tracking-wide mb-1">Complexity</h3>
-                            <p className="text-[13px] text-gray-700 dark:text-gray-300">{problem.editorial.complexity}</p>
-                        </div>
-                    )}
                 </div>
             )}
         </div>
@@ -644,11 +894,3 @@ const EditorialRenderer = ({ problem, isAdmin = false, onUpdateLinks, hasViewedE
 };
 
 export default EditorialRenderer;
-
-
-
-
-
-
-
-

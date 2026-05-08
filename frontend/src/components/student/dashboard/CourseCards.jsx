@@ -77,12 +77,12 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                             
                             <div className="relative z-10 flex flex-col h-full flex-1">
                             {/* Course Image */}
-                            <div className="relative h-48 bg-gray-100 dark:bg-gray-900 overflow-hidden border-b border-[var(--color-border-image)]">
+                            <div className="relative aspect-video bg-gray-50 dark:bg-black overflow-hidden border-b border-[var(--color-border-image)]">
                                 {course.thumbnailUrl ? (
                                     <img 
                                         src={course.thumbnailUrl} 
                                         alt={course.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Course+Image'; }}
                                     />
                                 ) : (
@@ -92,13 +92,13 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                 )}
                                 
                                 {/* Overlay Gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity" />
                             </div>
 
                             {/* Content */}
                             <div className="p-6 flex flex-col flex-1 gap-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-3 leading-snug min-h-[4.8rem]">
                                         {course.title}
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
@@ -107,41 +107,43 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                 </div>
 
                                 {/* Linear Progress Bar */}
-                                <div className="space-y-1.5">
-                                    <div className="w-full bg-gray-200 dark:bg-gray-800/80 rounded-full h-2 overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
-                                        <div 
-                                            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(99,102,241,0.4)]"
-                                            style={{ width: `${progress.percent}%` }}
-                                        />
+                                {activeTab !== 'all' && (
+                                    <div className="space-y-1.5">
+                                        <div className="w-full bg-gray-200 dark:bg-gray-800/80 rounded-full h-2 overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                                style={{ width: `${progress.percent}%` }}
+                                            />
+                                        </div>
+                                        <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                                            {progress.percent}% Complete
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
-                                        {progress.percent}% Complete
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* Rating & Stats Row */}
                                 <div className="flex items-center justify-between pt-1">
                                     <div className="flex items-center gap-1.5">
-                                        <div className="flex items-center gap-0.5">
+                                        <div className="flex items-center">
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <Star 
                                                     key={s} 
                                                     size={12} 
-                                                    className={`${s <= Math.round(course.averageRating || 4.5) ? 'text-amber-400 fill-amber-400' : 'text-gray-200 dark:text-gray-700'}`} 
+                                                    className={`${s <= Math.round(Number(course.averageRating) || 5.0) ? 'text-amber-400 fill-amber-400' : 'text-gray-200 dark:text-gray-700'}`} 
                                                 />
                                             ))}
                                         </div>
                                         <span className="text-[11px] font-black text-gray-700 dark:text-gray-300">
-                                            {course.averageRating ? Number(course.averageRating).toFixed(1) : '4.5'}
+                                            {course.averageRating ? Number(course.averageRating).toFixed(1) : '5.0'}
                                         </span>
                                         <span className="text-[10px] text-gray-400 font-medium">
-                                            ({course.ratingCount || '0'})
+                                            ({course.ratingCount || 0})
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1 text-gray-400">
                                         <UsersIcon size={12} />
                                         <span className="text-[10px] font-bold">
-                                            {course.enrolledCount !== undefined ? course.enrolledCount : (course.studentCount || 1)}
+                                            {course.enrolledCount !== undefined ? course.enrolledCount : (course.enrollmentCount || course.studentCount || 1)}
                                         </span>
                                     </div>
                                 </div>
@@ -152,7 +154,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                         <button 
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigate(`/dashboard/courses/${course._id || course.id}/leaderboard`);
+                                                navigate(`/dashboard/courses/${course.slug || course._id || course.id}/analytics`);
                                             }}
                                             className="w-full btn-secondary"
                                         >

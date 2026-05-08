@@ -122,7 +122,8 @@ const DashboardLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        {/* Search Bar */}
+                        {/* Search Bar - Hidden as requested */}
+                        {/* 
                         <div className="hidden md:flex items-center relative group w-72" ref={searchRef}>
                             <div className="page-search-wrapper w-full">
                                 <Search size={18} className="page-search-icon" />
@@ -147,7 +148,6 @@ const DashboardLayout = () => {
                                 }`}>⌘K</span>
                             </div>
 
-                            {/* Search Results Dropdown */}
                             {isSearchOpen && searchTerm.trim() !== '' && (
                                 <div className={`absolute top-full left-0 right-0 mt-2 p-2 rounded-2xl shadow-2xl border transition-all animate-in fade-in slide-in-from-top-2 duration-200 z-[100] ${
                                     isDark 
@@ -185,6 +185,7 @@ const DashboardLayout = () => {
                                 </div>
                             )}
                         </div>
+                        */}
 
                         {/* Notifications */}
                         <NotificationDropdown />

@@ -75,17 +75,29 @@ class CourseContest {
     }
 
     static async findById(idOrSlug) {
+        if (!idOrSlug || idOrSlug === 'undefined' || idOrSlug === 'null') return null;
+
         let contest = null;
-        try {
-            contest = await prisma.courseContest.findUnique({
-                where: { id: idOrSlug }
-            });
-        } catch (e) {}
+        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrSlug);
+
+        if (isUUID) {
+            try {
+                contest = await prisma.courseContest.findUnique({
+                    where: { id: idOrSlug }
+                });
+            } catch (e) {
+                console.error('[CourseContest.findById] UUID lookup error:', e.message);
+            }
+        }
         
         if (!contest) {
-            contest = await prisma.courseContest.findUnique({
-                where: { slug: String(idOrSlug) }
-            });
+            try {
+                contest = await prisma.courseContest.findUnique({
+                    where: { slug: String(idOrSlug) }
+                });
+            } catch (e) {
+                console.error('[CourseContest.findById] Slug lookup error:', e.message);
+            }
         }
 
         return this._populateProblems(contest);

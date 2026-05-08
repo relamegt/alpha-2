@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const calcRatingScore = (platform, rating) => {
     switch (platform.toLowerCase()) {
@@ -104,6 +105,8 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
         return timeSeries;
     }, [externalContestStats, leaderboardStats]);
 
+    const { isDark } = useTheme();
+
     if (data.length === 0) {
         return (
             <div className="bg-white dark:bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 h-96 flex flex-col items-center justify-center text-center">
@@ -155,13 +158,13 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
                         </defs>
                         <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 10, fontWeight: 500, fill: '#9CA3AF' }}
+                            tick={{ fontSize: 10, fontWeight: 500, fill: isDark ? '#9CA3AF' : '#6B7280' }}
                             axisLine={false}
                             tickLine={false}
                             minTickGap={50}
                         />
                         <YAxis
-                            tick={{ fontSize: 10, fontWeight: 500, fill: '#9CA3AF' }}
+                            tick={{ fontSize: 10, fontWeight: 500, fill: isDark ? '#9CA3AF' : '#6B7280' }}
                             axisLine={false}
                             tickLine={false}
                             domain={['auto', 'auto']}
@@ -169,18 +172,8 @@ const GlobalRankGraph = ({ externalContestStats, leaderboardStats }) => {
                         />
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-gray-200 dark:text-gray-800" opacity={0.5} />
                         <Tooltip
-                            cursor={{ stroke: 'currentColor', opacity: 0.1 }}
-                            contentStyle={{
-                                backgroundColor: 'var(--color-bg-card)',
-                                borderRadius: '12px',
-                                border: '1px solid var(--color-border-subtle)',
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                color: 'inherit'
-                            }}
-                            labelStyle={{ color: 'var(--color-text-muted)', fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}
-                            itemStyle={{ color: '#F59E0B' }}
+                            cursor={{ stroke: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', opacity: 0.1 }}
+                            content={<CustomTooltip isDark={isDark} />}
                         />
                         <Area
                             type="monotone"

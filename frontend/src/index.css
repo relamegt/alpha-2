@@ -32,6 +32,17 @@
         --color-border-card: #F3F4F6;
         --color-border-image: #E5E7EB;
         --color-border-interactive: #D1D5DB;
+
+        /* Streak & Activity Variables */
+        --color-streak-active-bg: rgba(98, 87, 227, 0.15);
+        --color-streak-active-border: rgba(98, 87, 227, 0.5);
+        --color-streak-active-text: #4F46E5;
+        --color-streak-fire: #F97316;
+        --color-activity-level-0: #F3F4F6;
+        --color-activity-level-1: #D1FAE5;
+        --color-activity-level-2: #6EE7B7;
+        --color-activity-level-3: #10B981;
+        --color-activity-level-4: #059669;
     }
 
     .dark {
@@ -59,9 +70,29 @@
         --color-border-card: rgba(125, 99, 242, 0.15);
         --color-border-image: rgba(255, 255, 255, 0.1);
         --color-border-interactive: rgba(125, 99, 242, 0.35);
+
+        /* Streak & Activity Variables */
+        --color-streak-active-bg: rgba(125, 99, 242, 0.25);
+        --color-streak-active-border: rgba(125, 99, 242, 0.6);
+        --color-streak-active-text: #FFFFFF;
+        --color-streak-fire: #FF5F1F;
+        --color-activity-level-0: #1F1F29;
+        --color-activity-level-1: #064e3b;
+        --color-activity-level-2: #065f46;
+        --color-activity-level-3: #047857;
+        --color-activity-level-4: #10b981;
     }
 
     /* Smooth theme transition */
+    .icon-gradient {
+        @apply text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-400;
+        display: inline-block;
+    }
+
+    .dark .icon-gradient {
+        @apply from-primary-400 to-indigo-400;
+    }
+
     html {
         transition: background-color 0.2s ease, color 0.2s ease;
     }
@@ -427,7 +458,7 @@
     }
 
     .custom-thin-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-gray-200 dark:bg-gray-800 rounded-full;
+        @apply bg-gray-300 dark:bg-zinc-700 rounded-full;
     }
 
     .custom-thin-scrollbar::-webkit-scrollbar-thumb:hover {

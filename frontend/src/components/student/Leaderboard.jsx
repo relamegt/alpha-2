@@ -417,7 +417,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
             const contests = data.contests || [];
             setInternalContests(contests);
             setInternalContestsMeta(contests.map(c => ({
-                id: c._id,
+                id: c._id || c.id,
                 title: c.title,
                 startTime: c.startTime,
                 endTime: c.endTime,
@@ -425,7 +425,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
             })));
             if (contests.length > 0) {
                 if (!contestId && !selectedInternalContest) {
-                    setSelectedInternalContest(contests[0]._id);
+                    setSelectedInternalContest(contests[0]._id || contests[0].id);
                 }
             } else if (!contestId) {
                 setSelectedInternalContest(null);
@@ -520,32 +520,35 @@ const Leaderboard = ({ batchId, isBatchView }) => {
             );
         }
 
-        // 3. Assign Filtered Rank (Branch/Section Rank)
-        // Sort by score desc to assign rank, then restore or keep sorted
-        // We need a stable score comparison. overallScore is the main metric.
-        // We create a temporary sorted version to determine ranks.
-        const scoreSorted = [...processed].sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0));
+        // 3. Assign Filtered Rank (Branch/Section/Search Rank)
+        // Sort by score desc to assign rank, with tie-breaking
+        const scoreSorted = [...processed].sort((a, b) => {
+            const scoreA = a.overallScore || 0;
+            const scoreB = b.overallScore || 0;
+            
+            if (scoreB !== scoreA) return scoreB - scoreA;
+            
+            // Tie-break 1: Alpha Coins
+            const coinsA = a.alphaCoins || 0;
+            const coinsB = b.alphaCoins || 0;
+            if (coinsB !== coinsA) return coinsB - coinsA;
+            
+            // Tie-break 2: Roll Number (Lexicographical)
+            return String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''));
+        });
 
-        // Map rank back to the items
-        // Since scoreSorted contents are references, we can't just mutate. 
-        // Better: Create a map of ID/RollNo -> Rank? Or just map the sorted list?
-        // Actually, we can just map the scoreSorted list to new objects with 'rank'.
-        // But wait, the user might want to sort by 'Name'. 
-        // If we only have scoreSorted, we can't sort by Name easily without losing the rank info if we don't stamp it.
-
-        // Let's stamp 'rank' on the objects.
         const ranked = scoreSorted.map((entry, index) => ({
             ...entry,
             rank: index + 1
         }));
 
-        // 4. Apply User Sort
+        // 4. Apply User Visual Sort (doesn't change the assigned 'rank')
         if (sortConfig.key) {
             ranked.sort((a, b) => {
                 let aValue = getValueByPath(a, sortConfig.key);
                 let bValue = getValueByPath(b, sortConfig.key);
 
-                // Check if numeric
+                // Handle numbers
                 const aNum = parseFloat(aValue);
                 const bNum = parseFloat(bValue);
 
@@ -555,10 +558,9 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                     return 0;
                 }
 
-                // String sorting
+                // Handle strings
                 const aStr = String(aValue || '').toLowerCase();
                 const bStr = String(bValue || '').toLowerCase();
-
                 if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1;
                 if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
@@ -566,7 +568,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
         }
 
         return ranked;
-    }, [rawPracticeData, filters, sortConfig, searchQuery]);
+    }, [rawPracticeData, viewType, filters, searchQuery, sortConfig]);
 
     // Get external leaderboard for selected platform and contest (CLIENT-SIDE)
     const externalLeaderboard = useMemo(() => {
@@ -673,7 +675,8 @@ const Leaderboard = ({ batchId, isBatchView }) => {
         const rows = sortedInternalData.map((entry, index) => {
             // One cell per problem: "Accepted-3m" / "Wrong Answer-7m" / "Not Attempted"
             const problemCells = contestInfo?.problems?.map(p => {
-                const pData = entry.problems?.[p._id];
+                const pId = p._id || p.id;
+                const pData = entry.problems?.[pId];
                 const status = pData?.status || 'Not Attempted';
                 if (status === 'Not Attempted') return 'Not Attempted';
                 const subTimeStr = pData?.submittedAt !== undefined && pData?.submittedAt !== null
@@ -1609,7 +1612,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                 : [
                                                     { value: '', label: 'Select a contest' },
                                                     ...internalContests.map((contest) => ({
-                                                        value: contest._id,
+                                                        value: contest._id || contest.id,
                                                         label: `${contest.title} - ${new Date(contest.startTime).toLocaleDateString()}`
                                                     }))
                                                 ]
@@ -1751,7 +1754,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                         </th>
 
                                                         {contestInfo?.problems?.map((prob, i) => (
-                                                            <th key={prob._id} className="px-3 py-4 text-center text-xs font-bold text-gray-900 dark:text-white uppercase whitespace-nowrap min-w-[160px] border-b border-gray-100 dark:border-gray-800 border-l border-[var(--color-border-interactive)]">
+                                                            <th key={prob._id || prob.id} className="px-3 py-4 text-center text-xs font-bold text-gray-900 dark:text-white uppercase whitespace-nowrap min-w-[160px] border-b border-gray-100 dark:border-gray-800 border-l border-[var(--color-border-interactive)]">
                                                                 P{i + 1}: {prob.title}
                                                             </th>
                                                         ))}
@@ -1802,7 +1805,8 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                                         <td style={pinnedBg} className="px-3 py-3 whitespace-nowrap text-sm dark:border-b dark:border-gray-700 text-purple-900 dark:text-purple-200">{currentUserEntry.branch}</td>
 
                                                                         {contestInfo?.problems?.map(prob => {
-                                                                            const pData = currentUserEntry.problems?.[prob._id];
+                                                                            const pId = prob._id || prob.id;
+                                                                            const pData = currentUserEntry.problems?.[pId];
                                                                             const status = pData?.status || 'Not Attempted';
                                                                             const rawTime = pData?.submittedAt;
                                                                             let formattedSubTime = (rawTime !== undefined && rawTime !== null)
@@ -1835,7 +1839,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                                             }
 
                                                                             return (
-                                                                                <td key={prob._id} style={pinnedBg} className="px-2 py-2 text-center dark:border-b dark:border-gray-700 dark:border-l dark:border-gray-700 min-w-[160px]">
+                                                                                <td key={pId} style={pinnedBg} className="px-2 py-2 text-center dark:border-b dark:border-gray-700 dark:border-l dark:border-gray-700 min-w-[160px]">
                                                                                     <div className={`rounded border inline-flex flex-col items-center gap-0.5 px-3 py-1.5 min-w-[130px] ${bgClass}`}>
                                                                                         <span className={`text-xs font-bold ${textClass}`}>
                                                                                             {statusIcon} {statusText}
@@ -1952,7 +1956,8 @@ const Leaderboard = ({ batchId, isBatchView }) => {
 
                                                                             {/* Per-Problem Cells: status badge + tries + submission time */}
                                                                             {contestInfo?.problems?.map(prob => {
-                                                                                const pData = entry.problems?.[prob._id];
+                                                                                const pId = prob._id || prob.id;
+                                                                                const pData = entry.problems?.[pId];
                                                                                 const status = pData?.status || 'Not Attempted';
                                                                                 const rawTime = pData?.submittedAt;
                                                                                 let formattedSubTime = (rawTime !== undefined && rawTime !== null)
@@ -1985,7 +1990,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                                                 }
 
                                                                                 return (
-                                                                                    <td key={prob._id} className="px-2 py-2 text-center border-b border-gray-100 dark:border-gray-800 border-l border-[var(--color-border-interactive)] min-w-[160px]">
+                                                                                    <td key={prob._id || prob.id} className="px-2 py-2 text-center border-b border-gray-100 dark:border-gray-800 border-l border-[var(--color-border-interactive)] min-w-[160px]">
                                                                                         <div className={`rounded border inline-flex flex-col items-center gap-0.5 px-3 py-1.5 min-w-[130px] ${bgClass}`}>
                                                                                             <span className={`text-xs font-bold ${textClass}`}>
                                                                                                 {statusIcon} {statusText}

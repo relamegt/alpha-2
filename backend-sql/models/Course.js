@@ -89,22 +89,35 @@ class Course {
             orderBy: { createdAt: 'asc' },
             include: {
                 _count: {
-                    select: { userBatches: true }
+                    select: { userBatches: true, ratings: true }
+                },
+                ratings: {
+                    select: { rating: true }
                 }
             }
         });
-        return courses.map(c => ({ 
-            ...c, 
-            _id: c.id,
-            enrolledCount: c._count.userBatches
-        }));
+        return courses.map(c => {
+            const ratingCount = c._count.ratings;
+            const sum = c.ratings.reduce((acc, r) => acc + r.rating, 0);
+            return { 
+                ...c, 
+                _id: c.id,
+                enrolledCount: c._count.userBatches,
+                ratingCount,
+                averageRating: ratingCount > 0 ? sum / ratingCount : 0,
+                ratings: undefined // don't send raw ratings
+            };
+        });
     }
 
     static async findById(idOrSlug) {
         let course = null;
         const include = {
             _count: {
-                select: { userBatches: true }
+                select: { userBatches: true, ratings: true }
+            },
+            ratings: {
+                select: { rating: true }
             }
         };
         try { 
@@ -120,8 +133,13 @@ class Course {
             });
         }
         if (course) {
+            const ratingCount = course._count.ratings;
+            const sum = course.ratings.reduce((acc, r) => acc + r.rating, 0);
             course._id = course.id;
             course.enrolledCount = course._count.userBatches;
+            course.ratingCount = ratingCount;
+            course.averageRating = ratingCount > 0 ? sum / ratingCount : 0;
+            course.ratings = undefined;
         }
         return course;
     }
@@ -129,7 +147,30 @@ class Course {
     static async findByIds(courseIds) {
         if (!courseIds || courseIds.length === 0) return [];
         const ids = courseIds.map(id => typeof id === 'string' ? id : String(id));
-        return await prisma.course.findMany({ where: { id: { in: ids } } });
+        const courses = await prisma.course.findMany({ 
+            where: { id: { in: ids } },
+            include: {
+                _count: {
+                    select: { userBatches: true, ratings: true }
+                },
+                ratings: {
+                    select: { rating: true }
+                }
+            }
+        });
+        
+        return courses.map(c => {
+            const ratingCount = c._count.ratings;
+            const sum = c.ratings.reduce((acc, r) => acc + r.rating, 0);
+            return {
+                ...c,
+                _id: c.id,
+                enrolledCount: c._count.userBatches,
+                ratingCount,
+                averageRating: ratingCount > 0 ? sum / ratingCount : 0,
+                ratings: undefined
+            };
+        });
     }
 
     static async update(courseId, updateData) {

@@ -85,6 +85,7 @@ import ContestList from './components/student/ContestList';
 import CodeEditor from './components/student/CodeEditor';
 import Leaderboard from './components/student/Leaderboard';
 import CourseLeaderboard from './components/student/CourseLeaderboard';
+import CourseAnalytics from './components/student/CourseAnalytics';
 import MyCourses from './components/student/MyCourses';
 import CourseOverview from './components/student/CourseOverview';
 import ContestInterface from './components/student/ContestInterface';
@@ -161,9 +162,10 @@ const ProtectedRoute = ({ children, allowedRoles, hideNavbar = false }) => {
     );
 };
 
+// No longer needed as we use direct profile routes
 const ProfileRedirect = () => {
     const { username } = useParams();
-    return <Navigate to={`/dashboard/profile/${username}`} replace />;
+    return <Navigate to={`/profile/${username}`} replace />;
 };
 
 const CourseRedirect = () => {
@@ -224,6 +226,12 @@ const PublicRoute = ({ children }) => {
     return children;
 };
 
+// Redirect components for parameter substitution
+const CourseLeaderboardRedirect = () => {
+    const { courseId } = useParams();
+    return <Navigate to={`/dashboard/courses/${courseId}/analytics/leaderboard`} replace />;
+};
+
 const DynamicToaster = () => {
     const location = useLocation();
     const { isDark } = useTheme();
@@ -263,7 +271,7 @@ function App() {
                             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
                             <Route path="/join/:contestId" element={<ContestJoin />} />
                             <Route path="/complete-profile" element={<ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}><CompleteProfile /></ProtectedRoute>} />
-                            <Route path="/profile/:username" element={<ProfileRedirect />} />
+                            <Route path="/profile/:username" element={<ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}><PublicProfile /></ProtectedRoute>} />
                             <Route path="/catalog" element={<Navigate to="/dashboard/catalog" replace />} />
                             <Route path="/articles" element={<Navigate to="/dashboard/articles" replace />} />
 
@@ -353,11 +361,13 @@ function App() {
                                      <Route path="experience/submit" element={<ExperienceSubmissionWizard />} />
                                      <Route path="experience/:id" element={<InterviewExperienceDetail />} />
                                  </Route>
-                                 <Route path="profile/:username" element={<PublicProfile />} />
+                                 {/* Profile route moved to top level */}
                                  <Route path="sheets/:sheetId" element={<SheetView />} />
                                  <Route path="assignments/:id" element={<AssignmentPage />} />
                                   <Route path="courses/:courseId" element={<CourseOverview />} />
-                                  <Route path="courses/:courseId/leaderboard" element={<CourseLeaderboard />} />
+                                  <Route path="courses/:courseId/analytics" element={<CourseAnalytics />} />
+                                  <Route path="courses/:courseId/analytics/:tab" element={<CourseAnalytics />} />
+                                  <Route path="courses/:courseId/leaderboard" element={<Navigate to="../analytics/leaderboard" replace />} />
                                   <Route path="problems/:problemId" element={<CodeEditor />} />
                                   <Route path="workspace/:courseId" element={<CodeEditor />} />
                                   <Route path="workspace/:courseId/:subId" element={<CodeEditor />} />
@@ -367,7 +377,7 @@ function App() {
  
                              {/* Student Routes (Legacy compatibility) */}
                              <Route path="/student/dashboard" element={<Navigate to="/dashboard/home" replace />} />
-                             <Route path="/courses/:courseId/leaderboard" element={<ProtectedRoute allowedRoles={['student', 'instructor', 'admin']} hideNavbar={true}><CourseLeaderboard /></ProtectedRoute>} />
+                             <Route path="/courses/:courseId/leaderboard" element={<CourseLeaderboardRedirect />} />
                              <Route path="/student/contests" element={<ProtectedRoute allowedRoles={['student']}><ContestList /></ProtectedRoute>} />
                              <Route path="/workspace/:courseId/:subId/contest/:contestSlug" element={<ProtectedRoute allowedRoles={['student', 'instructor', 'admin']} hideNavbar={true}><CodeEditor /></ProtectedRoute>} />
 

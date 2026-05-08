@@ -142,6 +142,7 @@ app.use('/api/student', require('./routes/student'));
 app.use('/api/instructor', require('./routes/instructor'));
 app.use('/api/contest', require('./routes/contest'));
 app.use('/api/course-contests', require('./routes/courseContest'));
+app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/reports', require('./routes/report'));
 app.use('/api/sql-problems', require('./routes/sqlProblem'));
 app.use('/api/videos', require('./routes/video'));
@@ -176,6 +177,8 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+const workers = [];
+
 const startServer = async () => {
     try {
         // 0. Initialize Redis first (needed for Queues & Cache)
@@ -189,10 +192,10 @@ const startServer = async () => {
             const { startEnrollmentExpiryWorker } = require('./workers/enrollmentExpiryWorker');
             const { startAiCreditResetWorker } = require('./workers/aiCreditResetWorker');
             console.warn('👷 Starting background workers...');
-            startScoreWorker();
-            startCodeExecutionWorker();
-            startEnrollmentExpiryWorker();
-            startAiCreditResetWorker();
+            workers.push(startScoreWorker());
+            workers.push(startCodeExecutionWorker());
+            workers.push(startEnrollmentExpiryWorker());
+            workers.push(startAiCreditResetWorker());
         } catch (workerErr) {
             console.warn('⚠️  Workers not available (non-fatal):', workerErr.message);
         }
@@ -201,6 +204,14 @@ const startServer = async () => {
         console.warn('🔌 Connecting to PostgreSQL via Prisma...');
         await prisma.$connect();
         console.log('✅ PostgreSQL Connected via Prisma');
+
+        // 2.5 Rebuild Global Leaderboard ZSET (Sync Redis with DB)
+        try {
+            const Leaderboard = require('./models/Leaderboard');
+            await Leaderboard.rebuildGlobalZSet();
+        } catch (lbErr) {
+            console.warn('⚠️  Leaderboard rebuild failed (non-fatal):', lbErr.message);
+        }
 
         // 3. Verify email configuration
         try {
@@ -256,6 +267,17 @@ const shutdown = () => {
     console.log('⚠️ Shutdown signal received: closing HTTP server...');
     server.close(async () => {
         console.log('✅ HTTP server closed');
+        
+        // Close workers
+        console.warn('👷 Closing background workers...');
+        for (const worker of workers) {
+            try {
+                if (worker) await worker.close();
+            } catch (err) {
+                console.error('❌ Error closing worker:', err.message);
+            }
+        }
+        
         await prisma.$disconnect();
         process.exit(0);
     });

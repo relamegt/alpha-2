@@ -323,7 +323,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                             {/* Menu Links */}
                             <div className="p-2 space-y-1">
                                 <Link
-                                    to={`/dashboard/profile/${user.username || user.id}`}
+                                    to={`/profile/${user.username || user.id}`}
                                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <User size={18} />

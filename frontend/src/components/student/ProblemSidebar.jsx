@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronRight, CheckCircle, Circle, ChevronDown, Search, X, LayoutGrid, FileText, Video as VideoIcon, Code2, HelpCircle, Trophy, Monitor, Terminal as TerminalIcon } from 'lucide-react';
 import { CiCircleList } from 'react-icons/ci';
@@ -81,8 +81,8 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     });
 
     const listLoading = (shouldFetchCourses && coursesLoading) || courseContestsLoading || (shouldFetchFocus && focusLoading);
-    const loading = problemsLoading || listLoading; 
-    
+    const loading = problemsLoading || listLoading;
+
     // Decoupled loading state for main container - allows partial rendering
     const isMainDataLoading = (shouldFetchCourses && coursesLoading) || (shouldFetchFocus && focusLoading);
     const [expandedSections, setExpandedSections] = useState(() => {
@@ -163,7 +163,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             const c = courses.find(c => String(c._id) === courseId || c.slug === courseId);
             return c ? (c.sections || []) : [];
         }
-        
+
         // No courseId, but a problemId or contestSlug exists (fallback navigation). Find the course containing this problem/contest
         if (problemId || contestSlug) {
             for (const course of courses) {
@@ -177,7 +177,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     for (const sub of allSubgroups) {
                         let match = false;
                         if (problemId) {
-                            match = sub.problemIds?.some(pid => 
+                            match = sub.problemIds?.some(pid =>
                                 String(pid) === problemId || problemIdAliasMap[String(pid)] === problemId
                             );
                         } else if (contestSlug && contests.length) {
@@ -195,10 +195,14 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                 }
             }
         }
-        
-        return [];
+
     }, [courses, courseId, problemId, problemIdAliasMap, contestSlug, contests]);
-    
+
+    const activeCourse = useMemo(() => {
+        if (!courses.length || !courseId) return null;
+        return courses.find(c => String(c._id) === courseId || c.slug === courseId);
+    }, [courses, courseId]);
+
     // Auto-expand first section and subsection if courseId is present but no specific problem/subId is focused
     // [Removed] As requested, default to all folders tracking closed on new workspace load.
     // Updated to auto-expand for contests as well via external link
@@ -366,10 +370,10 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     .filter(c => activeCategory === 'all' || activeCategory === 'contests')
                     .filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
-                return { 
-                    ...subsection, 
+                return {
+                    ...subsection,
                     problems: subsectionProblems,
-                    contests: subsectionContests 
+                    contests: subsectionContests
                 };
             }).filter(sub => {
                 if (problemsLoading || courseContestsLoading) return true;
@@ -404,8 +408,8 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                 .filter(c => activeCategory === 'all' || activeCategory === 'contests')
                 .filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
-            return { 
-                ...section, 
+            return {
+                ...section,
                 subsections: mappedSubsections,
                 problems: sectionProblems,
                 contests: sectionContests
@@ -458,10 +462,10 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         if (structuredContent.isSubView) {
             return (structuredContent.groups || []).flatMap(g => g.problems || []);
         }
-        
+
         const seen = new Set();
         const list = [];
-        
+
         // Add categorized
         (structuredContent.sections || []).forEach(s => {
             [s, ...(s.subsections || [])].forEach(sub => {
@@ -481,7 +485,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                 });
             });
         });
-        
+
         // Add uncategorized
         (structuredContent.uncategorized || []).forEach(p => {
             const id = p._id || p.id;
@@ -490,15 +494,66 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                 list.push(p);
             }
         });
-        
+
         return list;
     }, [structuredContent]);
 
-    const solvedCount = useMemo(() => {
-        return displayedProblems.filter(p => p.isSolved || p.isSubmitted).length;
-    }, [displayedProblems]);
+    // Compute total problems in the current context (ignoring search filters) for persistent progress display
+    const totalContentProblems = useMemo(() => {
+        const seen = new Set();
+        const list = [];
 
-    const progressPct = displayedProblems.length ? Math.round((solvedCount / displayedProblems.length) * 100) : 0;
+        // For Course Tree View
+        if (activeCourseSections.length > 0) {
+            activeCourseSections.forEach(section => {
+                const subgroups = [
+                    ...(section.problemIds?.length || section.courseContestIds?.length ? [{ problemIds: section.problemIds, courseContestIds: section.courseContestIds }] : []),
+                    ...(section.subsections || [])
+                ];
+                subgroups.forEach(sub => {
+                    (sub.problemIds || []).forEach(pid => {
+                        const pidStr = String(pid);
+                        if (!seen.has(pidStr)) {
+                            seen.add(pidStr);
+                            const p = problems.find(prob => String(prob._id) === pidStr || prob.id === pidStr);
+                            if (p) list.push(p);
+                        }
+                    });
+                    (sub.courseContestIds || []).forEach(cid => {
+                        const cidStr = String(cid?.$oid || cid);
+                        if (!seen.has(cidStr)) {
+                            seen.add(cidStr);
+                            const c = contests.find(con => String(con._id) === cidStr || String(con.id) === cidStr);
+                            if (c) list.push(c);
+                        }
+                    });
+                });
+            });
+        }
+        // For Focused Subsection View
+        else if (subId && focusedData) {
+            (focusedData.problems || []).forEach(p => {
+                const id = p._id || p.id;
+                if (!seen.has(id)) { seen.add(id); list.push(p); }
+            });
+            (focusedData.contests || []).forEach(c => {
+                const id = c._id || c.id;
+                if (!seen.has(id)) { seen.add(id); list.push(c); }
+            });
+        }
+        // Fallback to all problems if no specific course context
+        else if (!courseId) {
+            return problems;
+        }
+
+        return list;
+    }, [activeCourseSections, problems, contests, focusedData, subId, courseId]);
+
+    const solvedCount = useMemo(() => {
+        return totalContentProblems.filter(p => p.isSolved || p.isSubmitted).length;
+    }, [totalContentProblems]);
+
+    const progressPct = totalContentProblems.length ? Math.round((solvedCount / totalContentProblems.length) * 100) : 0;
     const circumference = 2 * Math.PI * 16; // Increased radius
 
     // Save/Restore Scroll Position
@@ -526,11 +581,11 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
         return () => el?.removeEventListener('scroll', handleScroll);
     }, [courseId, subId, structuredContent?.isLoading]); // Re-run when data finishes loading
 
-    if (loading) {
+    if (loading && !problemsData && !coursesData && !focusedData) {
         return (
-            <div className="flex flex-col h-full bg-white dark:bg-[#111117] overflow-hidden border-r border-gray-200 dark:border-gray-800 animate-pulse transition-colors">
+            <div className="flex flex-col h-full bg-white dark:bg-[var(--color-bg-sidebar)] overflow-hidden border-r border-gray-200 dark:border-gray-800 animate-pulse transition-colors">
                 {/* Header Skeleton */}
-                <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111117] z-10">
+                <div className="shrink-0 p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[var(--color-bg-sidebar)] z-10">
                     {/* Title row */}
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -589,25 +644,12 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
     ];
 
     return (
-<div className={`flex h-full bg-white dark:bg-[#111117] overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-[40px]' : ''}`}>
-            {/* ── Collapsed Content Label ── */}
-            {isCollapsed && (
-                <div 
-                    onClick={onToggle}
-                    className="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
-                >
-                    <div className="flex items-center justify-center w-full">
-                        <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap text-[10px] font-bold tracking-[0.35em] text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 uppercase transition-colors select-none">
-                            CONTENT
-                        </span>
-                    </div>
-                </div>
-            )}
+        <div className={`flex h-full bg-[var(--color-bg-sidebar)] dark:bg-[#111117] overflow-hidden transition-all duration-300`}>
 
             {/* ── Category Bar (Vertical) - Commented out as requested ── */}
             {/* 
             {!isCollapsed && (
-                <div className="w-[60px] shrink-0 bg-gray-50/50 dark:bg-[#0F1117] border-r border-gray-100 dark:border-gray-800 flex flex-col items-center py-4 gap-2 transition-colors">
+                <div className="w-[60px] shrink-0 bg-gray-50/50 dark:bg-[#0F1117] border-r border-gray-200 dark:border-gray-800 flex flex-col items-center py-4 gap-2 transition-colors">
                     {categories.map(cat => (
                         <button
                             key={cat.id}
@@ -631,11 +673,17 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
             )}
             */}
 
-            {/* ── Main Sidebar List (Hidden when collapsed) ── */}
-            {!isCollapsed && (
-                <div className="flex flex-col flex-1 min-w-[240px] animate-in fade-in slide-in-from-left-2 duration-300">
+            {/* ── Main Sidebar List ── Always mounted, hidden via CSS when collapsed ── */}
+            <div
+                className="flex flex-col flex-1 min-w-[240px] transition-all duration-300"
+                style={{
+                    opacity: isCollapsed ? 0 : 1,
+                    pointerEvents: isCollapsed ? 'none' : 'auto',
+                    overflow: 'hidden',
+                }}
+            >
                     {/* ── Header ─────────────────────────────────────────────── */}
-                    <div className="shrink-0 p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111117] z-10 transition-colors">
+                    <div className="shrink-0 p-4 border-b border-gray-200 dark:border-gray-800 bg-transparent z-10 transition-colors">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2 min-w-0">
                                 <div className="shrink-0 p-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
@@ -643,11 +691,9 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                 </div>
                                 <div className="truncate">
                                     <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">
-                                        {structuredContent?.isSubView 
-                                            ? (activeCategory === 'all' ? 'All' : categories.find(c => c.id === activeCategory)?.label)
-                                            : (categories.find(c => c.id === activeCategory)?.label || 'All')}
+                                        All Content
                                     </h2>
-                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">{solvedCount} / {displayedProblems.length} Complete</p>
+                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">{solvedCount} / {totalContentProblems.length} Complete</p>
                                 </div>
                             </div>
                             <div className="relative w-8 h-8 shrink-0">
@@ -658,7 +704,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                         className="stroke-amber-600 dark:stroke-amber-500 transition-all duration-500 ease-out"
                                         strokeWidth="3"
                                         strokeDasharray={circumference}
-                                        strokeDashoffset={circumference * (1 - (displayedProblems.length ? solvedCount / displayedProblems.length : 0))}
+                                        strokeDashoffset={circumference * (1 - (totalContentProblems.length ? solvedCount / totalContentProblems.length : 0))}
                                         strokeLinecap="round"
                                     />
                                 </svg>
@@ -677,7 +723,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={`Search ${activeCategory}...`}
-                                className="w-full bg-gray-50 dark:bg-[#0F1117] border border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-200 text-[11px] rounded-lg py-1.5 pl-8 pr-7 focus:bg-white dark:focus:bg-[#181820] focus:border-amber-500 dark:focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 font-medium"
+                                className="w-full bg-gray-50 dark:bg-[#0F1117] border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-200 text-[11px] rounded-lg py-1.5 pl-8 pr-7 focus:bg-white dark:focus:bg-[#181820] focus:border-amber-500 dark:focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 font-medium"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer">
@@ -688,21 +734,21 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                     </div>
 
                     {/* ── List ────────────────────────────────────────────────── */}
-                    <div 
+                    <div
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto overflow-x-hidden bg-white dark:bg-[#111117] transition-colors pb-10 custom-thin-scrollbar"
+                        className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent transition-colors pb-10 custom-thin-scrollbar"
                     >
                         {structuredContent?.isSubView ? (
                             structuredContent.isLoading ? (
                                 <div className="p-4 space-y-4 animate-pulse">
-                                    <div className="px-5 py-3 border-b border-gray-50 dark:border-gray-800 mb-2 flex flex-col gap-2">
-                                        <div className="w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded"></div>
+                                    <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-800 mb-2 flex flex-col gap-2">
+                                        <div className="w-24 h-2 bg-gray-200 dark:bg-gray-800 rounded"></div>
                                         <div className="w-3/4 h-4 bg-gray-200 dark:bg-gray-800 rounded"></div>
                                     </div>
                                     {[1, 2, 3, 4, 5].map(i => (
                                         <div key={i} className="flex items-center gap-3 px-5 py-2">
-                                            <div className="w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-800 shrink-0"></div>
-                                            <div className="w-full h-3 bg-gray-50 dark:bg-gray-800/50 rounded"></div>
+                                            <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-800 shrink-0"></div>
+                                            <div className="w-full h-3 bg-gray-200 dark:bg-gray-800/50 rounded"></div>
                                         </div>
                                     ))}
                                 </div>
@@ -761,7 +807,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                             <>
                                 {structuredContent?.sections.map(section => {
                                     const isExpanded = expandedSections[section._id];
-                                    
+
                                     let overallActiveIndex = -1;
                                     const pActiveIdx = (section.problems || []).findIndex(p => isActive(p.id));
                                     if (pActiveIdx !== -1) overallActiveIndex = pActiveIdx;
@@ -871,7 +917,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                                         const trueIdx = (section.problems?.length || 0) + (section.contests?.length || 0) + sIdx;
                                                         const totalSectItems = (section.problems?.length || 0) + (section.contests?.length || 0) + section.subsections.length;
                                                         const isLastSub = trueIdx === totalSectItems - 1;
-                                                        
+
                                                         const isUpperLineActive = overallActiveIndex !== -1 && trueIdx <= overallActiveIndex;
                                                         const isLowerLineActive = overallActiveIndex !== -1 && trueIdx < overallActiveIndex;
                                                         const isBranchActive = trueIdx === overallActiveIndex;
@@ -881,7 +927,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                                             const idStr = String(c._id || c.id);
                                                             return contestSlug === c.slug || contestSlug === idStr || problemId === idStr;
                                                         });
-                                                        
+
                                                         const totalProbs = sub.problems?.length || 0;
                                                         const activeItemIndex = activeProbIndex !== -1 ? activeProbIndex : (activeContestIndexOffset !== -1 ? totalProbs + activeContestIndexOffset : -1);
                                                         const totalItems = totalProbs + (sub.contests?.length || 0);
@@ -942,7 +988,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                                                                                 </div>
                                                                             );
                                                                         })}
-                                                                        
+
                                                                         {(sub.contests || []).map((contest, cIdx) => {
                                                                             const trueIdx = totalProbs + cIdx;
                                                                             const isLastItem = (trueIdx === totalItems - 1);
@@ -999,8 +1045,7 @@ const ProblemSidebar = ({ isCollapsed, onToggle }) => {
                         )}
                     </div>
                 </div>
-            )}
-        </div>
+            </div>
     );
 };
 
@@ -1009,7 +1054,7 @@ const SectionHeader = ({ title, expanded, count, onClick, noToggle }) => {
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-4 py-4 transition-all duration-200 border-b border-gray-50/50 dark:border-gray-800/30
+            className={`w-full flex items-center gap-3 px-4 py-4 transition-all duration-200 relative
                 ${expanded ? 'bg-white dark:bg-[#111117]' : 'bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e]'}
                 ${!noToggle ? 'cursor-pointer' : 'cursor-default'}
             `}
@@ -1031,6 +1076,10 @@ const SectionHeader = ({ title, expanded, count, onClick, noToggle }) => {
                     size={16}
                     className={`text-gray-400 dark:text-gray-500 transition-transform duration-300 shrink-0 ${expanded ? 'rotate-90 text-amber-600' : ''}`}
                 />
+            )}
+
+            {!expanded && (
+                <div className="absolute bottom-0 left-4 right-4 h-px bg-gray-100 dark:bg-gray-800/60" />
             )}
         </button>
     );
@@ -1091,16 +1140,16 @@ const ProblemRow = ({ problem, active, indent, onClick }) => {
                     <CheckCircle size={14} className="text-green-500 dark:text-green-500/80 fill-green-50 dark:fill-[#064e3b]/20" />
                 ) : (
                     problem.type === 'video' ? <VideoIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
-                    (problem.type === 'material' || problem.type === 'article') ? <FileText size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
-                    problem.type === 'quiz' ? <HelpCircle size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
-                    (problem.type === 'practical' || problem.type === 'assignment' || problem.type === 'FULLSTACK_MERN') ? <TerminalIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
-                    <Code2 size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} />
+                        (problem.type === 'material' || problem.type === 'article') ? <FileText size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
+                            problem.type === 'quiz' ? <HelpCircle size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
+                                (problem.type === 'practical' || problem.type === 'assignment' || problem.type === 'FULLSTACK_MERN') ? <TerminalIcon size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} /> :
+                                    <Code2 size={14} className={active ? "text-amber-600 dark:text-amber-500" : "text-gray-400"} />
                 )}
             </div>
 
             <span className={`flex-1 text-[12px] truncate leading-normal transition-colors
-                ${problem.isSolved 
-                    ? (active ? 'font-bold text-green-600 dark:text-green-500' : 'font-medium text-green-600 dark:text-green-600/80 group-hover:text-green-600 dark:group-hover:text-green-500/90') 
+                ${problem.isSolved
+                    ? (active ? 'font-bold text-green-600 dark:text-green-500' : 'font-medium text-green-600 dark:text-green-600/80 group-hover:text-green-600 dark:group-hover:text-green-500/90')
                     : (active ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300')}
             `}>
                 {problem.title}
@@ -1167,4 +1216,4 @@ const ContestRow = ({ contest, active, indent, onClick }) => {
     );
 };
 
-export default ProblemSidebar;
+export default memo(ProblemSidebar);

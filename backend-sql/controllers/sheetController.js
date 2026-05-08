@@ -14,7 +14,7 @@ const sheetController = {
     }
   },
 
-  // Get sheet by ID
+  // Get sheet by ID or Slug
   getSheetById: async (req, res, next) => {
     try {
       const { sheetId } = req.params;
@@ -49,9 +49,14 @@ const sheetController = {
   updateSheet: async (req, res, next) => {
     try {
       const { sheetId } = req.params;
-      const { name, description } = req.body;
-      const sheet = await Sheet.update(sheetId, { name, description });
-      res.json(sheet);
+      const { name, description, slug } = req.body;
+      
+      // Resolve ID if slug is passed
+      const sheet = await Sheet.findById(sheetId);
+      if (!sheet) return res.status(404).json({ message: 'Sheet not found' });
+
+      const updated = await Sheet.update(sheet.id, { name, description, slug });
+      res.json(updated);
     } catch (error) {
       next(error);
     }
@@ -61,7 +66,10 @@ const sheetController = {
   deleteSheet: async (req, res, next) => {
     try {
       const { sheetId } = req.params;
-      await Sheet.delete(sheetId);
+      const sheet = await Sheet.findById(sheetId);
+      if (!sheet) return res.status(404).json({ message: 'Sheet not found' });
+
+      await Sheet.delete(sheet.id);
       res.json({ message: 'Sheet deleted successfully' });
     } catch (error) {
       next(error);
@@ -73,7 +81,11 @@ const sheetController = {
     try {
       const { sheetId } = req.params;
       const { name, description, order } = req.body;
-      const section = await Sheet.addSection(sheetId, { name, description, order });
+      
+      const sheet = await Sheet.findById(sheetId);
+      if (!sheet) return res.status(404).json({ message: 'Sheet not found' });
+
+      const section = await Sheet.addSection(sheet.id, { name, description, order });
       res.status(201).json(section);
     } catch (error) {
       next(error);
@@ -310,7 +322,10 @@ const sheetController = {
   getUserSheetProgress: async (req, res, next) => {
     try {
       const { sheetId } = req.params;
-      const progress = await SheetProgress.findByUserAndSheet(req.user.userId, sheetId);
+      const sheet = await Sheet.findById(sheetId);
+      if (!sheet) return res.status(404).json({ message: 'Sheet not found' });
+
+      const progress = await SheetProgress.findByUserAndSheet(req.user.userId, sheet.id);
       res.json(progress);
     } catch (error) {
       next(error);

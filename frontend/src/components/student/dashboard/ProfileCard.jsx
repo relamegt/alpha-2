@@ -9,22 +9,22 @@ const ProfileCard = ({ user, updateUser }) => {
     const profilePic = user.profile?.profilePicture || `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`;
 
     return (
-        <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center text-center transition-all">
+        <div className="bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col items-center text-center transition-all">
             <div className="relative mb-4">
                 <img
                     src={profilePic}
                     alt={displayName}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-lg dark:shadow-none"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-900 shadow-lg dark:shadow-none"
                 />
-                <div className="absolute bottom-0 right-0 bg-green-500 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800"></div>
+                <div className="absolute bottom-0 right-0 bg-green-500 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900"></div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{displayName}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{displayName}</h2>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">{handle}</p>
 
             {/* Visibility Toggle */}
             <div className="flex items-center justify-center gap-2 mt-2 mb-2">
-                <span className={`text-xs font-bold transition-colors ${user.isPublicProfile === false ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'}`}>Private</span>
+                <span className={`text-xs font-bold transition-colors ${user.isPublicProfile === false ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>Private</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                     <input
                         type="checkbox"
@@ -62,7 +62,7 @@ const ProfileCard = ({ user, updateUser }) => {
                 <span className={`text-xs font-bold transition-colors ${user.isPublicProfile !== false ? 'text-emerald-500 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'}`}>Public</span>
             </div>
 
-            <div className="w-full border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+            <div className="w-full border-t border-gray-100 dark:border-gray-800 pt-4 mt-2">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-left">
                         <span className="text-gray-400 dark:text-gray-500 block text-xs uppercase tracking-wider font-semibold">Roll Number</span>

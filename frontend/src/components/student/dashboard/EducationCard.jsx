@@ -2,7 +2,7 @@ import React from 'react';
 
 const EducationCard = ({ education }) => {
     return (
-        <div className="bg-[#F1F3F4] dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mt-4 transition-all">
+        <div className="bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mt-4 transition-all">
             <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-wider">
                 Recent Education
             </h3>
@@ -12,7 +12,7 @@ const EducationCard = ({ education }) => {
                     🎓
                 </div>
                 <div>
-                    <h4 className="text-gray-900 dark:text-gray-100 font-bold text-base">
+                    <h4 className="text-gray-900 dark:text-white font-bold text-base">
                         {education?.degree || 'Degree'} ({education?.branch || 'Branch'})
                     </h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">

@@ -48,26 +48,33 @@ import CustomDropdown from '../shared/CustomDropdown';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import EditorialRenderer from './EditorialRenderer';
 
 const MarkdownComponents = {
-    h1: ({ children }) => <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-5 mb-3">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-5 mb-2">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-1.5">{children}</h3>,
-    p: ({ children }) => <p className="text-gray-700 dark:text-gray-300 text-[14px] leading-6 mb-3 whitespace-pre-wrap break-words">{children}</p>,
-    ul: ({ children }) => <ul className="text-gray-700 dark:text-gray-300 text-[14px] list-disc list-outside ml-4 mb-3 space-y-1">{children}</ul>,
-    ol: ({ children }) => <ol className="text-gray-700 dark:text-gray-300 text-[14px] list-decimal list-outside ml-4 mb-3 space-y-1">{children}</ol>,
-    li: ({ children }) => <li className="pl-1 leading-6 break-words dark:text-gray-300">{children}</li>,
-    blockquote: ({ children }) => <blockquote className="border-l-4 border-primary-400 dark:border-gray-500 pl-4 py-1 italic text-gray-500 dark:text-gray-400 my-3 bg-primary-50 dark:bg-[#23232e] rounded-r">{children}</blockquote>,
-    a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">{children}</a>,
-    img: ({ src, alt }) => <img src={src} alt={alt} className="max-w-full rounded-xl border border-gray-100 dark:border-gray-800 my-4 shadow-sm" />,
-    code: ({ inline, className, children }) => {
-        const content = String(children).replace(/\n$/, '');
-        const match = /language-(\w+)/.exec(className || '');
-        if (inline || (!match && !content.includes('\n'))) {
-            return <code className="bg-primary-50 dark:bg-[#23232e] text-primary-700 dark:text-gray-200 px-1 py-0.5 rounded text-sm font-mono break-all">{children}</code>;
-        }
-        return <pre className="my-3 p-3 overflow-x-auto text-sm font-mono text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg">{children}</pre>;
+  hr: (props) => <hr className="border-0 border-t border-[var(--color-border-interactive)] my-6" {...props} />,
+  h1: (props) => <h1 className="text-lg sm:text-xl lg:text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-6 border-b border-gray-100 dark:border-gray-800 pb-2 leading-tight">{props.children}</h1>,
+  h2: (props) => <h2 className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4 leading-tight">{props.children}</h2>,
+  h3: (props) => <h3 className="text-[15px] sm:text-lg lg:text-xl font-semibold text-gray-900 dark:text-white leading-snug mt-6 mb-3 break-words">{props.children}</h3>,
+  p: (props) => <p className="text-gray-700 dark:text-gray-300 text-[15px] sm:text-[15px] lg:text-[16px] leading-7 mb-4 whitespace-pre-wrap break-words">{props.children}</p>,
+  ul: (props) => <ul className="text-gray-700 dark:text-gray-300 text-[13px] sm:text-[15px] lg:text-[16px] list-disc list-outside ml-5 mb-4 space-y-2">{props.children}</ul>,
+  ol: (props) => <ol className="text-gray-700 dark:text-gray-300 text-[13px] sm:text-[15px] lg:text-[16px] list-decimal list-outside ml-5 mb-4 space-y-2">{props.children}</ol>,
+  li: (props) => <li className="pl-1 leading-7 break-words whitespace-pre-wrap">{props.children}</li>,
+  blockquote: (props) => <blockquote className="border-l-4 border-indigo-500 pl-4 pr-3 py-2 italic text-gray-500 dark:text-gray-400 text-[13px] sm:text-[14px] my-5 bg-gray-50 dark:bg-gray-800/30 rounded-r shadow-sm">{props.children}</blockquote>,
+  a: ({ href, ...props }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium transition-colors break-all">{props.children}</a>,
+  table: (props) => <div className="my-6 w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"><table className="w-full text-sm border-collapse text-left" {...props} /></div>,
+  thead: (props) => <thead className="bg-gray-50 dark:bg-zinc-900/50 text-gray-900 dark:text-gray-100" {...props} />,
+  tr: (props) => <tr className="border-t border-gray-100 dark:border-gray-800 even:bg-gray-50/50 dark:even:bg-zinc-900/20" {...props} />,
+  tbody: (props) => <tbody className="bg-transparent" {...props} />,
+  th: (props) => <th className="px-4 py-3 font-bold border-r border-indigo-100 dark:border-indigo-900/30 last:border-r-0 text-[12px] uppercase tracking-wider">{props.children}</th>,
+  td: (props) => <td className="px-4 py-3 border-r border-gray-100 dark:border-gray-800 last:border-r-0 align-top text-gray-700 dark:text-gray-300 text-[14px] leading-relaxed">{props.children}</td>,
+  code: ({ inline, className, children }) => {
+    const content = String(children).replace(/\n$/, '');
+    const isMultiLine = content.includes('\n');
+    if (inline || !isMultiLine) {
+      return <code className="bg-gray-100 dark:bg-gray-800/50 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded text-[12px] sm:text-[13px] font-mono border border-gray-200/50 dark:border-gray-700/50 inline break-all whitespace-normal">{children}</code>;
     }
+    return <div className="my-5 rounded-xl overflow-hidden bg-gray-900 dark:bg-[#0c0c0e] border border-gray-800 shadow-xl"><div className="p-4 sm:p-5 overflow-x-auto text-[12px] sm:text-[13px] font-mono text-gray-300 leading-relaxed">{children}</div></div>;
+  }
 };
 
 /* —"—"—" Helpers —"—"—" */
@@ -1874,7 +1881,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                         width: showSidebar ? `${sidebarW}%` : `${COLLAPSED_SIDEBAR_WIDTH}px`,
                         transition: isResizing ? 'none' : 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
                     }}
-                    className={`flex flex-col shrink-0 border-r border-gray-200 dark:border-gray-800 bg-[#F1F3F4] dark:bg-[#111117] z-[200] transition-transform duration-300 ease-in-out ${isMobile && !showSidebar ? '-translate-x-full' : 'translate-x-0'}`}
+                    className={`flex flex-col shrink-0 border-r border-gray-200 dark:border-gray-800 bg-[var(--color-bg-sidebar)] dark:bg-[#111117] z-[260] transition-transform duration-300 ease-in-out ${isMobile && !showSidebar ? '-translate-x-full' : 'translate-x-0'}`}
                 >
                     <div className="flex-1 overflow-hidden flex flex-col relative h-full">
                         {/* ── Collapsed CONTENT Label ── */}
@@ -1980,7 +1987,7 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                     {/* Toggle tab — vertically centered on right edge */}
                     <button
                         onClick={(e) => { e.stopPropagation(); setShowSidebar(!showSidebar); }}
-                        className={`absolute -right-[12px] top-1/2 -translate-y-1/2 z-50 w-[12px] h-12 bg-[#F1F3F4] dark:bg-[#111117] border border-l-0 border-[var(--color-border-interactive)] rounded-r-md shadow-sm flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors`}
+                        className={`absolute -right-[12px] top-1/2 -translate-y-1/2 z-[300] w-[12px] h-12 bg-[#F1F3F4] dark:bg-[#111117] border border-l-0 border-[var(--color-border-interactive)] rounded-r-md shadow-sm flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors`}
                         title={showSidebar ? 'Close Problem List' : 'Open Problem List'}
                     >
                         <div className="flex flex-col items-center justify-center gap-0.5 opacity-60 group-hover:opacity-100">
@@ -2028,72 +2035,12 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
 
                         {selectedProblem ? (
                             showEditorial ? (
-                                <div className="prose prose-sm max-w-none font-problem">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-6 font-sans">{selectedProblem.title} - Editorial</h2>
-
-                                    {(!selectedProblem.editorial || (!selectedProblem.editorial.approach && !selectedProblem.editorial.complexity && !selectedProblem.editorial.solution)) ? (
-                                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                                            <div className="w-16 h-16 bg-gray-50 dark:bg-[#111117] rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-gray-700">
-                                                <BookOpen className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                                            </div>
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">No Editorial Available</h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                                                The editorial for this problem has not been published yet. Try solving it on your own or discuss with your peers!
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <>
-
-                                            {selectedProblem.editorial.approach && (
-                                                <div className="mb-8">
-                                                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                        <span className="w-1.5 h-6 bg-purple-500 rounded-full" />
-                                                        Approach
-                                                    </h3>
-                                                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedProblem.editorial.approach }} />
-                                                </div>
-                                            )}
-
-                                            {selectedProblem.editorial.complexity && (
-                                                <div className="mb-8">
-                                                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                        <span className="w-1.5 h-6 bg-purple-500 rounded-full" />
-                                                        Complexity
-                                                    </h3>
-                                                    <div className="bg-gray-50 dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-300 transition-colors">
-                                                        <div dangerouslySetInnerHTML={{ __html: selectedProblem.editorial.complexity }} />
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {selectedProblem.editorial.solution && (
-                                                <div>
-                                                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                        <span className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                                                        Solution
-                                                    </h3>
-                                                    <div className="relative group">
-                                                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <button
-                                                                onClick={() => {
-                                                                    navigator.clipboard.writeText(selectedProblem.editorial.solution);
-                                                                    toast.success('Solution copied!');
-                                                                }}
-                                                                className="p-1.5 bg-[#F1F3F4] dark:bg-[#111117] shadow-sm border border-gray-100 dark:border-gray-800 rounded-md text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                                                                title="Copy Code"
-                                                            >
-                                                                <Code2 size={14} />
-                                                            </button>
-                                                        </div>
-                                                        <pre className="bg-[#111117] text-gray-100 rounded-xl p-4 overflow-x-auto text-xs font-mono border border-gray-800">
-                                                            <code>{selectedProblem.editorial.solution}</code>
-                                                        </pre>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
+                                <EditorialRenderer 
+                                    problem={selectedProblem}
+                                    isAdmin={false}
+                                    hasViewedEditorial={true}
+                                    isCompact={true}
+                                />
                             ) : (
                                 <div className="space-y-6">
                                     <div>
@@ -2259,24 +2206,36 @@ const ContestInterface = ({ isPractice: isPracticeProp = false }) => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-100 dark:border-gray-800 rounded-lg p-0.5 transition-colors">
+                                <div className="flex items-center bg-gray-100 dark:bg-[#111117] border border-gray-300 dark:border-gray-800 rounded-lg p-0.5 transition-colors">
                                     <button
                                         onClick={handleRun}
                                         disabled={running || isProblemLocked}
-                                        className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-[10px]"
+                                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-[10px] font-bold text-gray-700 dark:text-gray-300 rounded-md hover:bg-white dark:hover:bg-[#23232e] hover:shadow-sm transition-all disabled:opacity-50"
                                         title="Run Code (Ctrl+Enter)"
                                     >
-                                        {running ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
-                                        <span>Run</span>
+                                        {running ? (
+                                            <Loader2 size={12} className="animate-spin" />
+                                        ) : (
+                                            <Play size={10} className="fill-current" />
+                                        )}
+                                        <span className="hidden min-[450px]:inline-block sm:inline-block">
+                                            Run
+                                        </span>
                                     </button>
                                     <button
                                         onClick={handleSubmit}
                                         disabled={submitting || isProblemLocked || (contestSubmitted && !isPractice)}
-                                        className="btn-primary flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px]"
+                                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 ml-0.5 text-[10px] font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-md shadow-sm transition-all disabled:opacity-50"
                                         title={isPractice ? 'Verify Code' : 'Submit Code'}
                                     >
-                                        {submitting ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-                                        <span>{isPractice ? 'Verify' : 'Submit'}</span>
+                                        {submitting ? (
+                                            <Loader2 size={12} className="animate-spin" />
+                                        ) : (
+                                            <CheckCircle size={12} />
+                                        )}
+                                        <span className="hidden min-[450px]:inline-block sm:inline-block">
+                                            {isPractice ? 'Verify' : 'Submit'}
+                                        </span>
                                     </button>
                                 </div>
                             </div>

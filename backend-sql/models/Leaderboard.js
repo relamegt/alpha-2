@@ -24,7 +24,7 @@ class Leaderboard {
       create: {
         studentId,
         batchId: leaderboardData.batchId || null,
-        rollNumber: leaderboardData.rollNumber || 'N/A',
+        rollNumber: leaderboardData.rollNumber || '',
         username: leaderboardData.username || 'Unknown',
         alphaCoins,
         externalScores,
@@ -33,7 +33,7 @@ class Leaderboard {
       },
       update: {
         batchId: leaderboardData.batchId || null,
-        rollNumber: leaderboardData.rollNumber || 'N/A',
+        rollNumber: leaderboardData.rollNumber || '',
         username: leaderboardData.username || 'Unknown',
         alphaCoins,
         externalScores,
@@ -62,8 +62,26 @@ class Leaderboard {
 
   // Get batch leaderboard with ranks
   static async getBatchLeaderboard(batchId) {
+    // Join with User table to ensure students actually belong to the batch and exist
     const leaderboard = await prisma.leaderboard.findMany({
-      where: { batchId },
+      where: { 
+        batchId,
+        student: {
+          role: 'student',
+          isActive: true
+        }
+      },
+      include: {
+        student: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            education: true,
+            rollNumber: true
+          }
+        }
+      },
       orderBy: { overallScore: 'desc' },
       take: 10000
     });
@@ -82,7 +100,7 @@ class Leaderboard {
     const entry = await this.findByStudent(studentId);
     if (!entry) return;
 
-    const externalTotal = Object.values(entry.externalScores || {}).reduce((a, b) => a + b, 0);
+    const externalTotal = Object.values(entry.externalScores || {}).reduce((acc, val) => acc + (val || 0), 0);
     const newOverallScore = score + externalTotal;
 
     const result = await prisma.leaderboard.update({
@@ -112,34 +130,34 @@ class Leaderboard {
     try {
       const user = await prisma.user.findUnique({
           where: { id: studentId },
-          include: { externalProfiles: true }
+          include: { externalProfiles: true, education: true }
       });
       if (!user || user.role !== 'student') return null;
 
       // 1. Practice Score (Submissions for non-contest content)
       const practiceSubmissions = await prisma.submission.findMany({
           where: { studentId, verdict: 'Accepted' },
-          select: { problemId: true, sqlProblemId: true, videoId: true, quizId: true, articleId: true },
+          select: { problemId: true, sqlProblemId: true, quizId: true, videoId: true, articleId: true },
       });
 
       let practiceScore = 0;
       if (practiceSubmissions.length > 0) {
-          // Extract unique IDs of each type
           const problemIds = [...new Set(practiceSubmissions.map(s => s.problemId).filter(Boolean))];
           const sqlProblemIds = [...new Set(practiceSubmissions.map(s => s.sqlProblemId).filter(Boolean))];
           const quizIds = [...new Set(practiceSubmissions.map(s => s.quizId).filter(Boolean))];
           const videoIds = [...new Set(practiceSubmissions.map(s => s.videoId).filter(Boolean))];
           const articleIds = [...new Set(practiceSubmissions.map(s => s.articleId).filter(Boolean))];
 
-          // Fetch points for allowed content types (Problems, SQL, Quizzes)
-          const [problems, sqlProblems, quizzes] = await Promise.all([
+          const [problems, sqlProblems, quizzes, videos, articles] = await Promise.all([
               problemIds.length > 0 ? prisma.problem.findMany({ where: { id: { in: problemIds } }, select: { points: true } }) : [],
               sqlProblemIds.length > 0 ? prisma.sqlProblem.findMany({ where: { id: { in: sqlProblemIds } }, select: { points: true } }) : [],
               quizIds.length > 0 ? prisma.quiz.findMany({ where: { id: { in: quizIds } }, select: { points: true } }) : [],
+              videoIds.length > 0 ? prisma.video.findMany({ where: { id: { in: videoIds } }, select: { points: true } }) : [],
+              articleIds.length > 0 ? prisma.article.findMany({ where: { id: { in: articleIds } }, select: { points: true } }) : [],
           ]);
 
           const sumPoints = (list) => list.reduce((acc, curr) => acc + (curr.points || 0), 0);
-          practiceScore = sumPoints(problems) + sumPoints(sqlProblems) + sumPoints(quizzes);
+          practiceScore = sumPoints(problems) + sumPoints(sqlProblems) + sumPoints(quizzes) + sumPoints(videos) + sumPoints(articles);
       }
 
       // 2. Contest Score (Standard Contests)
@@ -167,7 +185,7 @@ class Leaderboard {
           }
       }
 
-      // 3. Course Contest Score (New!)
+      // 3. Course Contest Score
       const courseContestSubmissions = await prisma.courseContestSubmission.findMany({
           where: { studentId, verdict: 'Accepted', isFinalSubmission: true },
           select: { score: true }
@@ -197,8 +215,9 @@ class Leaderboard {
 
       return await this.upsertByStudent({
           studentId,
-          rollNumber: user.education?.rollNumber || 'N/A',
-          username: user.email.split('@')[0],
+          // ONLINE students don't have roll numbers, so we skip it to satisfy privacy/parity
+          rollNumber: user.studentType === 'ONLINE' ? '' : (user.rollNumber || user.education?.rollNumber || ''),
+          username: user.username || user.email.split('@')[0],
           alphaCoins,
           externalScores,
           batchId: user.batchId
@@ -208,37 +227,92 @@ class Leaderboard {
     }
   }
 
+  /**
+   * REBUILD-1 FIX: Sync the entire Redis global leaderboard ZSET from PostgreSQL.
+   * This clears stale "zombie" ranks from students who were deleted or deactivated.
+   */
+  static async rebuildGlobalZSet() {
+    console.warn('🔄 Rebuilding global leaderboard ZSET from PostgreSQL...');
+    const redis = require('../config/redis').getRedis();
+    const GLOBAL_RANK_KEY = 'leaderboard:global';
+    
+    // 1. Get all active students with their leaderboard entries
+    const students = await prisma.leaderboard.findMany({
+      where: {
+        student: {
+          role: 'student',
+          isActive: true
+        }
+      },
+      select: {
+        studentId: true,
+        overallScore: true
+      }
+    });
+
+    if (students.length === 0) {
+      await redis.del(GLOBAL_RANK_KEY);
+      return;
+    }
+
+    // 2. Atomic rebuild: use a temp key then rename to avoid race conditions
+    const tempKey = `${GLOBAL_RANK_KEY}:temp:${Date.now()}`;
+    const pipeline = redis.pipeline();
+    
+    students.forEach(s => {
+      pipeline.zadd(tempKey, s.overallScore, s.studentId);
+    });
+    
+    pipeline.rename(tempKey, GLOBAL_RANK_KEY);
+    await pipeline.exec();
+    console.log(`✅ Global leaderboard ZSET rebuilt with ${students.length} students.`);
+  }
+
   // Get student rank
   static async getStudentRank(studentId) {
     const entry = await this.findByStudent(studentId);
     if (!entry) return null;
 
-    const redis = getRedis();
+    // Fix: If student has no batch, return null for batchRank to avoid confusing counts
+    const hasBatch = !!entry.batchId;
 
-    const [batchRankCount, batchTotal, redisGlobalRank] = await Promise.all([
-      prisma.leaderboard.count({
+    const [batchRankCount, batchTotal] = await Promise.all([
+      hasBatch ? prisma.leaderboard.count({
         where: {
           batchId: entry.batchId,
-          overallScore: { gt: entry.overallScore }
+          overallScore: { gt: entry.overallScore },
+          student: { 
+            role: 'student',
+            isActive: true
+          }
         }
-      }),
-      prisma.leaderboard.count({ where: { batchId: entry.batchId } }),
-      redis.zrevrank(GLOBAL_RANK_KEY, studentId)
+      }) : Promise.resolve(null),
+      hasBatch ? prisma.leaderboard.count({ 
+        where: { 
+          batchId: entry.batchId,
+          student: { 
+            role: 'student',
+            isActive: true
+          }
+        } 
+      }) : Promise.resolve(null)
     ]);
 
-    let globalRank;
-    if (redisGlobalRank !== null) {
-      globalRank = redisGlobalRank + 1;
-    } else {
-      globalRank = await prisma.leaderboard.count({
-          where: { overallScore: { gt: entry.overallScore } }
-      }) + 1;
-    }
+    // Use database count to ensure 100% accuracy and filter by active student role
+    const globalRank = await prisma.leaderboard.count({
+        where: { 
+          overallScore: { gt: entry.overallScore },
+          student: { 
+            role: 'student',
+            isActive: true
+          }
+        }
+    }) + 1;
 
     return {
-      batchRank: batchRankCount + 1,
+      batchRank: hasBatch ? batchRankCount + 1 : null,
       globalRank,
-      totalStudents: batchTotal,
+      totalStudents: hasBatch ? batchTotal : null,
       score: entry.overallScore,
       details: entry
     };
@@ -246,9 +320,65 @@ class Leaderboard {
 
   static async getTopPerformers(limit = 10) {
       return await prisma.leaderboard.findMany({
+          where: {
+            student: {
+              role: 'student',
+              isActive: true
+            }
+          },
           orderBy: { overallScore: 'desc' },
           take: limit
       });
+  }
+
+  // Get paged global leaderboard
+  static async getGlobalLeaderboardPaged(page = 1, limit = 20, search = '') {
+      const skip = (page - 1) * limit;
+      const where = {
+          student: {
+              role: 'student',
+              isActive: true,
+              ...(search ? {
+                  OR: [
+                      { firstName: { contains: search, mode: 'insensitive' } },
+                      { lastName: { contains: search, mode: 'insensitive' } },
+                      { username: { contains: search, mode: 'insensitive' } }
+                  ]
+              } : {})
+          }
+      };
+
+      const [total, entries] = await Promise.all([
+          prisma.leaderboard.count({ where }),
+          prisma.leaderboard.findMany({
+              where,
+              include: {
+                  student: {
+                      select: {
+                          firstName: true,
+                          lastName: true,
+                          username: true,
+                          profileImage: true
+                      }
+                  }
+              },
+              orderBy: { overallScore: 'desc' },
+              skip,
+              take: limit
+          })
+      ]);
+
+      return {
+          total,
+          entries: entries.map((entry, index) => ({
+              studentId: entry.studentId,
+              rank: skip + index + 1,
+              name: `${entry.student.firstName || ''} ${entry.student.lastName || ''}`.trim() || entry.username,
+              username: entry.username,
+              score: entry.overallScore,
+              profileImage: entry.student.profileImage
+          }))
+      };
   }
 
   // --- Added Missing Methods for Parity ---
@@ -293,36 +423,18 @@ class Leaderboard {
   static async _getGlobalRanksFromScores(leaderboardData) {
       if (!leaderboardData || leaderboardData.length === 0) return leaderboardData;
       
-      const redis = getRedis();
-      const studentIds = leaderboardData.map(e => e.studentId);
-      
-      try {
-          // Attempt to get ranks from Redis
-          const pipeline = redis.pipeline();
-          studentIds.forEach(id => pipeline.zrevrank(GLOBAL_RANK_KEY, id));
-          const ranks = await pipeline.exec();
-          
-          leaderboardData.forEach((entry, index) => {
-              const redisRank = ranks[index][1];
-              if (redisRank !== null) {
-                  entry.globalRank = redisRank + 1;
-              }
-          });
-          
-          // For any missing ranks, calculate via SQL
-          const missingIds = leaderboardData.filter(e => !e.globalRank).map(e => e.studentId);
-          if (missingIds.length > 0) {
-              for (const entry of leaderboardData) {
-                  if (!entry.globalRank) {
-                      const count = await prisma.leaderboard.count({
-                          where: { overallScore: { gt: entry.overallScore } }
-                      });
-                      entry.globalRank = count + 1;
+      // Enforce DB-based ranking for 100% accuracy and active student role filtering
+      for (const entry of leaderboardData) {
+          const count = await prisma.leaderboard.count({
+              where: { 
+                  overallScore: { gt: entry.overallScore },
+                  student: { 
+                    role: 'student',
+                    isActive: true
                   }
               }
-          }
-      } catch (err) {
-          console.warn('[Leaderboard] Global rank enrichment failed:', err.message);
+          });
+          entry.globalRank = count + 1;
       }
       
       return leaderboardData;

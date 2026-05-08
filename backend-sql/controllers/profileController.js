@@ -47,6 +47,7 @@ const getDashboardData = async (req, res) => {
                         description: c.description,
                         slug: c.slug,
                         thumbnailUrl: c.thumbnailUrl,
+                        enrolledCount: c.enrolledCount,
                         sections: (c.sections || []).map(s => ({
                             id: s.id,
                             _id: s.id,
@@ -98,7 +99,7 @@ const getDashboardData = async (req, res) => {
                 where: { id: { in: cIds } },
                 select: {
                     id: true,
-                    _count: { select: { ratings: true } },
+                    _count: { select: { ratings: true, userBatches: true } },
                     ratings: { select: { rating: true } }
                 }
             });
@@ -109,12 +110,13 @@ const getDashboardData = async (req, res) => {
                 const sum = stat.ratings.reduce((acc, r) => acc + r.rating, 0);
                 statsMap.set(stat.id, {
                     ratingCount: count,
-                    averageRating: count > 0 ? sum / count : 0
+                    averageRating: count > 0 ? sum / count : 0,
+                    enrolledCount: stat._count.userBatches
                 });
             }
 
             assignedCourses = assignedCourses.map(c => {
-                const stats = statsMap.get(c.id) || { ratingCount: 0, averageRating: 0 };
+                const stats = statsMap.get(c.id) || { ratingCount: 0, averageRating: 0, enrolledCount: 0 };
                 return { ...c, ...stats };
             });
         }
@@ -135,7 +137,7 @@ const getDashboardData = async (req, res) => {
         const progress = await Progress.getStatistics(studentId);
 
         // --- Sheets Progress Tracking ---
-        const monthlySheetProgress = await prisma.sheetProgress.findMany({
+        const rawMonthlySheetProgress = await prisma.sheetProgress.findMany({
             where: { 
                 userId: studentId, 
                 completed: true,
@@ -143,6 +145,19 @@ const getDashboardData = async (req, res) => {
             },
             include: { sheetProblem: true }
         });
+
+        // Resolve sheet slugs for each progress entry
+        const uniqueSheetIds = [...new Set(rawMonthlySheetProgress.map(p => p.sheetId))];
+        const sheetsWithSlugs = await prisma.sheet.findMany({
+            where: { id: { in: uniqueSheetIds } },
+            select: { id: true, slug: true }
+        });
+        const sheetSlugMap = new Map(sheetsWithSlugs.map(s => [s.id, s.slug]));
+
+        const monthlySheetProgress = rawMonthlySheetProgress.map(p => ({
+            ...p,
+            sheetSlug: sheetSlugMap.get(p.sheetId)
+        }));
 
         // --- Contests Logic (ONLINE vs OFFLINE) ---
         // 1. Course Contests (Available to all enrolled)
@@ -208,9 +223,7 @@ const getDashboardData = async (req, res) => {
         }
 
         // --- Compute Chart Data & Metrics (Dynamic Range: Week, Month, Year) ---
-        const range = req.query.range || 'month';
-        const chartData = [];
-        const metrics = { quizzes: [], videos: [], problems: [], articles: [] };
+        const rangeData = {};
 
         const allAcceptedSubmissions = await prisma.submission.findMany({
             where: { studentId, verdict: 'Accepted' },
@@ -241,98 +254,197 @@ const getDashboardData = async (req, res) => {
         const endOfToday = new Date();
         endOfToday.setHours(23, 59, 59, 999);
 
-        if (range === 'year') {
-            // Last 12 months aggregation
-            for (let i = 11; i >= 0; i--) {
-                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const monthLabel = date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
-                
-                const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-                const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
-
-                // Cumulative Score at end of month
-                let scoreAtDate = 0;
-                allAcceptedSubmissions.forEach(sub => {
-                    if (new Date(sub.createdAt) <= endOfMonth) {
-                        const id = sub.problemId || sub.sqlProblemId || sub.quizId;
-                        scoreAtDate += pointsMap.get(id) || 10;
+        // Fetch Global Top Performers for Preview
+        const globalTopPerformers = await prisma.leaderboard.findMany({
+            where: {
+                student: {
+                    role: 'student',
+                    isActive: true
+                }
+            },
+            include: {
+                student: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        username: true,
+                        profileImage: true
                     }
+                }
+            },
+            orderBy: { overallScore: 'desc' },
+            take: 10
+        });
+
+        const formattedTopPerformers = globalTopPerformers.map(entry => ({
+            studentId: entry.studentId,
+            name: `${entry.student.firstName || ''} ${entry.student.lastName || ''}`.trim() || entry.username,
+            username: entry.username,
+            score: entry.overallScore,
+            profileImage: entry.student.profileImage
+        }));
+
+        // Fetch Student's Contest Rankings
+        const contestRankings = await prisma.contestSubmission.findMany({
+            where: { studentId },
+            include: {
+                contest: {
+                    select: { title: true, id: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10
+        });
+
+        // Group by contest and find max score/rank for each
+        const groupedRankings = [];
+        const contestMap = new Map();
+
+        for (const sub of contestRankings) {
+            if (!contestMap.has(sub.contestId)) {
+                // For rank, we'd ideally have a precomputed rank or compute it here
+                // For now, let's just get the score.
+                contestMap.set(sub.contestId, {
+                    id: sub.contestId,
+                    title: sub.contest.title,
+                    score: sub.score || 0,
+                    rank: 'N/A' // Ranks usually require a separate query or pre-computation
                 });
-
-                chartData.push({ 
-                    name: monthLabel, 
-                    score: scoreAtDate,
-                    rank: (i === 0 && leaderboardStats) ? leaderboardStats.globalRank : 0,
-                    fullDate: endOfMonth.toISOString()
-                });
-
-                // Monthly activity counts
-                const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
-                progressRecords.forEach(rec => {
-                    const recDate = new Date(rec.lastAttemptAt);
-                    if (recDate >= startOfMonth && recDate <= endOfMonth) {
-                        if (rec.contentType === 'quiz') counts.quizzes++;
-                        else if (rec.contentType === 'video') counts.videos++;
-                        else if (rec.contentType === 'problem') counts.problems++;
-                        else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
-                    }
-                });
-
-                metrics.quizzes.push({ name: monthLabel, count: counts.quizzes });
-                metrics.videos.push({ name: monthLabel, count: counts.videos });
-                metrics.problems.push({ name: monthLabel, count: counts.problems });
-                metrics.articles.push({ name: monthLabel, count: counts.articles });
-            }
-        } else {
-            // Daily aggregation for week/month
-            const daysToFetch = range === 'week' ? 7 : 30;
-            const oneDayMs = 24 * 60 * 60 * 1000;
-
-            for (let i = daysToFetch - 1; i >= 0; i--) {
-                const date = new Date(today.getTime() - i * oneDayMs);
-                const label = `${date.getDate().toString().padStart(2, '0')} ${date.toLocaleString('en-US', { month: 'short' })}`;
-
-                const endOfDate = new Date(date);
-                endOfDate.setHours(23, 59, 59, 999);
-
-                let scoreAtDate = 0;
-                allAcceptedSubmissions.forEach(sub => {
-                    if (new Date(sub.createdAt) <= endOfDate) {
-                        const id = sub.problemId || sub.sqlProblemId || sub.quizId;
-                        scoreAtDate += pointsMap.get(id) || 10;
-                    }
-                });
-
-                chartData.push({ 
-                    name: label, 
-                    score: scoreAtDate,
-                    rank: (i === 0 && leaderboardStats) ? leaderboardStats.globalRank : 0,
-                    fullDate: date.toISOString()
-                });
-
-                const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
-                progressRecords.forEach(rec => {
-                    const recDate = new Date(rec.lastAttemptAt);
-                    if (recDate.toDateString() === date.toDateString()) {
-                        if (rec.contentType === 'quiz') counts.quizzes++;
-                        else if (rec.contentType === 'video') counts.videos++;
-                        else if (rec.contentType === 'problem') counts.problems++;
-                        else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
-                    }
-                });
-
-                metrics.quizzes.push({ name: label, count: counts.quizzes });
-                metrics.videos.push({ name: label, count: counts.videos });
-                metrics.problems.push({ name: label, count: counts.problems });
-                metrics.articles.push({ name: label, count: counts.articles });
             }
         }
+        const formattedContestRankings = Array.from(contestMap.values());
+        const ranges = ['week', 'month', 'year', 'all'];
+
+        ranges.forEach(range => {
+            const chartData = [];
+            const metrics = { quizzes: [], videos: [], problems: [], articles: [] };
+
+            if (range === 'all') {
+                // For all time, we find the first submission date and divide into ~15 points
+                const firstSub = allAcceptedSubmissions[0];
+                const startDate = firstSub ? new Date(firstSub.createdAt) : new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+                startDate.setHours(0, 0, 0, 0);
+                
+                const diffTime = Math.abs(today - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const interval = Math.max(1, Math.ceil(diffDays / 15));
+
+                for (let i = 0; i <= 15; i++) {
+                    const date = new Date(startDate.getTime() + i * interval * 24 * 60 * 60 * 1000);
+                    if (date > today && i < 15) continue;
+                    const finalDate = date > today ? today : date;
+                    
+                    const label = `${finalDate.getDate().toString().padStart(2, '0')}-${(finalDate.getMonth() + 1).toString().padStart(2, '0')}-${finalDate.getFullYear()}`;
+                    const endOfDate = new Date(finalDate);
+                    endOfDate.setHours(23, 59, 59, 999);
+
+                    let scoreAtDate = 0;
+                    allAcceptedSubmissions.forEach(sub => {
+                        if (new Date(sub.createdAt) <= endOfDate) {
+                            const id = sub.problemId || sub.sqlProblemId || sub.quizId;
+                            scoreAtDate += pointsMap.get(id) || 10;
+                        }
+                    });
+
+                    chartData.push({ 
+                        name: label, 
+                        score: scoreAtDate,
+                        rank: leaderboardStats ? leaderboardStats.globalRank : 0, // Fallback to current rank
+                        fullDate: finalDate.toISOString()
+                    });
+                    
+                    if (finalDate >= today) break;
+                }
+            } else if (range === 'year') {
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                    const monthLabel = date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+                    
+                    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+
+                    let scoreAtDate = 0;
+                    allAcceptedSubmissions.forEach(sub => {
+                        if (new Date(sub.createdAt) <= endOfMonth) {
+                            const id = sub.problemId || sub.sqlProblemId || sub.quizId;
+                            scoreAtDate += pointsMap.get(id) || 10;
+                        }
+                    });
+
+                    chartData.push({ 
+                        name: monthLabel, 
+                        score: scoreAtDate,
+                        rank: leaderboardStats ? leaderboardStats.globalRank : 0,
+                        fullDate: endOfMonth.toISOString()
+                    });
+
+                    const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
+                    progressRecords.forEach(rec => {
+                        const recDate = new Date(rec.lastAttemptAt);
+                        if (recDate >= startOfMonth && recDate <= endOfMonth) {
+                            if (rec.contentType === 'quiz') counts.quizzes++;
+                            else if (rec.contentType === 'video') counts.videos++;
+                            else if (rec.contentType === 'problem') counts.problems++;
+                            else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
+                        }
+                    });
+
+                    metrics.quizzes.push({ name: monthLabel, count: counts.quizzes });
+                    metrics.videos.push({ name: monthLabel, count: counts.videos });
+                    metrics.problems.push({ name: monthLabel, count: counts.problems });
+                    metrics.articles.push({ name: monthLabel, count: counts.articles });
+                }
+            } else {
+                const daysToFetch = range === 'week' ? 7 : 30;
+                const oneDayMs = 24 * 60 * 60 * 1000;
+
+                for (let i = daysToFetch - 1; i >= 0; i--) {
+                    const date = new Date(today.getTime() - i * oneDayMs);
+                    const label = `${date.getDate().toString().padStart(2, '0')} ${date.toLocaleString('en-US', { month: 'short' })}`;
+
+                    const endOfDate = new Date(date);
+                    endOfDate.setHours(23, 59, 59, 999);
+
+                    let scoreAtDate = 0;
+                    allAcceptedSubmissions.forEach(sub => {
+                        if (new Date(sub.createdAt) <= endOfDate) {
+                            const id = sub.problemId || sub.sqlProblemId || sub.quizId;
+                            scoreAtDate += pointsMap.get(id) || 10;
+                        }
+                    });
+
+                    chartData.push({ 
+                        name: label, 
+                        score: scoreAtDate,
+                        rank: leaderboardStats ? leaderboardStats.globalRank : 0,
+                        fullDate: date.toISOString()
+                    });
+
+                    const counts = { quizzes: 0, videos: 0, problems: 0, articles: 0 };
+                    progressRecords.forEach(rec => {
+                        const recDate = new Date(rec.lastAttemptAt);
+                        if (recDate.toDateString() === date.toDateString()) {
+                            if (rec.contentType === 'quiz') counts.quizzes++;
+                            else if (rec.contentType === 'video') counts.videos++;
+                            else if (rec.contentType === 'problem') counts.problems++;
+                            else if (rec.contentType === 'article' || rec.contentType === 'public_article') counts.articles++;
+                        }
+                    });
+
+                    metrics.quizzes.push({ name: label, count: counts.quizzes });
+                    metrics.videos.push({ name: label, count: counts.videos });
+                    metrics.problems.push({ name: label, count: counts.problems });
+                    metrics.articles.push({ name: label, count: counts.articles });
+                }
+            }
+            
+            rangeData[range] = { chartData, metrics };
+        });
 
         if (progress) {
             progress.streakDays = currentStreak;
             progress.maxStreakDays = maxStreak;
-            progress.chartData = chartData;
-            progress.metrics = metrics;
+            progress.rangeData = rangeData;
             progress.activeDateStrings = Array.from(activeDateStrings);
         }
 
@@ -361,7 +473,9 @@ const getDashboardData = async (req, res) => {
                 assignedCourses,
                 monthlySheetProgress,
                 courseContests,
-                internalContests
+                internalContests,
+                globalTopPerformers: formattedTopPerformers,
+                contestRankings: formattedContestRankings
             }
         });
     } catch (error) {

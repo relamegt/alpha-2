@@ -62,12 +62,25 @@ class Problem {
     }
 
     static async findById(idOrSlug) {
+        if (!idOrSlug || idOrSlug === 'undefined' || idOrSlug === 'null') return null;
+
         let problem = null;
-        try {
-            problem = await prisma.problem.findUnique({ where: { id: idOrSlug } });
-        } catch (e) {}
+        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(idOrSlug);
+
+        if (isUUID) {
+            try {
+                problem = await prisma.problem.findUnique({ where: { id: idOrSlug } });
+            } catch (e) {
+                console.error('[Problem.findById] UUID lookup error:', e.message);
+            }
+        }
+
         if (!problem) {
-            problem = await prisma.problem.findUnique({ where: { slug: idOrSlug } });
+            try {
+                problem = await prisma.problem.findUnique({ where: { slug: String(idOrSlug) } });
+            } catch (e) {
+                console.error('[Problem.findById] Slug lookup error:', e.message);
+            }
         }
         return problem;
     }
@@ -136,7 +149,7 @@ class Problem {
         const finalUpdate = {};
         
         // List of JSON fields that might need merging if partial updates are sent
-        const jsonFields = ['constraints', 'edgeCases', 'examples', 'testCases', 'editorial', 'resources', 'solutionCode', 'quizQuestions'];
+        const jsonFields = ['constraints', 'edgeCases', 'examples', 'testCases', 'editorial', 'solutionCode'];
         
         // Initialize holders with existing data
         const jsonHolders = {};
@@ -144,19 +157,22 @@ class Problem {
             jsonHolders[field] = typeof problem[field] === 'object' && problem[field] !== null ? (Array.isArray(problem[field]) ? [...problem[field]] : { ...problem[field] }) : (['editorial', 'solutionCode'].includes(field) ? {} : []);
         });
 
+        // List of fields that exist in the Prisma schema for the Problem model
+        const allowedFields = [
+            'slug', 'title', 'section', 'type', 'points', 'description', 'constraints', 
+            'inputFormat', 'outputFormat', 'edgeCases', 'examples', 'testCases', 
+            'timeComplexity', 'spaceComplexity', 'timeLimit', 'editorial', 
+            'editorialLink', 'videoUrl', 'solutionCode', 'isContestProblem', 
+            'contestId', 'category', 'difficulty'
+        ];
+        
         Object.keys(validData).forEach(key => {
+            if (!allowedFields.includes(key)) return; // Skip fields not in schema
+
             let handled = false;
             
             // Check if key is dot-notation for a JSON field (e.g., 'constraints.0.description')
             for (const field of jsonFields) {
-                if (key.startsWith(`${field}.`)) {
-                    const parts = key.split('.');
-                    // For simplicity, we only handle one level of nesting deeply or replace top-level keys if they are objects
-                    // Standard admin panel usually sends the whole array/object for these, but dot-notation is a fallback
-                    // Here we just map the key to the finalUpdate if it's not a dot-notation Prisma error
-                    handled = false; // Let Prisma error if it's deep dot-notation, but we'll try to prevent it
-                    break;
-                }
                 if (key === field) {
                     finalUpdate[field] = validData[key];
                     handled = true;

@@ -102,9 +102,6 @@ const MyCourses = () => {
                 </div>
 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <button className="p-2.5 rounded-xl bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                        <LayoutList size={20} />
-                    </button>
                     {/* Search Bar */}
                     <div className="relative w-full sm:w-64 group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors z-10" size={16} />
