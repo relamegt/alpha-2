@@ -101,6 +101,7 @@
         background-color: var(--color-bg-primary);
         color: var(--color-text-primary);
         font-family: 'Outfit', sans-serif;
+        transition: padding-top 0.25s ease;
     }
 
     /* Global override to remove all bold styles as requested */

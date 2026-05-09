@@ -115,6 +115,7 @@ class User {
             include: {
                 batch: true,
                 externalProfiles: true,
+                planInstance: true,
                 userBatches: {
                     include: {
                         batch: true

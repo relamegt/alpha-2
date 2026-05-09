@@ -6,6 +6,7 @@ const { adminOnly } = require('../middleware/roleGuard');
 
 // Public/Student routes
 router.post('/validate', protect, couponController.validateCoupon);
+router.get('/available-promos', protect, couponController.getAvailablePromoCodes);
 
 // Admin routes
 router.get('/', protect, adminOnly, couponController.getAllCoupons);

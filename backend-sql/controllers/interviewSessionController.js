@@ -27,6 +27,27 @@ function serializeSession(row) {
 exports.createSession = async (req, res) => {
     try {
         const studentId = req.user.userId;
+
+        // Fetch user's current plan and usage
+        const user = await prisma.user.findUnique({
+            where: { id: studentId },
+            include: { planInstance: true }
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const limit = user.planInstance?.aiInterviewsLimit || 0;
+        const used = user.dailyAiInterviewsUsed || 0;
+
+        if (used >= limit) {
+            return res.status(403).json({
+                success: false,
+                message: `You have reached your daily limit of ${limit} AI interview sessions. Please upgrade your plan for more sessions.`
+            });
+        }
+
         const {
             companyName = '',
             website = '',
@@ -39,22 +60,31 @@ exports.createSession = async (req, res) => {
             resumeText = '',
         } = req.body || {};
 
-        const row = await prisma.interviewSession.create({
-            data: {
-                studentId,
-                companyName: companyName || null,
-                website: website || null,
-                jobDescription: jobDescription || null,
-                interviewType: String(interviewType),
-                difficulty: String(difficulty),
-                plannedDuration: Math.min(120, Math.max(5, Number(plannedDuration) || 30)),
-                voiceName: voiceName || 'Puck',
-                resumeUrl: resumeUrl || null,
-                resumeText: resumeText || null,
-                status: 'pending',
-                transcript: [],
-            },
-        });
+        // Use transaction to ensure both session is created and usage is incremented
+        const [row] = await prisma.$transaction([
+            prisma.interviewSession.create({
+                data: {
+                    studentId,
+                    companyName: companyName || null,
+                    website: website || null,
+                    jobDescription: jobDescription || null,
+                    interviewType: String(interviewType),
+                    difficulty: String(difficulty),
+                    plannedDuration: Math.min(120, Math.max(5, Number(plannedDuration) || 30)),
+                    voiceName: voiceName || 'Puck',
+                    resumeUrl: resumeUrl || null,
+                    resumeText: resumeText || null,
+                    status: 'pending',
+                    transcript: [],
+                },
+            }),
+            prisma.user.update({
+                where: { id: studentId },
+                data: {
+                    dailyAiInterviewsUsed: { increment: 1 }
+                }
+            })
+        ]);
 
         res.status(201).json({ success: true, session: serializeSession(row) });
     } catch (err) {

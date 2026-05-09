@@ -17,15 +17,30 @@ const courseAccessGuard = async (req, res, next) => {
             return next();
         }
 
-        // 0. Check for active subscription with allCourseAccess
-        const userForSub = await prisma.user.findUnique({
+        // 0. Check for active subscription with dynamic plan
+        const userWithPlan = await prisma.user.findUnique({
             where: { id: userId },
-            select: { plan: true, subscriptionExpiresAt: true }
+            include: { planInstance: true }
         });
 
-        if (userForSub && userForSub.plan !== 'FREE') {
-            if (!userForSub.subscriptionExpiresAt || new Date(userForSub.subscriptionExpiresAt) > new Date()) {
-                // If it's a subscription, all courses are accessible
+        if (userWithPlan && userWithPlan.planInstance && userWithPlan.planInstance.isActive) {
+            const now = new Date();
+            if (!userWithPlan.subscriptionExpiresAt || new Date(userWithPlan.subscriptionExpiresAt) > now) {
+                const plan = userWithPlan.planInstance;
+                if (plan.courseAccess === 'ALL') {
+                    return next();
+                } else if (plan.courseAccess === 'SPECIFIC') {
+                    const linkedCourses = Array.isArray(plan.linkedCourses) ? plan.linkedCourses : [];
+                    if (linkedCourses.includes(finalCourseId)) {
+                        return next();
+                    }
+                }
+            }
+        }
+
+        // Backward compatibility for legacy PlanType enum
+        if (userWithPlan && userWithPlan.plan !== 'FREE' && !userWithPlan.planId) {
+            if (!userWithPlan.subscriptionExpiresAt || new Date(userWithPlan.subscriptionExpiresAt) > new Date()) {
                 return next();
             }
         }

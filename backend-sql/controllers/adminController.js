@@ -797,27 +797,46 @@ const getAllSubscriptions = async (req, res) => {
 
 const assignPlanByEmail = async (req, res) => {
     try {
-        const { email, plan, durationMonths } = req.body;
+        const { email, plan, planId, durationMonths } = req.body;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + (durationMonths || 1));
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                plan,
-                subscriptionExpiresAt: expiryDate
+        let expiryDate = new Date();
+        
+        // If planId is provided, get plan details
+        if (planId) {
+            const planDetails = await prisma.subscriptionPlan.findUnique({ where: { id: planId } });
+            if (!planDetails) {
+                return res.status(404).json({ success: false, message: 'Plan not found' });
             }
-        });
+            expiryDate.setDate(expiryDate.getDate() + (planDetails.durationInDays || 30));
+            
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    planId,
+                    plan: 'PRO', // Set a default high-tier legacy role for backward compatibility
+                    subscriptionExpiresAt: expiryDate
+                }
+            });
+        } else {
+            // Legacy way
+            expiryDate.setMonth(expiryDate.getMonth() + (durationMonths || 1));
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    plan: plan || 'FREE',
+                    subscriptionExpiresAt: expiryDate
+                }
+            });
+        }
 
         res.json({
             success: true,
-            message: `Plan ${plan} assigned to ${email} successfully until ${expiryDate.toLocaleDateString()}`
+            message: `Plan assigned to ${email} successfully until ${expiryDate.toLocaleDateString()}`
         });
     } catch (error) {
         console.error('Assign plan error:', error);

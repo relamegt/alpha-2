@@ -68,11 +68,14 @@ model User {
   interviewExperiences     InterviewExperience[]
 
   plan                     PlanType                   @default(FREE)
+  planId                   String?
+  planInstance             SubscriptionPlan?          @relation("UserPlan", fields: [planId], references: [id])
   subscriptionExpiresAt    DateTime?
   razorpaySubscriptionId   String?
   dailyAiTokensUsed        Int                        @default(0)
   dailyCompilerUsed        Int                        @default(0)
   dailySubmissionsUsed     Int                        @default(0)
+  dailyAiInterviewsUsed    Int                        @default(0)
   lastUsageReset           DateTime                   @default(now())
   
   sessions                 Session[]
@@ -860,6 +863,8 @@ model Coupon {
   isActive        Boolean  @default(true)
   usageLimit      Int?
   usedCount       Int      @default(0)
+  isSaleRelated   Boolean  @default(false)
+  isPromoted      Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -867,20 +872,69 @@ model Coupon {
 }
 
 model SubscriptionOrder {
-  id              String        @id @default(uuid())
+  id              String            @id @default(uuid())
   userId          String
-  planType        PlanType
-  razorpayOrderId String        @unique
+  planType        PlanType?
+  planId          String?
+  razorpayOrderId String            @unique
   amount          Float
-  currency        String        @default("INR")
-  status          PaymentStatus @default(PENDING)
+  currency        String            @default("INR")
+  status          PaymentStatus     @default(PENDING)
   couponCode      String?
-  discountAmount  Float         @default(0)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discountAmount  Float             @default(0)
+  durationInDays  Int?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            SubscriptionPlan? @relation(fields: [planId], references: [id])
 
   @@map("subscription_orders")
+}
+
+model SubscriptionPlan {
+  id               String              @id @default(uuid())
+  name             String
+  price            Float
+  originalPrice    Float?
+  currency         String              @default("INR")
+  durationInDays   Int                 @default(30)
+  description      String?
+  features         Json                @default("[]")
+  excludedFeatures Json                @default("[]")
+  courseAccess     String              @default("ALL")
+  linkedCourses    Json                @default("[]")
+  aiTokensLimit    Int                 @default(0)
+  compilerLimit    Int                 @default(0)
+  submissionsLimit Int                 @default(0)
+  aiInterviewsLimit Int                @default(0)
+  isActive         Boolean             @default(true)
+  isPopular        Boolean             @default(false)
+  gstEnabled       Boolean             @default(false)
+  pricingOptions   Json                @default("[]") // [{duration: 365, price: 5999, label: "12 Months", originalPrice: 9999}, ...]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  users            User[]              @relation("UserPlan")
+  orders           SubscriptionOrder[]
+
+  @@map("subscription_plans")
+}
+
+model SaleBanner {
+  id              String    @id @default(uuid())
+  title           String
+  subtitle        String?
+  couponCode      String?
+  discountText    String?
+  buttonText      String    @default("Upgrade Now")
+  buttonLink      String    @default("/pricing")
+  endTime         DateTime?
+  isActive        Boolean   @default(false)
+  backgroundColor String?   @default("linear-gradient(to right, #6a11cb 0%, #2575fc 100%)")
+  textColor       String?   @default("#ffffff")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("sale_banners")
 }
 
 enum PlanType {
@@ -889,7 +943,6 @@ enum PlanType {
   PLUS
   PRO
 }
-
 
 model InterviewSession {
   id              String   @id @default(cuid())
@@ -920,7 +973,6 @@ model InterviewSession {
   @@index([studentId])
   @@map("interview_sessions")
 }
-
 
 model InterviewExperience {
   id                 String           @id @default(uuid())

@@ -162,6 +162,8 @@ app.use('/api/interview', require('./routes/interview'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/api/coupons', require('./routes/couponRoutes'));
+app.use('/api/plans', require('./routes/planRoutes'));
+app.use('/api/sales', require('./routes/saleRoutes'));
 
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });

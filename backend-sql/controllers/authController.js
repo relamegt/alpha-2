@@ -632,6 +632,11 @@ const getCurrentUser = async (req, res) => {
                 isFirstLogin: user.isFirstLogin || false,
                 isSpotUser: req.user.isSpotUser || false,
                 registeredForContest: user.registeredForContest,
+                planInstance: user.planInstance,
+                dailyAiTokensUsed: user.dailyAiTokensUsed,
+                dailyCompilerUsed: user.dailyCompilerUsed,
+                dailySubmissionsUsed: user.dailySubmissionsUsed,
+                dailyAiInterviewsUsed: user.dailyAiInterviewsUsed,
                 createdAt: user.createdAt,
                 lastLogin: user.lastLogin
             }

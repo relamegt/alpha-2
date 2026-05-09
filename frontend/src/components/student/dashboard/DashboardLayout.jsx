@@ -5,6 +5,7 @@ import { Bell, Search, ChevronRight, Zap, LayoutDashboard, BookOpen, FileText, C
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import NotificationDropdown from './NotificationDropdown';
+import SaleBanner from '../../shared/SaleBanner';
 
 const SEARCHABLE_PAGES = [
     { name: 'Dashboard Home', path: '/home', icon: LayoutDashboard, category: 'Main' },
@@ -92,6 +93,7 @@ const DashboardLayout = () => {
 
             {/* Main Content Area */}
             <div className={`flex-1 flex flex-col transition-all duration-300 bg-[var(--color-bg-primary)] ${isCollapsed ? 'ml-20' : 'ml-20 lg:ml-64'}`}>
+                <SaleBanner />
                 {/* Minimal Top Header */}
                 <header className="h-16 flex items-center justify-between px-8 border-b border-gray-100 dark:border-gray-800 bg-[var(--color-bg-primary)] sticky top-0 z-30">
                     <div className="flex items-center gap-4">

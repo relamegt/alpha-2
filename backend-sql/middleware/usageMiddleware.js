@@ -9,10 +9,12 @@ const checkLimit = async (userId, type, tokensRequested = 1000) => {
         where: { id: userId },
         select: {
             plan: true,
+            planId: true,
             subscriptionExpiresAt: true,
             dailyAiTokensUsed: true,
             dailyCompilerUsed: true,
             dailySubmissionsUsed: true,
+            dailyAiInterviewsUsed: true,
             lastUsageReset: true
         }
     });
@@ -29,12 +31,14 @@ const checkLimit = async (userId, type, tokensRequested = 1000) => {
                 dailyAiTokensUsed: 0,
                 dailyCompilerUsed: 0,
                 dailySubmissionsUsed: 0,
+                dailyAiInterviewsUsed: 0,
                 lastUsageReset: now
             }
         });
         user.dailyAiTokensUsed = 0;
         user.dailyCompilerUsed = 0;
         user.dailySubmissionsUsed = 0;
+        user.dailyAiInterviewsUsed = 0;
     }
 
     // 2. Determine active plan (check for expiry)
@@ -42,13 +46,42 @@ const checkLimit = async (userId, type, tokensRequested = 1000) => {
     if (currentPlan !== 'FREE' && user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) < now) {
         await prisma.user.update({
             where: { id: userId },
-            data: { plan: 'FREE' }
+            data: { plan: 'FREE', planId: null }
         });
         currentPlan = 'FREE';
+        user.planId = null;
     }
 
-    const planConfig = PLANS[currentPlan];
-    const limits = planConfig.features;
+    // 3. Fetch limits from DB (SubscriptionPlan)
+    let limits = {
+        aiTokensPerDay: 5000,
+        compilerPerDay: 20,
+        submissionsPerDay: 20
+    };
+
+    if (user.planId) {
+        const plan = await prisma.subscriptionPlan.findUnique({
+            where: { id: user.planId }
+        });
+        if (plan) {
+            limits = {
+                aiTokensPerDay: plan.aiTokensLimit || 5000,
+                compilerPerDay: plan.compilerLimit || 20,
+                submissionsPerDay: plan.submissionsLimit || 20,
+                aiInterviewsPerDay: plan.aiInterviewsLimit || 0
+            };
+        }
+    } else {
+        // Fallback for default PlanType if planId is missing but plan string is set
+        const PLAN_FALLBACKS = {
+            FREE: { aiTokensPerDay: 5000, compilerPerDay: 20, submissionsPerDay: 20, aiInterviewsPerDay: 0 },
+            BASIC: { aiTokensPerDay: 25000, compilerPerDay: 50, submissionsPerDay: 50, aiInterviewsPerDay: 2 },
+            PLUS: { aiTokensPerDay: 50000, compilerPerDay: 100, submissionsPerDay: 100, aiInterviewsPerDay: 5 },
+            PRO: { aiTokensPerDay: 75000, compilerPerDay: 300, submissionsPerDay: 300, aiInterviewsPerDay: 10 }
+        };
+        const fallback = PLAN_FALLBACKS[currentPlan] || PLAN_FALLBACKS.FREE;
+        limits = fallback;
+    }
 
     if (type === 'ai') {
         if (user.dailyAiTokensUsed + tokensRequested > limits.aiTokensPerDay) {

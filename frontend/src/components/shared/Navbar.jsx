@@ -5,6 +5,7 @@ import ThemeToggle from './ThemeToggle';
 import toast from 'react-hot-toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import profileService from '../../services/profileService';
+import SaleBanner from './SaleBanner';
 
 const NavItem = ({ link, isDark, setIsMenuOpen }) => {
     const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
@@ -101,7 +102,14 @@ const Navbar = () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [assignedCourses, setAssignedCourses] = useState([]);
+    const [bannerHeight, setBannerHeight] = useState(0);
     const menuRef = useRef(null);
+    const navRef = useRef(null);
+
+    // Only add padding for the EXTRA banner height — pages already handle navbar spacing
+    useEffect(() => {
+        document.body.style.paddingTop = bannerHeight > 0 ? `${bannerHeight}px` : '';
+    }, [bannerHeight]);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -139,32 +147,35 @@ const Navbar = () => {
 
     if (!user) {
         return (
-            <nav className="bg-white/70 dark:bg-[#0B0B0F]/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50 fixed top-0 left-0 right-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
-                                <img
-                                    src="/alphalogo.png"
-                                    alt="AlphaKnowledge"
-                                    className="h-6 sm:h-8 w-auto object-contain"
-                                />
-                                <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">AlphaKnowledge</span>
-                            </Link>
-                        </div>
-                        <div className="hidden md:flex items-center gap-8">
-                            <Link to="/courses" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Courses</Link>
-                            <Link to="/articles-list" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Articles</Link>
-                            <Link to="/pricing" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pricing</Link>
-                        </div>
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <ThemeToggle size="sm" />
-                            <Link to="/login" className="btn-secondary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Log In</Link>
-                            <Link to="/signup" className="btn-primary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Get Started</Link>
+            <div className="fixed top-0 left-0 right-0 z-50">
+                <SaleBanner onHeightChange={setBannerHeight} />
+                <nav ref={navRef} className="bg-white/70 dark:bg-[#0B0B0F]/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center gap-2">
+                                <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
+                                    <img
+                                        src="/alphalogo.png"
+                                        alt="AlphaKnowledge"
+                                        className="h-6 sm:h-8 w-auto object-contain"
+                                    />
+                                    <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">AlphaKnowledge</span>
+                                </Link>
+                            </div>
+                            <div className="hidden md:flex items-center gap-8">
+                                <Link to="/courses" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Courses</Link>
+                                <Link to="/articles-list" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Articles</Link>
+                                <Link to="/pricing" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pricing</Link>
+                            </div>
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <ThemeToggle size="sm" />
+                                <Link to="/login" className="btn-secondary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Log In</Link>
+                                <Link to="/signup" className="btn-primary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Get Started</Link>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </nav>
+                </nav>
+            </div>
         );
     }
 
@@ -280,7 +291,9 @@ const Navbar = () => {
 
 
     return (
-        <nav className="bg-[#F1F3F4] dark:bg-[#111117] border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
+        <div className="fixed top-0 left-0 right-0 z-50">
+            <SaleBanner onHeightChange={setBannerHeight} />
+            <nav ref={navRef} className="bg-[#F1F3F4] dark:bg-[#111117] border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo (Left side) */}
@@ -367,7 +380,8 @@ const Navbar = () => {
                 </div>
             </div>
         </nav>
-    );
+    </div>
+);
 };
 
 export default Navbar;

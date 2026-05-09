@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Zap, Terminal, Code2, AlertCircle, TrendingUp, Cpu } from 'lucide-react';
+import { Zap, Terminal, Code2, AlertCircle, TrendingUp, Cpu, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Cookies from 'js-cookie';
 
@@ -52,6 +52,7 @@ const AiUsageSettings = () => {
         aiTokens: details?.features?.aiTokensPerDay || 5000,
         compiler: details?.features?.compilerPerDay || 20,
         submissions: details?.features?.submissionsPerDay || 20,
+        aiInterviews: details?.aiInterviewsLimit || 0
     };
 
     const usageCards = [
@@ -81,6 +82,15 @@ const AiUsageSettings = () => {
             icon: Code2,
             color: 'purple',
             desc: 'Problem submissions and evaluation runs.'
+        },
+        {
+            title: 'AI Mock Interviews',
+            value: usage.aiInterviews,
+            limit: limits.aiInterviews,
+            unit: 'Sessions',
+            icon: Users,
+            color: 'blue',
+            desc: 'Participate in AI-powered mock interview sessions.'
         }
     ];
 
@@ -120,7 +130,7 @@ const AiUsageSettings = () => {
                                 </div>
                                 <div className="text-right">
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{card.value.toLocaleString()}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Used Today</p>
+                                    <p className="text-[10px] font-bold text-gray-400">Used Today</p>
                                 </div>
                             </div>
 
@@ -128,7 +138,7 @@ const AiUsageSettings = () => {
                             <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed mb-4">{card.desc}</p>
 
                             <div className="space-y-2">
-                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
+                                <div className="flex items-center justify-between text-[10px] font-bold">
                                     <span className="text-gray-400">Progress</span>
                                     <span className={textClass}>{Math.round(percentage)}%</span>
                                 </div>

@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import NotificationDropdown from '../student/dashboard/NotificationDropdown';
+import SaleBanner from '../shared/SaleBanner';
 
 const ADMIN_SEARCHABLE_PAGES = [
     { name: 'Dashboard', path: '/home', icon: LayoutDashboard, category: 'Main' },
@@ -24,7 +25,9 @@ const ADMIN_SEARCHABLE_PAGES = [
     { name: 'Editorial Creator', path: '/editorial-creator', icon: FileText, category: 'Tools' },
     { name: 'Job Manager', path: '/jobs', icon: Briefcase, category: 'Admin' },
     { name: 'Subscriptions', path: '/admin-subscriptions', icon: CreditCard, category: 'Finance' },
+    { name: 'Plans Management', path: '/admin-plans', icon: Layers, category: 'Finance' },
     { name: 'Coupons', path: '/coupons', icon: Tag, category: 'Finance' },
+    { name: 'Sales & Banners', path: '/sales-banners', icon: Zap, category: 'Finance' },
 ];
 
 const AdminSidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, isHeader }) => {
@@ -164,7 +167,9 @@ const AdminLayout = () => {
             icon: Shield,
             subItems: [
                 { label: "Subscriptions", to: "/admin-subscriptions" },
-                { label: "Coupon Codes", to: "/coupons" }
+                { label: "Plans Management", to: "/admin-plans" },
+                { label: "Coupon Codes", to: "/coupons" },
+                { label: "Sales & Banners", to: "/sales-banners" }
             ]
         },
         {
@@ -293,6 +298,7 @@ const AdminLayout = () => {
 
             {/* Main Content Area */}
             <div className={`flex-1 flex flex-col transition-all duration-300 bg-[var(--color-bg-primary)] ${isCollapsed ? 'ml-20' : 'ml-20 lg:ml-64'}`}>
+                <SaleBanner />
                 {/* Header */}
                 <header className="h-16 flex items-center justify-between px-8 border-b border-gray-100 dark:border-gray-800 bg-[var(--color-bg-primary)] sticky top-0 z-30">
                     <div className="flex items-center gap-4">

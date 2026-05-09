@@ -3,9 +3,10 @@ const prisma = require('../config/db');
 exports.validateCoupon = async (req, res, next) => {
     try {
         const { code, amount } = req.body;
+        const normalizedCode = (code || "").trim().toUpperCase();
         
         const coupon = await prisma.coupon.findUnique({
-            where: { code }
+            where: { code: normalizedCode }
         });
 
         if (!coupon) {
@@ -53,7 +54,7 @@ exports.validateCoupon = async (req, res, next) => {
 // Admin only
 exports.createCoupon = async (req, res, next) => {
     try {
-        const { code, discountPercent, discountAmount, minPurchase, expiryDate, usageLimit, isActive } = req.body;
+        const { code, discountPercent, discountAmount, minPurchase, expiryDate, usageLimit, isActive, isSaleRelated, isPromoted } = req.body;
 
         const coupon = await prisma.coupon.create({
             data: {
@@ -63,7 +64,9 @@ exports.createCoupon = async (req, res, next) => {
                 minPurchase: minPurchase || 0,
                 expiryDate: new Date(expiryDate),
                 usageLimit: usageLimit || null,
-                isActive: isActive !== undefined ? isActive : true
+                isActive: isActive !== undefined ? isActive : true,
+                isSaleRelated: isSaleRelated || false,
+                isPromoted: isPromoted || false
             }
         });
 
@@ -76,7 +79,7 @@ exports.createCoupon = async (req, res, next) => {
 exports.updateCoupon = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { code, discountPercent, discountAmount, minPurchase, expiryDate, usageLimit, isActive } = req.body;
+        const { code, discountPercent, discountAmount, minPurchase, expiryDate, usageLimit, isActive, isSaleRelated, isPromoted } = req.body;
 
         const coupon = await prisma.coupon.update({
             where: { id },
@@ -87,7 +90,9 @@ exports.updateCoupon = async (req, res, next) => {
                 minPurchase: minPurchase !== undefined ? minPurchase : undefined,
                 expiryDate: expiryDate ? new Date(expiryDate) : undefined,
                 usageLimit: usageLimit !== undefined ? usageLimit : undefined,
-                isActive: isActive !== undefined ? isActive : undefined
+                isActive: isActive !== undefined ? isActive : undefined,
+                isSaleRelated: isSaleRelated !== undefined ? isSaleRelated : undefined,
+                isPromoted: isPromoted !== undefined ? isPromoted : undefined
             }
         });
 
@@ -113,6 +118,38 @@ exports.getAllCoupons = async (req, res, next) => {
             orderBy: { createdAt: 'desc' }
         });
         res.json({ success: true, coupons });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getAvailablePromoCodes = async (req, res, next) => {
+    try {
+        const coupons = await prisma.coupon.findMany({
+            where: {
+                isActive: true,
+                isSaleRelated: true,
+                expiryDate: { gt: new Date() }
+            },
+            select: {
+                code: true,
+                discountPercent: true,
+                discountAmount: true,
+                usageLimit: true,
+                usedCount: true
+            },
+            orderBy: { discountPercent: 'desc' }
+        });
+
+        // Filter out those that exceeded usage limit if limit exists
+        const availableCoupons = coupons.filter(c => !c.usageLimit || c.usedCount < c.usageLimit)
+            .map(c => ({
+                code: c.code,
+                discountPercent: c.discountPercent,
+                discountAmount: c.discountAmount
+            }));
+
+        res.json({ success: true, coupons: availableCoupons });
     } catch (error) {
         next(error);
     }

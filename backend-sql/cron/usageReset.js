@@ -15,6 +15,7 @@ const initUsageResetCron = () => {
                     dailyAiTokensUsed: 0,
                     dailyCompilerUsed: 0,
                     dailySubmissionsUsed: 0,
+                    dailyAiInterviewsUsed: 0,
                     lastUsageReset: new Date()
                 }
             });

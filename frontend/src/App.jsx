@@ -75,6 +75,8 @@ import ReportGenerator from './components/admin/ReportGenerator';
 import EditorialCreator from './components/admin/EditorialCreator';
 import CouponManager from './components/admin/CouponManager';
 import SubscriptionManager from './components/admin/SubscriptionManager';
+import PlanManager from './components/admin/PlanManager';
+import SaleManager from './components/admin/SaleManager';
 
 // Instructor Components
 import ProfileReset from './components/instructor/ProfileReset';
@@ -320,6 +322,8 @@ function App() {
                                  <Route path="/editorial-creator" element={<ProtectedRoute allowedRoles={['admin']}><EditorialCreator /></ProtectedRoute>} />
                                  <Route path="/coupons" element={<ProtectedRoute allowedRoles={['admin']}><CouponManager /></ProtectedRoute>} />
                                  <Route path="/admin-subscriptions" element={<ProtectedRoute allowedRoles={['admin']}><SubscriptionManager /></ProtectedRoute>} />
+                                 <Route path="/admin-plans" element={<ProtectedRoute allowedRoles={['admin']}><PlanManager /></ProtectedRoute>} />
+                                 <Route path="/sales-banners" element={<ProtectedRoute allowedRoles={['admin']}><SaleManager /></ProtectedRoute>} />
                                  
                                  {/* Contests */}
                                  <Route path="/contests" element={<RoleSelector student={<ContestList />} admin={<ContestManager />} instructor={<ContestManager />} />} />
