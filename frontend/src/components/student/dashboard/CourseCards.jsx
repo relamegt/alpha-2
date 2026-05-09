@@ -53,7 +53,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Your Courses</h2>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pick up where you left off</p>
                     </div>
-                    <Link to="/dashboard/courses" className="text-sm font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1">
+                    <Link to="/courses" className="text-sm font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1">
                         View All Courses <ChevronRight size={16} />
                     </Link>
                 </div>
@@ -154,7 +154,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                         <button 
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigate(`/dashboard/courses/${course.slug || course._id || course.id}/analytics`);
+                                                navigate(`/courses/${course.slug || course._id || course.id}/analytics`);
                                             }}
                                             className="w-full btn-secondary"
                                         >
@@ -175,7 +175,7 @@ const CourseCards = ({ assignedCourses, problemsSolved = [], hideTitle = false, 
                                         </button>
                                     ) : (
                                         <Link 
-                                            to={`/dashboard/courses/${course.slug || course._id || course.id}`}
+                                            to={`/courses/${course.slug || course._id || course.id}`}
                                             className="w-full btn-primary"
                                         >
                                             Preview

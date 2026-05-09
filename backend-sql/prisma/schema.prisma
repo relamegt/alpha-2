@@ -67,9 +67,39 @@ model User {
   courseRatings            CourseRating[]
   interviewExperiences     InterviewExperience[]
 
+  plan                     PlanType                   @default(FREE)
+  subscriptionExpiresAt    DateTime?
+  razorpaySubscriptionId   String?
+  dailyAiTokensUsed        Int                        @default(0)
+  dailyCompilerUsed        Int                        @default(0)
+  dailySubmissionsUsed     Int                        @default(0)
+  lastUsageReset           DateTime                   @default(now())
+  
+  sessions                 Session[]
+  subscriptionOrders       SubscriptionOrder[]
+  usedCoupons              Json                       @default("[]")
+
   @@index([batchId])
   @@index([role])
   @@map("users")
+}
+
+model Session {
+  id                String   @id @default(uuid())
+  userId            String
+  tokenVersion      Int      @default(0)
+  deviceFingerprint String?
+  userAgent         String?
+  browser           String?
+  os                String?
+  ipAddress         String?
+  location          String?
+  lastActive        DateTime @default(now())
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
 }
 
 model Batch {
@@ -818,6 +848,46 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountPercent Float    @default(0)
+  discountAmount  Float?
+  minPurchase     Float    @default(0)
+  expiryDate      DateTime
+  isActive        Boolean  @default(true)
+  usageLimit      Int?
+  usedCount       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+model SubscriptionOrder {
+  id              String        @id @default(uuid())
+  userId          String
+  planType        PlanType
+  razorpayOrderId String        @unique
+  amount          Float
+  currency        String        @default("INR")
+  status          PaymentStatus @default(PENDING)
+  couponCode      String?
+  discountAmount  Float         @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscription_orders")
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PLUS
+  PRO
 }
 
 

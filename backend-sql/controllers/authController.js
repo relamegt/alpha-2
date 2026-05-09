@@ -4,6 +4,8 @@ const User = require('../models/User');
 const crypto = require('crypto');
 const { getRedis } = require('../config/redis');
 const { OAuth2Client } = require('google-auth-library');
+const UAParser = require('ua-parser-js');
+const prisma = require('../config/db');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -73,22 +75,43 @@ const login = async (req, res) => {
             });
         }
 
-        // Invalidate all previous sessions by incrementing token version
-        const updatedUser = await User.incrementTokenVersion(user.id);
-        const tokenVersion = updatedUser.tokenVersion || 0;
+        const tokenVersion = user.tokenVersion || 0;
 
-        // Bust Redis auth cache so old cached tokenVersion is not served
-        try { await getRedis().del(`user:auth:${user.id.toString()}`); } catch (e) { }
+        // Generate session record
+        const userAgent = req.headers['user-agent'] || '';
+        const parser = new UAParser(userAgent);
+        const uaResults = parser.getResult();
+        const ip = req.ip || req.connection?.remoteAddress || 'unknown';
 
-        // Generate tokens with version
+        const session = await prisma.session.create({
+            data: {
+                userId: user.id.toString(),
+                tokenVersion: tokenVersion,
+                deviceFingerprint: generateFingerprint(req),
+                userAgent,
+                browser: uaResults.browser.name || 'Unknown',
+                os: uaResults.os.name || 'Unknown',
+                ipAddress: ip,
+                location: null,
+            }
+        });
+
+        // Generate tokens with version and sessionId
         const accessToken = jwt.sign(
-            { userId: user.id.toString(), email: user.email, role: user.role, studentType: user.studentType || 'ONLINE', tokenVersion },
+            { 
+                userId: user.id.toString(), 
+                email: user.email, 
+                role: user.role, 
+                studentType: user.studentType || 'ONLINE', 
+                tokenVersion,
+                sessionId: session.id 
+            },
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '24h' }
         );
 
         const refreshToken = jwt.sign(
-            { userId: user.id.toString(), tokenVersion },
+            { userId: user.id.toString(), tokenVersion, sessionId: session.id },
             process.env.JWT_REFRESH_SECRET,
             { expiresIn: '7d' }
         );
@@ -240,22 +263,43 @@ const googleLogin = async (req, res) => {
             });
         }
 
-        // Invalidate all previous sessions by incrementing token version
-        const updatedUser = await User.incrementTokenVersion(user.id);
-        const tokenVersion = updatedUser.tokenVersion || 0;
+        const tokenVersion = user.tokenVersion || 0;
 
-        // Bust Redis auth cache
-        try { await getRedis().del(`user:auth:${user.id.toString()}`); } catch (e) { }
+        // Generate session record
+        const userAgent = req.headers['user-agent'] || '';
+        const parser = new UAParser(userAgent);
+        const uaResults = parser.getResult();
+        const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+
+        const session = await prisma.session.create({
+            data: {
+                userId: user.id.toString(),
+                tokenVersion: tokenVersion,
+                deviceFingerprint: generateFingerprint(req),
+                userAgent,
+                browser: uaResults.browser.name || 'Unknown',
+                os: uaResults.os.name || 'Unknown',
+                ipAddress: ip,
+                location: null,
+            }
+        });
 
         // Generate tokens
         const accessToken = jwt.sign(
-            { userId: user.id.toString(), email: user.email, role: user.role, studentType: user.studentType || 'ONLINE', tokenVersion },
+            { 
+                userId: user.id.toString(), 
+                email: user.email, 
+                role: user.role, 
+                studentType: user.studentType || 'ONLINE', 
+                tokenVersion,
+                sessionId: session.id
+            },
             process.env.JWT_ACCESS_SECRET,
             { expiresIn: '24h' }
         );
 
         const refreshToken = jwt.sign(
-            { userId: user.id.toString(), tokenVersion },
+            { userId: user.id.toString(), tokenVersion, sessionId: session.id },
             process.env.JWT_REFRESH_SECRET,
             { expiresIn: '7d' }
         );
@@ -523,14 +567,23 @@ const refreshToken = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const userId = req.user.userId;
-        // Increment version to invalidate all tokens for this user
-        await User.incrementTokenVersion(userId);
+        const sessionId = req.user.sessionId;
 
-        // Bust Redis auth cache so the next request doesn't get the old cached version
+        // Delete specific session if sessionId is available
+        if (sessionId) {
+            await prisma.session.deleteMany({
+                where: { id: sessionId, userId }
+            });
+        } else {
+            // Fallback: Clear all sessions for this user (old behavior)
+            await prisma.session.deleteMany({
+                where: { userId }
+            });
+            await User.incrementTokenVersion(userId);
+        }
+
+        // Bust Redis auth cache
         try { await getRedis().del(`user:auth:${userId}`); } catch (e) { }
-
-        // Also clear legacy session fields if present (cleanup)
-        await User.clearSession(userId);
 
         res.json({ success: true, message: 'Logged out successfully' });
     } catch (error) {
@@ -659,18 +712,9 @@ const forgotPassword = async (req, res) => {
         const redis = getRedis();
 
         // BUG #15 FIX: Check if a valid OTP already exists before generating a new one.
-        // Previously, each call unconditionally overwrote the OTP in Redis, allowing rapid-fire
-        // requests to keep generating fresh OTPs and invalidating the previous one (denial-of-service
-        // against the reset flow). Also the IP-based rate limiter was in-memory (Bug #14), meaning
-        // it could be bypassed across server instances.
-        // Fix 1: If an OTP already exists and was issued within the last 60 seconds, reuse it
-        //         and don't send a new one (idempotent within the quiet period).
-        // Fix 2: Email-based Redis key as an additional distributed rate limiter.
         const emailRateLimitKey = `ratelimit:otp:email:${email}`;
         const recentRequest = await redis.get(emailRateLimitKey);
         if (recentRequest) {
-            // An OTP was already requested for this email within the last 60 seconds.
-            // Return success without generating a new OTP (idempotent).
             return res.json({
                 success: true,
                 message: 'If the email exists, an OTP has been sent'
@@ -688,8 +732,6 @@ const forgotPassword = async (req, res) => {
 
         // Send OTP via email
         await sendOTP(email, otp);
-
-        // Auto-delete handled by Redis TTL (no setTimeout needed)
 
         res.json({
             success: true,
@@ -720,8 +762,6 @@ const resetPassword = async (req, res) => {
                 message: 'Invalid or expired OTP'
             });
         }
-
-        // OTP is valid (Redis TTL already ensures 10-minute expiry — no extra timestamp check needed)
 
         // Find user
         const user = await User.findByEmail(email);
@@ -761,9 +801,6 @@ const resetPassword = async (req, res) => {
 // Verify session
 const verifySession = async (req, res) => {
     try {
-        // BUG #17 FIX: verifyToken middleware already fetched the user (with Redis caching)
-        // and validated isActive + tokenVersion. We can use req.cachedAuthUser directly
-        // instead of making another DB call. Fall back to DB only if not cached.
         const user = req.cachedAuthUser || await User.findById(req.user.userId);
         if (!user || !user.isActive) {
             return res.status(401).json({
@@ -777,9 +814,9 @@ const verifySession = async (req, res) => {
             message: 'Session is valid',
             user: {
                 id: user.id,
-                email: req.user.email, // from token (already validated)
+                email: req.user.email,
                 username: user.username,
-                role: req.user.role   // from token (already validated)
+                role: req.user.role
             }
         });
     } catch (error) {
@@ -801,6 +838,62 @@ module.exports = {
     forgotPassword,
     resetPassword,
     verifySession,
+    getSessions: async (req, res) => {
+        try {
+            const userId = req.user.userId;
+            const sessionId = req.user.sessionId;
+
+            let sessions = await prisma.session.findMany({
+                where: { userId },
+                orderBy: { lastActive: 'desc' }
+            });
+
+            // If the current request's session is not in the list (legacy token or missing record)
+            const currentSessionExists = sessions.find(s => s.id === sessionId);
+            
+            if (!currentSessionExists) {
+                // Create a record for this "legacy" or "missing" session
+                const userAgent = req.headers['user-agent'] || '';
+                const parser = new UAParser(userAgent);
+                const uaResults = parser.getResult();
+                const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+
+                try {
+                    const newSession = await prisma.session.create({
+                        data: {
+                            userId,
+                            tokenVersion: 0, 
+                            deviceFingerprint: 'legacy-session',
+                            userAgent,
+                            browser: uaResults.browser.name || 'Unknown',
+                            os: uaResults.os.name || 'Unknown',
+                            ipAddress: ip,
+                            location: null,
+                        }
+                    });
+                    sessions = [newSession, ...sessions];
+                } catch (createErr) {
+                    console.error('Failed to create legacy session record:', createErr);
+                }
+            }
+
+            res.json({ success: true, sessions });
+        } catch (error) {
+            console.error('Get sessions error:', error);
+            res.status(500).json({ success: false, message: 'Failed to fetch sessions' });
+        }
+    },
+    revokeSession: async (req, res) => {
+        try {
+            const { id } = req.params;
+            await prisma.session.delete({
+                where: { id, userId: req.user.userId }
+            });
+            res.json({ success: true, message: 'Session revoked' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: 'Failed to revoke session' });
+        }
+    },
     completeFirstLoginProfile,
     signup,
     googleLogin

@@ -160,6 +160,8 @@ app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/interview-experiences', require('./routes/interviewExperienceRoutes'));
 app.use('/api/interview', require('./routes/interview'));
 app.use('/api/assignments', require('./routes/assignments'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/coupons', require('./routes/couponRoutes'));
 
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -234,10 +236,12 @@ const startServer = async () => {
                 const { startBatchExpiryJob } = require('./cron/batchExpiry');
                 const { startProfileSyncJob } = require('./cron/profileSync');
                 const { startEnrollmentExpiryJob } = require('./cron/enrollmentExpiry');
+                const initUsageResetCron = require('./cron/usageReset');
                 console.warn('⏰ Starting cron jobs...');
                 startBatchExpiryJob();
                 startProfileSyncJob();
                 startEnrollmentExpiryJob();
+                initUsageResetCron();
             } catch (cronErr) {
                 console.warn('⚠️  Cron jobs not available (non-fatal):', cronErr.message);
             }

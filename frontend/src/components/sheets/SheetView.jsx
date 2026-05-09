@@ -121,7 +121,7 @@ const SheetView = () => {
           <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sheet Not Found</h2>
           <p className="text-gray-500 text-sm mb-6">The practice sheet you are looking for does not exist or has been removed.</p>
-          <button onClick={() => navigate('/dashboard/sheets')} className="px-6 py-2 bg-primary-600 text-white rounded-xl font-bold text-sm">Go to Sheets</button>
+          <button onClick={() => navigate('/sheets')} className="px-6 py-2 bg-primary-600 text-white rounded-xl font-bold text-sm">Go to Sheets</button>
         </div>
       </div>
     );

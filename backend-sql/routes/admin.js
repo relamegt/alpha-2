@@ -30,10 +30,7 @@ router.delete('/batches/:batchId', adminOnly, adminController.deleteBatch);
 // ============================================
 // USER MANAGEMENT (WITHIN BATCH) ROUTES
 // ============================================
-// Add single user to batch
 router.post('/batches/:batchId/users', adminOnly, adminController.addUserToBatch);
-
-// Bulk add users to batch (CSV upload)
 router.post('/batches/:batchId/users/bulk',
     adminOnly,
     upload.single('file'),
@@ -41,11 +38,7 @@ router.post('/batches/:batchId/users/bulk',
     validateFileUpload,
     adminController.bulkAddUsersToBatch
 );
-
-// Get all users in a batch
 router.get('/batches/:batchId/users', instructorOrAdmin, adminController.getBatchUsers);
-
-// Remove user from batch
 router.delete('/batches/:batchId/users/:userId', adminOnly, adminController.removeUserFromBatch);
 
 // ============================================
@@ -53,14 +46,13 @@ router.delete('/batches/:batchId/users/:userId', adminOnly, adminController.remo
 // ============================================
 router.post('/admins', adminOnly, adminController.createAdminUser);
 router.get('/users', adminOnly, adminController.getAllUsers);
-
-// System analytics and generic user deletion
 router.get('/analytics', adminOnly, adminController.getSystemAnalytics);
 router.delete('/users/:userId', adminOnly, adminController.deleteUser);
 
 // ============================================
-// CONTEST MANAGEMENT ROUTES (ADMIN)
+// SUBSCRIPTION & PLAN MANAGEMENT
 // ============================================
-// ============================================
+router.get('/subscriptions', adminOnly, adminController.getAllSubscriptions);
+router.post('/users/assign-plan', adminOnly, adminController.assignPlanByEmail);
 
 module.exports = router;

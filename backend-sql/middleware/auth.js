@@ -75,7 +75,39 @@ const verifyToken = async (req, res, next) => {
         }
 
 
-        // SINGLE SESSION ENFORCEMENT: Verify Token Version
+        // ATTACH USER INFO
+        req.user = {
+            userId: decoded.userId,
+            email: decoded.email,
+            role: decoded.role,
+            batchId: user.batchId,
+            isSpotUser: decoded.isSpotUser || false,
+            sessionId: decoded.sessionId
+        };
+
+        // MULTI-SESSION VALIDATION: If sessionId is present, verify it still exists
+        if (decoded.sessionId) {
+            const prisma = require('../config/db');
+            const session = await prisma.session.findUnique({
+                where: { id: decoded.sessionId, userId: decoded.userId }
+            });
+
+            if (!session) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Session has been revoked or expired.',
+                    code: 'SESSION_REVOKED'
+                });
+            }
+
+            // Update last active (optionally throttled)
+            await prisma.session.update({
+                where: { id: session.id },
+                data: { lastActive: new Date() }
+            });
+        }
+
+        // SINGLE SESSION ENFORCEMENT: Verify Token Version (Legacy/Password Change)
         if (decoded.tokenVersion !== undefined && user.tokenVersion !== decoded.tokenVersion) {
             return res.status(401).json({
                 success: false,
@@ -83,24 +115,6 @@ const verifyToken = async (req, res, next) => {
                 code: 'SESSION_REPLACED'
             });
         }
-
-        // Backward compatibility: If user has a version > 0 but token has none, invalidate
-        if ((user.tokenVersion > 0) && decoded.tokenVersion === undefined) {
-            return res.status(401).json({
-                success: false,
-                message: 'Session expired (Legacy). Please login again.',
-                code: 'SESSION_REPLACED'
-            });
-        }
-
-        // Attach user info to request
-        req.user = {
-            userId: decoded.userId,
-            email: decoded.email,
-            role: decoded.role,
-            batchId: user.batchId,
-            isSpotUser: decoded.isSpotUser || false
-        };
         // Fix #12: Attach cached user object so requireProfileCompletion avoids a second DB call
         req.cachedAuthUser = user;
 

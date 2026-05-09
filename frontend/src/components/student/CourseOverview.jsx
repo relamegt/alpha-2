@@ -35,6 +35,9 @@ const CourseOverview = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [rating, setRating] = useState(5);
     const [isEnrolling, setIsEnrolling] = useState(false);
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
     const queryClient = useQueryClient();
 
     const { data: allCoursesData, isLoading: allLoading } = useQuery({
@@ -69,9 +72,20 @@ const CourseOverview = () => {
 
     const isEnrolled = useMemo(() => {
         if (user?.role === 'admin' || user?.role === 'instructor') return true;
+        
+        // 1. Individual course enrollment check
         const enrolled = assignedCourseIds.includes(course?._id);
-        console.log('Enrollment check:', { courseId: course?._id, assignedCourseIds, enrolled });
-        return enrolled;
+        if (enrolled) return true;
+
+        // 2. Subscription check
+        if (user?.plan && user?.plan !== 'FREE') {
+            // If subscription is not expired, grant access
+            if (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date()) {
+                return true;
+            }
+        }
+
+        return false;
     }, [user, assignedCourseIds, course]);
 
     const handleEnrollFree = async () => {
@@ -109,7 +123,7 @@ const CourseOverview = () => {
                 return;
             }
 
-            const order = await publicService.createOrder(course._id || course.id);
+            const order = await publicService.createOrder(course._id || course.id, appliedCoupon?.code);
             
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_placeholder',
@@ -185,7 +199,7 @@ const CourseOverview = () => {
     if (!course) {
         return (
             <div className="min-h-screen bg-[var(--color-bg-primary)] p-8">
-                <button onClick={() => navigate('/dashboard/courses')} className="btn-secondary flex items-center gap-2 mb-8 w-max">
+                <button onClick={() => navigate('/courses')} className="btn-secondary flex items-center gap-2 mb-8 w-max">
                     <ArrowLeft size={16} /> Back to Courses
                 </button>
                 <div className="bg-[var(--color-bg-card)] rounded-2xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -371,8 +385,55 @@ const CourseOverview = () => {
                             </div>
 
                             <div className="p-6 space-y-6">
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {course.isPaid ? `₹${course.price || '3,000'}` : 'Free'}
+                                <div className="flex flex-col gap-4">
+                                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {course.isPaid ? (
+                                            <div className="flex flex-col">
+                                                <span className={appliedCoupon ? 'text-sm line-through text-gray-400' : ''}>
+                                                    ₹{course.price?.toLocaleString() || '3,000'}
+                                                </span>
+                                                {appliedCoupon && (
+                                                    <span className="text-green-600 dark:text-green-400">
+                                                        ₹{(course.price - (appliedCoupon.discountType === 'PERCENT' ? (course.price * appliedCoupon.discountValue / 100) : appliedCoupon.discountValue)).toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ) : 'Free'}
+                                    </div>
+                                    
+                                    {!isEnrolled && course.isPaid && (
+                                        <div className="relative group">
+                                            <input
+                                                type="text"
+                                                placeholder="Coupon Code"
+                                                className="w-full pl-4 pr-20 py-2.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl text-xs outline-none focus:border-primary-500 transition-all"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                            />
+                                            <button
+                                                onClick={async () => {
+                                                    setIsValidatingCoupon(true);
+                                                    try {
+                                                        const res = await axios.post(`${API_URL}/coupons/validate`, {
+                                                            code: couponCode,
+                                                            amount: course.price,
+                                                            courseId: course._id || course.id
+                                                        }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                                                        setAppliedCoupon(res.data.coupon);
+                                                        toast.success('Coupon applied!');
+                                                    } catch (err) {
+                                                        toast.error(err.response?.data?.message || 'Invalid coupon');
+                                                    } finally {
+                                                        setIsValidatingCoupon(false);
+                                                    }
+                                                }}
+                                                disabled={isValidatingCoupon || !couponCode}
+                                                className="absolute right-1 top-1 bottom-1 px-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-lg text-[10px] font-bold hover:opacity-90 disabled:opacity-50"
+                                            >
+                                                {isValidatingCoupon ? '...' : 'Apply'}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-3">
@@ -397,11 +458,14 @@ const CourseOverview = () => {
                                         </>
                                     ) : (
                                         <button 
-                                            onClick={course.isPaid ? handlePurchase : handleEnrollFree}
+                                            onClick={(!user || user.plan === 'FREE') && course.isPaid ? handlePurchase : handleEnrollFree}
                                             disabled={isEnrolling}
                                             className="w-full btn-primary disabled:opacity-50"
                                         >
-                                            {isEnrolling ? 'Processing...' : (course.isPaid ? `Buy Now - ₹${course.price}` : 'Enroll Now (Free)')}
+                                            {isEnrolling ? 'Processing...' : 
+                                                (user && user.plan !== 'FREE' && course.isPaid) ? 'Enroll Now (Free with Plan)' :
+                                                (course.isPaid ? `Buy Now - ₹${course.price}` : 'Enroll Now (Free)')
+                                            }
                                         </button>
                                     )}
                                 </div>

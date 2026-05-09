@@ -120,17 +120,17 @@ const InstructorLayout = () => {
     const location = useLocation();
 
     const navItems = [
-        { label: "Dashboard", to: "/instructor/dashboard", icon: LayoutDashboard },
-        { label: "Contests", to: "/instructor/contests", icon: Trophy },
-        { label: "Reports", to: "/instructor/reports", icon: ClipboardList },
-        { label: "Courses", to: "/instructor/courses", icon: BookOpen },
-        { label: "Reset Profile", to: "/instructor/reset-profile", icon: Users },
+        { label: "Dashboard", to: "/home", icon: LayoutDashboard },
+        { label: "Contests", to: "/contests", icon: Trophy },
+        { label: "Reports", to: "/reports", icon: ClipboardList },
+        { label: "Courses", to: "/courses", icon: BookOpen },
+        { label: "Reset Profile", to: "/reset-profile", icon: Users },
         {
             label: "Settings",
             icon: SettingsIcon,
             subItems: [
-                { label: "Personal details", to: "/instructor/settings/personal" },
-                { label: "Change password", to: "/instructor/settings/security" },
+                { label: "Personal details", to: "/settings" },
+                { label: "Change password", to: "/security" },
             ]
         },
     ];
@@ -157,7 +157,7 @@ const InstructorLayout = () => {
                     </button>
                 </div>
                 <div className="flex items-center px-5 py-8 shrink-0">
-                    <Link to="/instructor/dashboard" className="flex items-center gap-2 overflow-hidden">
+                    <Link to="/home" className="flex items-center gap-2 overflow-hidden">
                         <img src="/alphalogo.png" alt="Logo" className="w-10 h-8 shrink-0" />
                         {!isCollapsed && <span className="font-bold text-xl text-gray-900 dark:text-white tracking-tight whitespace-nowrap">AlphaInstructor</span>}
                     </Link>
@@ -215,14 +215,27 @@ const InstructorLayout = () => {
 
             <div className={`flex-1 flex flex-col transition-all duration-300 bg-[var(--color-bg-primary)] ${isCollapsed ? 'ml-20' : 'ml-20 lg:ml-64'}`}>
                 <header className="h-16 flex items-center justify-between px-8 border-b border-gray-100 dark:border-gray-800 bg-[var(--color-bg-primary)] sticky top-0 z-30">
-                    <nav className="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400">
-                        <span className="capitalize">{pathnames[0] || 'Dashboard'}</span>
-                        {pathnames.length > 1 && (
-                            <>
-                                <ChevronRight size={14} />
-                                <span className="text-gray-900 dark:text-white capitalize">{pathnames[pathnames.length - 1]}</span>
-                            </>
-                        )}
+                    <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
+                        {pathnames.map((name, index) => {
+                            const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
+                            const isLast = index === pathnames.length - 1;
+                            // If name is home, show it as Dashboard
+                            const displayName = name === 'home' 
+                                ? 'Dashboard' 
+                                : name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+
+                            return (
+                                <React.Fragment key={name}>
+                                    <ChevronRight size={14} className="text-gray-300" />
+                                    {isLast ? (
+                                        <span className="font-medium text-gray-900 dark:text-white">{displayName}</span>
+                                    ) : (
+                                        <Link to={routeTo} className="hover:text-primary-600 transition-colors">{displayName}</Link>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
                     </nav>
                 </header>
 

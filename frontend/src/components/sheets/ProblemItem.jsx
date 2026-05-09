@@ -147,7 +147,7 @@ const ProblemItem = ({
         <td className="py-2 px-4 text-center">
           {problem.editorialLink ? (
             <button
-              onClick={() => navigate(`/dashboard/editorial/${problem.id}`)}
+              onClick={() => navigate(`/editorial/${problem.id}`)}
               className="p-1.5 rounded-lg text-indigo-500 hover:bg-indigo-500/10 transition-colors"
               title="Editorial"
             >

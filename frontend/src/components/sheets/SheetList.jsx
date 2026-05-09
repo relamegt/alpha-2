@@ -223,7 +223,7 @@ const SheetList = ({ onSheetSelect }) => {
                                 className={`group bg-[var(--color-bg-card)] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 cursor-pointer overflow-hidden flex flex-col relative ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
                                 onClick={() => {
                                     const idOrSlug = sheet.slug || sheet.id;
-                                    onSheetSelect ? onSheetSelect(idOrSlug) : navigate(`/dashboard/sheets/${idOrSlug}`);
+                                    onSheetSelect ? onSheetSelect(idOrSlug) : navigate(`/sheets/${idOrSlug}`);
                                 }}
                             >
                                 {/* Static Ambient Glow - Mimicking CodeTyper effect */}

@@ -242,7 +242,7 @@ const CourseAnalytics = () => {
 
     const handleTabChange = (newTab) => {
         setActiveTab(newTab);
-        navigate(`/dashboard/courses/${courseId}/analytics/${newTab}`, { replace: true });
+        navigate(`/courses/${courseId}/analytics/${newTab}`, { replace: true });
     };
 
     // Fetch Course Analytics Data

@@ -111,7 +111,7 @@ export default function AssignmentsPage() {
                     isDark ? 'bg-[var(--color-bg-card)] hover:bg-[#111111]' : 'bg-[#ededede7] hover:bg-gray-50 shadow-sm hover:shadow-md'
                   }`}
                   style={{ animationDelay: `${idx * 100}ms` }}
-                  onClick={() => navigate(`/dashboard/assignments/${a.id}`)}
+                  onClick={() => navigate(`/assignments/${a.id}`)}
                 >
                   {/* Icon Placeholder */}
                   <div className="w-full md:w-56 h-36 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800/50 flex-shrink-0 flex items-center justify-center text-4xl border border-[var(--color-border-image)]">

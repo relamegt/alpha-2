@@ -23,7 +23,7 @@ import CustomDropdown from '../shared/CustomDropdown';
 import PerformanceHistoryModal from './dashboard/PerformanceHistoryModal';
 
 const Dashboard = () => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [rankRange, setRankRange] = useState('week');
     const [quizMetricsRange, setQuizMetricsRange] = useState('week');
@@ -36,6 +36,12 @@ const Dashboard = () => {
     const { data, isLoading } = useQuery({
         queryKey: ['dashboard'],
         queryFn: async () => {
+            // Refresh user data to get latest usage stats (matching settings page logic)
+            try {
+                await refreshUser();
+            } catch (e) {
+                console.error('Refresh user failed on dashboard mount', e);
+            }
             const response = await profileService.getDashboardData();
             return response.dashboard;
         },
@@ -216,11 +222,88 @@ const Dashboard = () => {
                                 <h4 className="text-sm text-gray-900 dark:text-white font-bold line-clamp-1 leading-tight">{dashboardData?.dailyChallenge?.title || 'Daily Challenge'}</h4>
                                 <div className="flex items-center justify-between mt-2">
                                     <p className="text-[11px] text-amber-500 font-bold">Earn {dashboardData?.dailyChallenge?.coins || 0} coins</p>
-                                    <Link to="/dashboard/compiler" className="text-[11px] text-primary-500 hover:text-white transition-colors font-bold underline underline-offset-2">Solve →</Link>
+                                    <Link to="/compiler" className="text-[11px] text-primary-500 hover:text-white transition-colors font-bold underline underline-offset-2">Solve →</Link>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Plan & Usage Section */}
+                    {user?.role === 'student' && (
+                        <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm animate-in slide-in-from-top-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary-500/10 rounded-2xl text-primary-500">
+                                        <Award size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                            {user.plan || 'FREE'} PLAN
+                                        </h3>
+                                        <p className="text-xs text-gray-500">
+                                            {user.plan === 'FREE' || !user.subscriptionExpiresAt || isNaN(new Date(user.subscriptionExpiresAt).getTime())
+                                                ? 'Upgrade to unlock premium features' 
+                                                : `Valid until ${new Date(user.subscriptionExpiresAt).toLocaleDateString()}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1 max-w-3xl">
+                                    {/* AI Tokens */}
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                                            <span>AI Tokens</span>
+                                            <span>
+                                                {user.dailyAiTokensUsed >= 1000 
+                                                    ? `${Math.round(user.dailyAiTokensUsed / 1000)}K` 
+                                                    : user.dailyAiTokensUsed || 0} / {user.plan === 'PRO' ? '75K' : user.plan === 'PLUS' ? '50K' : user.plan === 'BASIC' ? '25K' : '5K'}
+                                            </span>
+                                        </div>
+                                        <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(59,130,246,0.4)]" 
+                                                style={{ width: `${Math.min(100, ((user.dailyAiTokensUsed || 0) / (user.plan === 'PRO' ? 75000 : user.plan === 'PLUS' ? 50000 : user.plan === 'BASIC' ? 25000 : 5000)) * 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Compiler Usage */}
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                                            <span>Compiler</span>
+                                            <span>{user.dailyCompilerUsed || 0} / {user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20}</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
+                                                style={{ width: `${Math.min(100, ((user.dailyCompilerUsed || 0) / (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20)) * 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Submissions */}
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                                            <span>Submissions</span>
+                                            <span>{user.dailySubmissionsUsed || 0} / {user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20}</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
+                                                style={{ width: `${Math.min(100, ((user.dailySubmissionsUsed || 0) / (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20)) * 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {user.plan === 'FREE' && (
+                                    <Link to="/pricing" className="btn-primary py-2 px-6">
+                                        Upgrade
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Chart & Streak Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
@@ -293,7 +376,7 @@ const Dashboard = () => {
                                     {monthlySheetProgress.map((sheet, idx) => (
                                         <div 
                                             key={idx} 
-                                            onClick={() => navigate(`/dashboard/sheets/${sheet.sheetSlug || sheet.sheetId}`)}
+                                            onClick={() => navigate(`/sheets/${sheet.sheetSlug || sheet.sheetId}`)}
                                             className="flex items-center justify-between p-4 bg-[var(--color-bg-primary)] rounded-2xl border border-gray-100 dark:border-gray-800 cursor-pointer hover:border-primary-500/50 transition-colors group"
                                         >
                                             <div className="flex items-center gap-4">

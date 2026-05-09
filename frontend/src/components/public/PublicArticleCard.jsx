@@ -45,7 +45,7 @@ const PublicArticleCard = ({ article, onToggleSave }) => {
             {/* Content */}
             <div className="flex flex-col flex-grow py-1">
                 <div className="flex justify-between items-start mb-2">
-                    <Link to={`/dashboard/articles/${article.slug}`}>
+                    <Link to={`/articles/${article.slug}`}>
                         <h3 className={`text-xl font-normal leading-tight group-hover:text-primary-500 transition-colors text-gray-900 dark:text-gray-100`}>
                             {article.title}
                         </h3>
@@ -98,7 +98,7 @@ const PublicArticleCard = ({ article, onToggleSave }) => {
                     </div>
 
                     <Link 
-                        to={`/dashboard/articles/${article.slug}`}
+                        to={`/articles/${article.slug}`}
                         className="btn-primary py-2 px-4 text-xs"
                     >
                         Read Article

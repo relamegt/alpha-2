@@ -15,6 +15,8 @@ import PersonalDetails from './PersonalDetails';
 import ProfessionalDetails from './ProfessionalDetails';
 import SecuritySettings from './SecuritySettings';
 import CodingProfiles from './CodingProfiles';
+import SubscriptionSettings from './SubscriptionSettings';
+import AiUsageSettings from './AiUsageSettings';
 import toast from 'react-hot-toast';
 
 const SettingsLayout = () => {
@@ -22,19 +24,19 @@ const SettingsLayout = () => {
     const [activeTab, setActiveTab] = useState('account');
 
     const tabs = [
-        { id: 'account', label: 'Account', icon: User },
-        { id: 'subscription', label: 'Subscription', icon: CreditCard },
-        { id: 'ai-usage', label: 'AI Usage', icon: Zap },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
-        { id: 'referrals', label: 'Referrals', icon: Users },
-        { id: 'sessions', label: 'Sessions', icon: Monitor },
+        { id: 'account', label: 'Account', icon: User, title: 'Account Settings', desc: 'Manage your profile information and professional details.' },
+        { id: 'subscription', label: 'Subscription', icon: CreditCard, title: 'Subscription & Plans', desc: 'Manage your current plan, view billing details and expiry dates.' },
+        { id: 'ai-usage', label: 'AI Usage', icon: Zap, title: 'Daily Usage Limits', desc: 'Monitor your remaining AI tokens, compiler runs and submissions.' },
+        { id: 'sessions', label: 'Security', icon: Monitor, title: 'Security & Sessions', desc: 'Manage your password and monitor active device sessions.' },
     ];
+
+    const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'account':
                 return (
-                    <div className="space-y-8 animate-fade-in">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
                         <PersonalDetails hideHeader={true} />
                         <div className="border-t border-[var(--color-border-interactive)] pt-8">
                             <ProfessionalDetails hideHeader={true} />
@@ -44,17 +46,21 @@ const SettingsLayout = () => {
                         </div>
                     </div>
                 );
+            case 'subscription':
+                return <SubscriptionSettings />;
+            case 'ai-usage':
+                return <AiUsageSettings />;
             case 'sessions':
                 return <SecuritySettings hideHeader={true} />;
             default:
                 return (
                     <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
                         <div className="w-16 h-16 bg-gray-50 dark:bg-[#111117] rounded-2xl flex items-center justify-center text-gray-400 mb-4 border border-gray-100 dark:border-gray-800">
-                            {React.createElement(tabs.find(t => t.id === activeTab)?.icon || User, { size: 32 })}
+                            {React.createElement(activeTabData.icon, { size: 32 })}
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Coming Soon</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
-                            The {tabs.find(t => t.id === activeTab)?.label} management feature is currently under development.
+                            The {activeTabData.label} management feature is currently under development.
                         </p>
                     </div>
                 );
@@ -67,8 +73,8 @@ const SettingsLayout = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                     <div className="page-header-container">
-                        <h1 className="page-header-title">Account</h1>
-                        <p className="page-header-desc">Manage your account information, preferences, and notification settings.</p>
+                        <h1 className="page-header-title">{activeTabData.title}</h1>
+                        <p className="page-header-desc">{activeTabData.desc}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="btn-secondary py-2 px-4">

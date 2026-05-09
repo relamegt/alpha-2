@@ -63,13 +63,9 @@ export const AuthProvider = ({ children }) => {
 
                     switch (response.user.role) {
                         case 'admin':
-                            navigate('/admin/dashboard');
-                            break;
                         case 'instructor':
-                            navigate('/instructor/dashboard');
-                            break;
                         case 'student':
-                            navigate('/student/dashboard');
+                            navigate('/home');
                             break;
                         default:
                             navigate('/');
@@ -109,9 +105,9 @@ export const AuthProvider = ({ children }) => {
                     navigate('/complete-profile');
                 } else {
                     switch (response.user.role) {
-                        case 'admin': navigate('/admin/dashboard'); break;
-                        case 'instructor': navigate('/instructor/dashboard'); break;
-                        case 'student': navigate('/student/dashboard'); break;
+                        case 'admin':
+                        case 'instructor':
+                        case 'student': navigate('/home'); break;
                         default: navigate('/');
                     }
                 }
@@ -200,7 +196,7 @@ export const AuthProvider = ({ children }) => {
 
     const refreshUser = async () => {
         try {
-            const userData = await authService.getCurrentUser();
+            const userData = await authService.getCurrentUser(true);
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
             return userData;

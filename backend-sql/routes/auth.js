@@ -21,6 +21,10 @@ router.get('/me', authController.getCurrentUser);
 router.post('/change-password', validatePasswordChange, authController.changePassword);
 router.get('/verify-session', authController.verifySession);
 
+// Session management
+router.get('/sessions', authController.getSessions);
+router.delete('/sessions/revoke/:id', authController.revokeSession);
+
 // Complete first login profile (only for first-time users)
 router.post('/complete-profile', requireFirstLogin, validateProfileCompletion, authController.completeFirstLoginProfile);
 

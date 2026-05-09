@@ -27,9 +27,9 @@ const publicService = {
         }
     },
 
-    createOrder: async (courseId) => {
+    createOrder: async (courseId, couponCode) => {
         try {
-            const response = await apiClient.post('/enroll/create-order', { courseId });
+            const response = await apiClient.post('/enroll/create-order', { courseId, couponCode });
             return response.data;
         } catch (error) {
             throw error.response?.data || { message: 'Failed to create payment order' };

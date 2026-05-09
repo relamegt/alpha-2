@@ -259,6 +259,36 @@ const authService = {
         }
     },
 
+    // Get active sessions
+    getSessions: async () => {
+        try {
+            const accessToken = Cookies.get('accessToken');
+            const response = await apiClient.get('/auth/sessions', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to fetch sessions' };
+        }
+    },
+
+    // Revoke a session
+    revokeSession: async (sessionId) => {
+        try {
+            const accessToken = Cookies.get('accessToken');
+            const response = await apiClient.delete(`/auth/sessions/revoke/${sessionId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to revoke session' };
+        }
+    },
+
     // Check if user is authenticated
     isAuthenticated: () => {
         return !!Cookies.get('accessToken') || !!Cookies.get('refreshToken');

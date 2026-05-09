@@ -12,13 +12,14 @@ import {
     Download,
     X,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    Zap
 } from 'lucide-react';
 import CustomDropdown from '../../components/shared/CustomDropdown';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const UserManagement = () => {
-    const [viewMode, setViewMode] = useState('batch'); // 'batch' or 'admin'
+    const [viewMode, setViewMode] = useState('batch'); // 'batch', 'admin', or 'subscription'
     const [batches, setBatches] = useState([]);
     const [selectedBatch, setSelectedBatch] = useState('');
     const [users, setUsers] = useState([]);
@@ -42,6 +43,7 @@ const UserManagement = () => {
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
     const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+    const [showAssignPlanModal, setShowAssignPlanModal] = useState(false);
 
     const [uploadMode, setUploadMode] = useState('single'); // 'single' or 'bulk'
 
@@ -57,6 +59,12 @@ const UserManagement = () => {
     const [bulkUploadData, setBulkUploadData] = useState({
         file: null,
         role: 'student',
+    });
+
+    const [planFormData, setPlanFormData] = useState({
+        email: '',
+        planId: 'BASIC',
+        durationMonths: 1
     });
 
     useEffect(() => {
@@ -137,6 +145,22 @@ const UserManagement = () => {
             fetchAdmins();
         } catch (error) {
             toast.error(error.message || 'Failed to create admin');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleAssignPlan = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await adminService.assignPlan(planFormData);
+            toast.success(response.message);
+            setShowAssignPlanModal(false);
+            setPlanFormData({ email: '', planId: 'BASIC', durationMonths: 1 });
+            if (viewMode === 'batch') fetchBatchUsers();
+        } catch (error) {
+            toast.error(error.message || 'Failed to assign plan');
         } finally {
             setIsSubmitting(false);
         }
@@ -259,6 +283,16 @@ const UserManagement = () => {
                             >
                                 <Shield size={16} />
                                 System Admins
+                            </button>
+                            <button
+                                onClick={() => setViewMode('subscription')}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'subscription'
+                                        ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
+                                        : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <Zap size={16} />
+                                Subscriptions
                             </button>
                         </div>
                     </div>
@@ -426,7 +460,7 @@ const UserManagement = () => {
                         </div>
                     )}
                 </div>
-            ) : (
+            ) : viewMode === 'admin' ? (
                 /* Admin Management View */
                 <div className="space-y-6">
                     <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex justify-between items-center">
@@ -515,6 +549,53 @@ const UserManagement = () => {
                             </table>
                         </div>
                     )}
+                </div>
+            ) : (
+                /* Subscription Management View */
+                <div className="space-y-6">
+                    <div className="bg-[var(--color-bg-card)] p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Zap size={120} />
+                        </div>
+                        <div className="relative z-10">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Subscription & Financial Aid</h2>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-2xl">
+                                Manually assign premium plans to students for financial aid, scholarships, or promotional purposes. 
+                                This bypasses payment requirements and grants instant access to all premium features.
+                            </p>
+                            <button
+                                onClick={() => setShowAssignPlanModal(true)}
+                                className="btn-primary mt-8 flex items-center gap-2 px-8 py-3 rounded-2xl shadow-lg shadow-blue-500/20"
+                            >
+                                <Zap size={18} className="fill-current" />
+                                Assign Premium Plan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-blue-50/50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/50">
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 flex items-center justify-center mb-4">
+                                <Users size={20} />
+                            </div>
+                            <h3 className="font-bold text-blue-900 dark:text-blue-200">User Identification</h3>
+                            <p className="text-xs text-blue-700/70 dark:text-blue-400/70 mt-2">Assign plans using registered email addresses. Users will receive limits as per the selected tier.</p>
+                        </div>
+                        <div className="bg-purple-50/50 dark:bg-purple-900/20 p-6 rounded-3xl border border-purple-100 dark:border-purple-900/50">
+                            <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-800 text-purple-600 dark:text-purple-300 flex items-center justify-center mb-4">
+                                <Zap size={20} />
+                            </div>
+                            <h3 className="font-bold text-purple-900 dark:text-purple-200">Instant Activation</h3>
+                            <p className="text-xs text-purple-700/70 dark:text-purple-400/70 mt-2">Limits (AI Tokens, Compiler Runs) are updated immediately. Usage counters are reset upon assignment.</p>
+                        </div>
+                        <div className="bg-emerald-50/50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-900/50">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mb-4">
+                                <Shield size={20} />
+                            </div>
+                            <h3 className="font-bold text-emerald-900 dark:text-emerald-200">Access Control</h3>
+                            <p className="text-xs text-emerald-700/70 dark:text-emerald-400/70 mt-2">Subscribed users gain access to all courses automatically via the platform's global access guard.</p>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -671,8 +752,8 @@ const UserManagement = () => {
                                 </button>
                             </div>
                         </form>
-                        </div>
                     </div>
+                </div>
             )}
 
             {/* Bulk Upload Modal */}
@@ -772,8 +853,83 @@ const UserManagement = () => {
                                 </button>
                             </div>
                         </form>
-                        </div>
                     </div>
+                </div>
+            )}
+
+            {/* Assign Plan Modal */}
+            {showAssignPlanModal && (
+                <div className="modal-backdrop" onClick={() => setShowAssignPlanModal(false)}>
+                    <div className="modal-content p-0" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                                    <Zap size={20} />
+                                </div>
+                                <h2 className="modal-title">Assign Plan</h2>
+                            </div>
+                            <button onClick={() => setShowAssignPlanModal(false)} className="modal-close">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAssignPlan} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="modal-body space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                        User Email <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={planFormData.email}
+                                        onChange={(e) => setPlanFormData({ ...planFormData, email: e.target.value })}
+                                        className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100"
+                                        placeholder="student@example.com"
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            Plan Tier <span className="text-red-500">*</span>
+                                        </label>
+                                        <CustomDropdown
+                                            options={[
+                                                { value: 'BASIC', label: 'Basic Plan' },
+                                                { value: 'PLUS', label: 'Plus Plan' },
+                                                { value: 'PRO', label: 'Pro Plan' },
+                                                { value: 'FREE', label: 'Free Plan' }
+                                            ]}
+                                            value={planFormData.planId}
+                                            onChange={(val) => setPlanFormData({ ...planFormData, planId: val })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            Duration (Months)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={planFormData.durationMonths}
+                                            onChange={(e) => setPlanFormData({ ...planFormData, durationMonths: parseInt(e.target.value) })}
+                                            className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100"
+                                            min="1"
+                                            disabled={planFormData.planId === 'FREE'}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => setShowAssignPlanModal(false)} className="btn-secondary">
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Assigning...' : 'Assign Plan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

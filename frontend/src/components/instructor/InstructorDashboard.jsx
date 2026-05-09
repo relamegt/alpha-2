@@ -77,7 +77,7 @@ const InstructorDashboard = () => {
                 </div>
                 <div className="flex gap-3">
                     <button
-                        onClick={() => navigate('/instructor/contests')}
+                        onClick={() => navigate('/contests')}
                         className="btn-primary flex items-center gap-2"
                     >
                         <Activity size={18} />

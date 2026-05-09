@@ -78,7 +78,7 @@ const InterviewExperienceList = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate(location.pathname.includes('/admin') ? '/admin/interview-experience/submit' : '/dashboard/interview/experience/submit')}
+                    onClick={() => navigate('/interview/experience/submit')}
                     className="btn-primary"
                 >
                     <Plus className="w-4 h-4" />
@@ -178,7 +178,7 @@ const InterviewExperienceList = () => {
             experiences.map((exp) => (
               <div
                 key={exp.id}
-                onClick={() => navigate(location.pathname.includes('/admin') ? `/admin/interview-experience/${exp.id}` : `/dashboard/interview/experience/${exp.id}`)}
+                onClick={() => navigate(`/interview/experience/${exp.id}`)}
                 className={`group p-6 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all duration-200 cursor-pointer flex flex-col relative overflow-hidden ${
                     isDark 
                         ? 'bg-[var(--color-bg-card)] hover:bg-[var(--color-bg-hover)]' 

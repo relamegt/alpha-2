@@ -20,7 +20,7 @@ import announcementService from '../../../services/announcementService';
 import { cn } from '../../../utils/interviewUtils';
 import NotificationDetailModal from './NotificationDetailModal';
 
-const NotificationDropdown = ({ basePath = '/dashboard' }) => {
+const NotificationDropdown = ({ basePath = '' }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unread'
     const [selectedNotification, setSelectedNotification] = useState(null);
@@ -261,7 +261,7 @@ const NotificationDropdown = ({ basePath = '/dashboard' }) => {
                         {/* Footer */}
                         <div className="p-3 border-t border-[var(--color-border-interactive)] flex items-center justify-between bg-gray-50/30 dark:bg-white/[0.01]">
                             <Link 
-                                to={`${basePath}/announcements`}
+                                to={`/announcements`}
                                 onClick={() => setIsOpen(false)}
                                 className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all"
                             >
@@ -269,7 +269,7 @@ const NotificationDropdown = ({ basePath = '/dashboard' }) => {
                                 View All
                             </Link>
                             <Link 
-                                to={basePath === '/admin' ? '/admin/settings/personal' : '/dashboard/settings'}
+                                to={`/settings`}
                                 onClick={() => setIsOpen(false)}
                                 className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all"
                             >

@@ -6,6 +6,7 @@ const { verifyToken, requireProfileCompletion } = require('../middleware/auth');
 const { studentOnly, requireBatch, requireRole } = require('../middleware/roleGuard');
 const { validateSubmission, validateExternalProfile, validateProfileUpdate, validateObjectId } = require('../middleware/validation');
 const { codeExecutionLimiter, profileSyncLimiter } = require('../middleware/rateLimiter');
+const { checkCompilerLimit, checkSubmissionLimit } = require('../middleware/usageMiddleware');
 
 // All routes require authentication
 router.use(verifyToken, requireRole('student', 'instructor', 'admin'));
@@ -38,8 +39,8 @@ router.delete('/external-profiles/:profileId', validateObjectId('profileId'), pr
 router.post('/external-profiles/sync', profileSyncLimiter, requireBatch, profileController.manualSyncProfiles);
 
 // Code submission
-router.post('/code/run', codeExecutionLimiter, validateSubmission, submissionController.runCode);
-router.post('/code/submit', codeExecutionLimiter, validateSubmission, submissionController.submitCode);
+router.post('/code/run', codeExecutionLimiter, checkCompilerLimit, validateSubmission, submissionController.runCode);
+router.post('/code/submit', codeExecutionLimiter, checkSubmissionLimit, validateSubmission, submissionController.submitCode);
 router.post('/code/:problemId/complete', validateObjectId('problemId'), submissionController.markProblemComplete);
 
 // Submissions

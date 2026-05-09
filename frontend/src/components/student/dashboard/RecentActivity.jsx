@@ -23,7 +23,7 @@ const RecentActivity = ({ submissions = [] }) => {
         <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 h-full">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
-                <Link to="/student/dashboard" className="text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-widest">
+                <Link to="/home" className="text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-widest">
                     View All
                 </Link>
             </div>

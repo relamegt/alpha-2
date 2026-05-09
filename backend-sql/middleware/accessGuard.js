@@ -17,11 +17,29 @@ const courseAccessGuard = async (req, res, next) => {
             return next();
         }
 
+        // 0. Check for active subscription with allCourseAccess
+        const userForSub = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { plan: true, subscriptionExpiresAt: true }
+        });
+
+        if (userForSub && userForSub.plan !== 'FREE') {
+            if (!userForSub.subscriptionExpiresAt || new Date(userForSub.subscriptionExpiresAt) > new Date()) {
+                // If it's a subscription, all courses are accessible
+                return next();
+            }
+        }
+
         // 1. Check Offline Batch access
         // We fetch the user's active batches and check if ANY of them are OFFLINE and include this course
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { batchId: true, assignedBatchIds: true }
+            select: { 
+                batchId: true, 
+                assignedBatchIds: true,
+                plan: true,
+                subscriptionExpiresAt: true
+            }
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });

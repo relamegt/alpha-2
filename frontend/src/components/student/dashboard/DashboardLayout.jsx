@@ -7,19 +7,19 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const SEARCHABLE_PAGES = [
-    { name: 'Dashboard Home', path: '/dashboard/home', icon: LayoutDashboard, category: 'Main' },
-    { name: 'My Courses', path: '/dashboard/courses', icon: BookOpen, category: 'Learning' },
-    { name: 'Problem Sheets', path: '/dashboard/sheets', icon: FileText, category: 'Learning' },
-    { name: 'Practical Assignments', path: '/dashboard/assignments', icon: ClipboardList, category: 'Learning' },
-    { name: 'Technical Articles', path: '/dashboard/articles', icon: Book, category: 'Learning' },
-    { name: 'Internal Contests', path: '/dashboard/contests', icon: Trophy, category: 'Practice' },
-    { name: 'AI Interviewer', path: '/dashboard/interview', icon: Zap, category: 'Practice' },
-    { name: 'Quick Compiler', path: '/dashboard/compiler', icon: Terminal, category: 'Practice' },
-    { name: 'Job Portal', path: '/dashboard/jobs', icon: Briefcase, category: 'Practice' },
-    { name: 'Interview Experiences', path: '/dashboard/interview/experience', icon: MessageSquare, category: 'Practice' },
-    { name: 'Announcements', path: '/dashboard/announcements', icon: Bell, category: 'Practice' },
-    { name: 'Leaderboard', path: '/dashboard/leaderboard', icon: Trophy, category: 'Practice' },
-    { name: 'Settings', path: '/dashboard/settings', icon: SettingsIcon, category: 'Account' },
+    { name: 'Dashboard Home', path: '/home', icon: LayoutDashboard, category: 'Main' },
+    { name: 'My Courses', path: '/courses', icon: BookOpen, category: 'Learning' },
+    { name: 'Problem Sheets', path: '/sheets', icon: FileText, category: 'Learning' },
+    { name: 'Practical Assignments', path: '/assignments', icon: ClipboardList, category: 'Learning' },
+    { name: 'Technical Articles', path: '/articles-list', icon: Book, category: 'Learning' },
+    { name: 'Internal Contests', path: '/contests', icon: Trophy, category: 'Practice' },
+    { name: 'AI Interviewer', path: '/interview', icon: Zap, category: 'Practice' },
+    { name: 'Quick Compiler', path: '/compiler', icon: Terminal, category: 'Practice' },
+    { name: 'Job Portal', path: '/jobs', icon: Briefcase, category: 'Practice' },
+    { name: 'Interview Experiences', path: '/interview/experience', icon: MessageSquare, category: 'Practice' },
+    { name: 'Announcements', path: '/announcements', icon: Bell, category: 'Practice' },
+    { name: 'Leaderboard', path: '/leaderboard', icon: Trophy, category: 'Practice' },
+    { name: 'Settings', path: '/settings', icon: SettingsIcon, category: 'Account' },
 ];
 
 const DashboardLayout = () => {
@@ -41,7 +41,7 @@ const DashboardLayout = () => {
     // Pages that should occupy the full space without padding
     const isFullWidthPage = location.pathname.includes('/compiler') ||
         location.pathname.includes('/workspace') ||
-        location.pathname.includes('/dashboard/articles/') ||
+        location.pathname.includes('/articles-list/') ||
         location.pathname.includes('/interview/experience/');
 
     // Filtered Results
@@ -95,17 +95,15 @@ const DashboardLayout = () => {
                 {/* Minimal Top Header */}
                 <header className="h-16 flex items-center justify-between px-8 border-b border-gray-100 dark:border-gray-800 bg-[var(--color-bg-primary)] sticky top-0 z-30">
                     <div className="flex items-center gap-4">
-                        {/* Breadcrumbs */}
-                        <nav className="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400">
-                            <Link to="/dashboard/home" className="hover:text-primary-600 transition-colors font-small">Dashboard</Link>
+                        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
                             {pathnames.map((name, index) => {
-                                // Reconstruct the path properly even after filtering 'dashboard'
-                                const routeTo = `/dashboard/${pathnames.slice(0, index + 1).join('/')}`;
+                                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
                                 const isLast = index === pathnames.length - 1;
-                                const displayName = name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
-
-                                // Skip rendering if the name is 'home' to keep it as just 'Dashboard'
-                                if (name === 'home') return null;
+                                // If name is home, show it as Dashboard
+                                const displayName = name === 'home' 
+                                    ? 'Dashboard' 
+                                    : name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
 
                                 return (
                                     <React.Fragment key={name}>
@@ -113,7 +111,7 @@ const DashboardLayout = () => {
                                         {isLast ? (
                                             <span className="font-medium text-gray-900 dark:text-white">{displayName}</span>
                                         ) : (
-                                            <Link to={routeTo} className="hover:text-primary-600 transition-colors font-medium">{displayName}</Link>
+                                            <Link to={routeTo} className="hover:text-primary-600 transition-colors">{displayName}</Link>
                                         )}
                                     </React.Fragment>
                                 );

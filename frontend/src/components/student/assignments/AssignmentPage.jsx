@@ -71,7 +71,7 @@ export default function AssignmentPage() {
           <Info size={48} className="text-primary-400 mx-auto mb-4" />
           <h1 className="page-header-title">Assignment Not Found</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">The workspace you are looking for might have been moved or deleted.</p>
-          <Link to="/dashboard/assignments" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-600/20">Return to Assignments</Link>
+          <Link to="/assignments" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-600/20">Return to Assignments</Link>
         </div>
       </div>
     );
@@ -88,7 +88,7 @@ export default function AssignmentPage() {
       {/* Top Banner / Header */}
       <header className="shrink-0 pb-6 border-b border-gray-100 dark:border-gray-800">
         <div className="flex flex-col gap-6">
-          <Link to="/dashboard/assignments" className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all font-semibold text-[10px] uppercase tracking-wider group">
+          <Link to="/assignments" className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-all font-semibold text-[10px] uppercase tracking-wider group">
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> BACK TO ASSIGNMENTS
           </Link>
           <div className="space-y-4">

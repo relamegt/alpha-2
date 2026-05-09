@@ -537,7 +537,7 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
     const handleAsk = () => {
         if (!userQuestion.trim()) return toast.error('Please describe what you need help with');
         if (!code?.trim()) return toast.error('No code found to analyze');
-        if (creditsData?.credits !== 'Unlimited' && creditsData?.credits <= 0) return;
+        if (creditsData?.remaining <= 0) return toast.error('Daily AI token limit reached. Upgrade for more!');
         askMutation.mutate({ problemTitle, problemDescription, language, code, userQuestion });
     };
 
@@ -606,16 +606,16 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                     ) : (
                         <>
                             <p className="text-[11px] text-gray-500 dark:text-zinc-500">
-                                <span className="font-bold text-violet-600 dark:text-violet-400">{creditsData?.credits ?? 0}</span>
-                                {creditsData?.credits === 'Unlimited' ? '' : ' / 30 credits'} left
+                                <span className="font-bold text-violet-600 dark:text-violet-400">
+                                    {Math.round(creditsData?.remaining / 1000)}K
+                                </span>
+                                 / {Math.round(creditsData?.limit / 1000)}K tokens left
                             </p>
                             <div className="w-24 h-1 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-violet-500 rounded-full transition-all"
                                     style={{
-                                        width: `${creditsData?.credits === 'Unlimited'
-                                            ? 100
-                                            : ((creditsData?.credits ?? 0) / 30) * 100}%`
+                                        width: `${((creditsData?.remaining ?? 0) / (creditsData?.limit || 5000)) * 100}%`
                                     }}
                                 />
                             </div>
@@ -643,14 +643,20 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                                 <p className="text-[10px] text-gray-400 dark:text-zinc-600 text-right">Ctrl + Enter to submit</p>
                             </div>
 
-                            {creditsData?.credits !== 'Unlimited' && creditsData?.credits <= 0 ? (
+                            {creditsData?.remaining <= 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-6 bg-zinc-800/50 border border-zinc-700 rounded-xl text-center">
                                     <Lock size={28} className="text-zinc-600" />
                                     <div>
-                                        <p className="text-sm font-bold text-zinc-300">Credits exhausted</p>
+                                        <p className="text-sm font-bold text-zinc-300">Daily tokens exhausted</p>
                                         <p className="text-xs text-zinc-500 mt-1">
-                                            Resets {new Date(creditsData?.resetAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            Your limit resets tomorrow. Upgrade for more tokens!
                                         </p>
+                                        <button 
+                                            onClick={() => window.location.href = '/dashboard/pricing'}
+                                            className="mt-4 text-xs text-violet-400 font-bold hover:underline"
+                                        >
+                                            Upgrade Plan →
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
@@ -664,7 +670,7 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                                 </button>
                             )}
                             <p className="text-[10px] text-center text-zinc-600">
-                                1 credit per analysis · {creditsData?.credits === 'Unlimited' ? 'Unlimited' : (creditsData?.credits ?? '—')} remaining
+                                Tokens are used for code analysis · {Math.round(creditsData?.remaining / 1000)}K remaining
                             </p>
                         </motion.div>
                     )}

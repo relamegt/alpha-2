@@ -23,7 +23,19 @@ exports.enrollFree = async (req, res, next) => {
         }
 
         if (course.isPaid) {
-            return res.status(400).json({ message: 'This course is not free' });
+            // Check if user has an active subscription that includes all course access
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { plan: true, subscriptionExpiresAt: true }
+            });
+
+            const hasActiveSubscription = user.plan !== 'FREE' && 
+                                        user.subscriptionExpiresAt && 
+                                        new Date(user.subscriptionExpiresAt) > new Date();
+            
+            if (!hasActiveSubscription) {
+                return res.status(400).json({ message: 'This course is not free. Please purchase or subscribe.' });
+            }
         }
 
         let onlineBatchId = course.onlineBatchId;
@@ -68,7 +80,7 @@ exports.enrollFree = async (req, res, next) => {
 
 exports.createOrder = async (req, res, next) => {
     try {
-        const { courseId } = req.body;
+        const { courseId, couponCode } = req.body;
         const userId = req.user.userId;
 
         if (!courseId) {
@@ -83,8 +95,23 @@ exports.createOrder = async (req, res, next) => {
             return res.status(400).json({ message: 'Invalid course for purchase' });
         }
 
+        let amount = course.price;
+        let discountAmount = 0;
+
+        if (couponCode) {
+            const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } });
+            if (coupon && coupon.isActive && new Date(coupon.expiryDate) > new Date()) {
+                if (coupon.discountPercent) {
+                    discountAmount = (amount * coupon.discountPercent) / 100;
+                } else if (coupon.discountAmount) {
+                    discountAmount = coupon.discountAmount;
+                }
+                amount = Math.max(0, amount - discountAmount);
+            }
+        }
+
         const options = {
-            amount: Math.round(course.price * 100), // Razorpay expects paise
+            amount: Math.round(amount * 100), // Razorpay expects paise
             currency: course.currency || 'INR',
             receipt: `receipt_${Date.now()}_${userId}`,
         };
@@ -97,7 +124,7 @@ exports.createOrder = async (req, res, next) => {
                 userId,
                 courseId: course.id,
                 razorpayOrderId: order.id,
-                amount: course.price,
+                amount: amount,
                 currency: course.currency || 'INR',
                 status: 'PENDING'
             }

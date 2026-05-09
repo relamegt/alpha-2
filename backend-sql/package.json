@@ -57,6 +57,7 @@
     "rate-limit-redis": "^4.3.1",
     "razorpay": "^2.9.6",
     "tsx": "^4.21.0",
+    "ua-parser-js": "^2.0.9",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.20.0"
   },

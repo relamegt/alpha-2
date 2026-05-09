@@ -2,27 +2,29 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Trophy, Shield, Sun, Moon, LogOut, ChevronLeft, ChevronRight, User, Settings as SettingsIcon, Bell as BellIcon, Map, Zap, Search,
-    LayoutDashboard, Code2, FileText, Users, Layers, Database, Youtube, BookOpen, Briefcase, ClipboardList
+    LayoutDashboard, Code2, FileText, Users, Layers, Database, Youtube, BookOpen, Briefcase, ClipboardList, CreditCard, Tag
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import NotificationDropdown from '../student/dashboard/NotificationDropdown';
 
 const ADMIN_SEARCHABLE_PAGES = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, category: 'Main' },
-    { name: 'Quick Compiler', path: '/admin/compiler', icon: Code2, category: 'Tools' },
-    { name: 'Technical Articles', path: '/admin/articles', icon: FileText, category: 'Content' },
-    { name: 'User Management', path: '/admin/users', icon: Users, category: 'Admin' },
-    { name: 'Batch Management', path: '/admin/batches', icon: Layers, category: 'Admin' },
-    { name: 'Coding Problems', path: '/admin/problems', icon: Database, category: 'Bank' },
-    { name: 'SQL Problems', path: '/admin/sql-problems', icon: Database, category: 'Bank' },
-    { name: 'Video Content', path: '/admin/videos', icon: Youtube, category: 'Bank' },
-    { name: 'Quizzes', path: '/admin/quizzes', icon: Layers, category: 'Bank' },
-    { name: 'Course Manager', path: '/admin/courses', icon: BookOpen, category: 'Content' },
-    { name: 'Global Contests', path: '/admin/contests', icon: Trophy, category: 'Practice' },
-    { name: 'Announcements', path: '/admin/announcements', icon: BellIcon, category: 'Communication' },
-    { name: 'Editorial Creator', path: '/admin/editorial-creator', icon: FileText, category: 'Tools' },
-    { name: 'Job Manager', path: '/admin/jobs', icon: Briefcase, category: 'Admin' },
+    { name: 'Dashboard', path: '/home', icon: LayoutDashboard, category: 'Main' },
+    { name: 'Quick Compiler', path: '/compiler', icon: Code2, category: 'Tools' },
+    { name: 'Technical Articles', path: '/articles-list', icon: FileText, category: 'Content' },
+    { name: 'User Management', path: '/users', icon: Users, category: 'Admin' },
+    { name: 'Batch Management', path: '/batches', icon: Layers, category: 'Admin' },
+    { name: 'Coding Problems', path: '/problems-manager', icon: Database, category: 'Bank' },
+    { name: 'SQL Problems', path: '/sql-problems', icon: Database, category: 'Bank' },
+    { name: 'Video Content', path: '/videos', icon: Youtube, category: 'Bank' },
+    { name: 'Quizzes', path: '/quizzes', icon: Layers, category: 'Bank' },
+    { name: 'Course Manager', path: '/courses', icon: BookOpen, category: 'Content' },
+    { name: 'Global Contests', path: '/contests', icon: Trophy, category: 'Practice' },
+    { name: 'Announcements', path: '/announcements', icon: BellIcon, category: 'Communication' },
+    { name: 'Editorial Creator', path: '/editorial-creator', icon: FileText, category: 'Tools' },
+    { name: 'Job Manager', path: '/jobs', icon: Briefcase, category: 'Admin' },
+    { name: 'Subscriptions', path: '/admin-subscriptions', icon: CreditCard, category: 'Finance' },
+    { name: 'Coupons', path: '/coupons', icon: Tag, category: 'Finance' },
 ];
 
 const AdminSidebarItem = ({ icon: Icon, label, to, isCollapsed, subItems, isHeader }) => {
@@ -151,35 +153,43 @@ const AdminLayout = () => {
           );
 
     const navItems = [
-        { label: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
-        { label: "AI Interviewer", to: "/admin/interview", icon: Zap },
-        { label: "Quick Compiler", to: "/admin/compiler", icon: Code2 },
-        { label: "Technical Articles", to: "/admin/articles", icon: FileText },
-        { label: "User Management", to: "/admin/users", icon: Users },
-        { label: "Batch Management", to: "/admin/batches", icon: Layers },
+        { label: "Dashboard", to: "/home", icon: LayoutDashboard },
+        { label: "AI Interviewer", to: "/interview", icon: Zap },
+        { label: "Quick Compiler", to: "/compiler", icon: Code2 },
+        { label: "Technical Articles", to: "/private-articles", icon: FileText },
+        { label: "User Management", to: "/users", icon: Users },
+        { label: "Batch Management", to: "/batches", icon: Layers },
+        {
+            label: "Finance & Revenue",
+            icon: Shield,
+            subItems: [
+                { label: "Subscriptions", to: "/admin-subscriptions" },
+                { label: "Coupon Codes", to: "/coupons" }
+            ]
+        },
         {
             label: "Content Bank",
             icon: Database,
             subItems: [
-                { label: "Coding Problems", to: "/admin/problems" },
-                { label: "SQL Problems", to: "/admin/sql-problems" },
-                { label: "Video Content", to: "/admin/videos" },
-                { label: "Quizzes", to: "/admin/quizzes" },
-                { label: "Private Articles", to: "/admin/private-articles" },
-                { label: "Public Articles", to: "/admin/public-articles" },
-                { label: "Practical Sheets", to: "/admin/sheets" },
-                { label: "Assignment Manager", to: "/admin/assignments" },
-                { label: "Editorial Creator", to: "/admin/editorial-creator" },
-                { label: "Course Contests", to: "/admin/course-contests" },
-                { label: "Job Manager", to: "/admin/jobs" },
-                { label: "Interview Exp Manager", to: "/admin/interview-experience" },
+                { label: "Coding Problems", to: "/problems-manager" },
+                { label: "SQL Problems", to: "/sql-problems" },
+                { label: "Video Content", to: "/videos" },
+                { label: "Quizzes", to: "/quizzes" },
+                { label: "Private Articles", to: "/private-articles" },
+                { label: "Public Articles", to: "/public-articles-manager" },
+                { label: "Practical Sheets", to: "/sheets" },
+                { label: "Assignment Manager", to: "/assignments" },
+                { label: "Editorial Creator", to: "/editorial-creator" },
+                { label: "Course Contests", to: "/course-contests-manager" },
+                { label: "Job Manager", to: "/jobs" },
+                { label: "Interview Exp Manager", to: "/interview/experience" },
             ]
         },
-        { label: "Course Manager", to: "/admin/courses", icon: BookOpen },
-        { label: "Global Contests", to: "/admin/contests", icon: Trophy },
-        { label: "Leaderboard", to: "/admin/leaderboard", icon: Map },
-        { label: "Reports", to: "/admin/reports", icon: ClipboardList },
-        { label: "Announcements", to: "/admin/announcements", icon: BellIcon },
+        { label: "Course Manager", to: "/courses", icon: BookOpen },
+        { label: "Global Contests", to: "/contests", icon: Trophy },
+        { label: "Leaderboard", to: "/leaderboard", icon: Map },
+        { label: "Reports", to: "/reports", icon: ClipboardList },
+        { label: "Announcements", to: "/announcements", icon: BellIcon },
     ];
 
     useEffect(() => {
@@ -217,7 +227,7 @@ const AdminLayout = () => {
                     </button>
                 </div>
                 <div className="flex items-center px-5 py-8 shrink-0">
-                    <Link to="/admin/dashboard" className="flex items-center gap-2 overflow-hidden">
+                    <Link to="/home" className="flex items-center gap-2 overflow-hidden">
                         <img src="/alphalogo.png" alt="Logo" className="w-10 h-8 shrink-0" />
                         {!isCollapsed && <span className="font-bold text-xl text-gray-900 dark:text-white tracking-tight whitespace-nowrap">AlphaKnowledge</span>}
                     </Link>
@@ -250,7 +260,7 @@ const AdminLayout = () => {
                                 </div>
                                 <div className="p-2 mt-1 border-t border-[var(--color-border-interactive)] space-y-1">
                                     <Link
-                                        to="/admin/settings"
+                                        to="/settings"
                                         onClick={() => setIsProfileOpen(false)}
                                         className="flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
                                     >
@@ -286,19 +296,23 @@ const AdminLayout = () => {
                 {/* Header */}
                 <header className="h-16 flex items-center justify-between px-8 border-b border-gray-100 dark:border-gray-800 bg-[var(--color-bg-primary)] sticky top-0 z-30">
                     <div className="flex items-center gap-4">
-                        <nav className="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400">
-                            <Link to="/admin/dashboard" className="hover:text-primary-600 transition-colors font-medium">Admin</Link>
+                        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
                             {pathnames.map((name, index) => {
-                                const routeTo = `/admin/${pathnames.slice(0, index + 1).join('/')}`;
+                                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
                                 const isLast = index === pathnames.length - 1;
-                                const displayName = name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+                                // If name is home, show it as Dashboard
+                                const displayName = name === 'home' 
+                                    ? 'Dashboard' 
+                                    : name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+                                
                                 return (
                                     <React.Fragment key={name}>
                                         <ChevronRight size={14} className="text-gray-300" />
                                         {isLast ? (
                                             <span className="font-medium text-gray-900 dark:text-white">{displayName}</span>
                                         ) : (
-                                            <Link to={routeTo} className="hover:text-primary-600 transition-colors font-medium">{displayName}</Link>
+                                            <Link to={routeTo} className="hover:text-primary-600 transition-colors">{displayName}</Link>
                                         )}
                                     </React.Fragment>
                                 );
@@ -338,7 +352,7 @@ const AdminLayout = () => {
                                     isDark 
                                         ? 'bg-[var(--color-bg-card)] border-gray-800 text-gray-200' 
                                         : 'bg-white border-gray-100 text-gray-800'
-                                }`}>
+                                }}`}>
                                     {filteredPages.length > 0 ? (
                                         <div className="max-h-[300px] overflow-y-auto no-scrollbar">
                                             {filteredPages.map((page, idx) => (
@@ -371,7 +385,7 @@ const AdminLayout = () => {
                             )}
                         </div>
 
-                        <NotificationDropdown basePath="/admin" />
+                        <NotificationDropdown basePath="" />
                     </div>
                 </header>
 

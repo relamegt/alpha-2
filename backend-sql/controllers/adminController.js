@@ -8,7 +8,6 @@ const Article = require('../models/PrivateArticle');
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/db');
 
-
 // ============================================
 // BATCH MANAGEMENT
 // ============================================
@@ -745,6 +744,91 @@ const deleteBatch = async (req, res) => {
     }
 };
 
+// ============================================
+// SUBSCRIPTION MANAGEMENT
+// ============================================
+
+const getAllSubscriptions = async (req, res) => {
+    try {
+        const { page: _page, limit: _limit, status } = req.query;
+        const page = parseInt(_page) || 1;
+        const limit = parseInt(_limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const where = status ? { status } : {};
+
+        const [subscriptions, total] = await Promise.all([
+            prisma.subscriptionOrder.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit
+            }),
+            prisma.subscriptionOrder.count({ where })
+        ]);
+
+        res.json({
+            success: true,
+            subscriptions,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (error) {
+        console.error('Get subscriptions error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch subscriptions',
+            error: error.message
+        });
+    }
+};
+
+const assignPlanByEmail = async (req, res) => {
+    try {
+        const { email, plan, durationMonths } = req.body;
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + (durationMonths || 1));
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                plan,
+                subscriptionExpiresAt: expiryDate
+            }
+        });
+
+        res.json({
+            success: true,
+            message: `Plan ${plan} assigned to ${email} successfully until ${expiryDate.toLocaleDateString()}`
+        });
+    } catch (error) {
+        console.error('Assign plan error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to assign plan',
+            error: error.message
+        });
+    }
+};
+
 // Get system analytics (includes permanent user count)
 const getSystemAnalytics = async (req, res) => {
     try {
@@ -757,7 +841,9 @@ const getSystemAnalytics = async (req, res) => {
             totalBatches,
             activeBatches,
             totalContests,
-            totalUsersEverCreated
+            totalUsersEverCreated,
+            totalSubscriptions,
+            pendingSubscriptions
         ] = await Promise.all([
             prisma.user.count(),
             prisma.user.count({ where: { role: 'student' } }),
@@ -766,7 +852,9 @@ const getSystemAnalytics = async (req, res) => {
             prisma.batch.count(),
             prisma.batch.count({ where: { status: 'active' } }),
             prisma.contest.count(),
-            User.getTotalUsersCount()
+            User.getTotalUsersCount(),
+            prisma.subscriptionOrder.count({ where: { status: 'COMPLETED' } }),
+            prisma.subscriptionOrder.count({ where: { status: 'PENDING' } })
         ]);
 
         const [codingCount, sqlCount, videoCount, quizCount, articleCount] = await Promise.all([
@@ -781,12 +869,16 @@ const getSystemAnalytics = async (req, res) => {
             success: true,
             analytics: {
                 users: {
-                    total: activeUsers,                      // Added for dashboard compatibility
-                    totalEverCreated: totalUsersEverCreated, // For homepage
-                    currentActive: activeUsers,              // Current active users
+                    total: activeUsers,
+                    totalEverCreated: totalUsersEverCreated,
+                    currentActive: activeUsers,
                     students: totalStudents,
                     instructors: totalInstructors,
                     admins: totalAdmins
+                },
+                subscriptions: {
+                    total: totalSubscriptions,
+                    pending: pendingSubscriptions
                 },
                 batches: {
                     total: totalBatches,
@@ -798,14 +890,8 @@ const getSystemAnalytics = async (req, res) => {
                     sql: sqlCount,
                     videos: videoCount,
                     quizzes: quizCount,
-                    articles: articleCount,
-                    byDifficulty: await Problem.getDifficultyWiseCount().then(counts => ({
-                        Easy: counts.easy,
-                        Medium: counts.medium,
-                        Hard: counts.hard
-                    }))
-                },
-                contests: totalContests
+                    articles: articleCount
+                }
             }
         });
     } catch (error) {
@@ -819,24 +905,21 @@ const getSystemAnalytics = async (req, res) => {
 };
 
 module.exports = {
-    // Batch Management
     createBatch,
     getAllBatches,
     updateBatch,
     extendBatchExpiry,
     getBatchStatistics,
     getBatchById,
-    deleteBatch,
-
-    // User Management (within batch)
     addUserToBatch,
     bulkAddUsersToBatch,
     getBatchUsers,
-    removeUserFromBatch,
-
-    // Admin User Management
     createAdminUser,
     getAllUsers,
+    removeUserFromBatch,
+    deleteUser,
+    deleteBatch,
     getSystemAnalytics,
-    deleteUser
+    getAllSubscriptions,
+    assignPlanByEmail
 };

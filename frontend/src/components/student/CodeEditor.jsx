@@ -2401,7 +2401,7 @@ const CodeEditor = () => {
           {courseId && (
             <button
               onClick={() =>
-                navigate(`/dashboard/courses/${courseId}/analytics/leaderboard`)
+                navigate(`/courses/${courseId}/analytics/leaderboard`)
               }
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all shadow-sm"
             >
@@ -2410,7 +2410,7 @@ const CodeEditor = () => {
             </button>
           )}
           <button
-            onClick={() => navigate("/student/dashboard")}
+            onClick={() => navigate("/home")}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-[#1c1c24] border border-gray-200 dark:border-[#282833] hover:bg-gray-100 dark:hover:bg-[#23232e] transition-all shadow-sm ml-2"
           >
             <List size={14} />

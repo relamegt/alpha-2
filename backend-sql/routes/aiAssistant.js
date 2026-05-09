@@ -3,6 +3,7 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const prisma = require('../config/db');
 const { protect } = require('../middleware/auth');
+const { checkAiLimit } = require('../middleware/usageMiddleware');
 const axios = require('axios'); // Added axios for Groq requests
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -109,24 +110,36 @@ const extractText = (response) => {
 router.get('/credits', protect, async (req, res) => {
     try {
         const userId = req.user.userId;
-        let aiCredits = await prisma.aiCredits.findUnique({ where: { userId } });
-        if (!aiCredits) {
-            aiCredits = await prisma.aiCredits.create({
-                data: { userId, credits: 30, resetAt: getNextMonthFirstDay() }
-            });
-        }
-        if (process.env.NODE_ENV === 'development') {
-            res.json({ success: true, credits: 'Unlimited', resetAt: aiCredits.resetAt });
-        } else {
-            res.json({ success: true, credits: aiCredits.credits, resetAt: aiCredits.resetAt });
-        }
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { plan: true, dailyAiTokensUsed: true }
+        });
+
+        const PLAN_LIMITS = {
+            FREE: 5000,
+            BASIC: 25000,
+            PLUS: 50000,
+            PRO: 75000
+        };
+
+        const plan = user.plan || 'FREE';
+        const limit = PLAN_LIMITS[plan] || 5000;
+        const used = user.dailyAiTokensUsed || 0;
+
+        res.json({
+            success: true,
+            plan,
+            limit,
+            used,
+            remaining: Math.max(0, limit - used)
+        });
     } catch (error) {
         console.error('[AI] Error fetching credits:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch AI credits' });
     }
 });
 
-router.post('/ask', protect, async (req, res) => {
+router.post('/ask', protect, checkAiLimit, async (req, res) => {
     const { problemTitle, problemDescription, language, code, userQuestion } = req.body;
     const userId = req.user.userId;
 
@@ -135,110 +148,79 @@ router.post('/ask', protect, async (req, res) => {
     }
 
     try {
-        const result = await prisma.$transaction(async (tx) => {
-            let credits = await tx.aiCredits.findUnique({ where: { userId } });
-            if (!credits) {
-                credits = await tx.aiCredits.create({
-                    data: { userId, credits: 30, resetAt: getNextMonthFirstDay() }
-                });
-            }
-            if (process.env.NODE_ENV !== 'development' && credits.credits <= 0) {
-                return { error: 'Monthly AI credits exhausted.', resetAt: credits.resetAt };
-            }
-            let updatedCredits;
-            if (process.env.NODE_ENV === 'development') {
-                updatedCredits = { credits: 'Unlimited' };
-            } else {
-                updatedCredits = await tx.aiCredits.update({
-                    where: { userId },
-                    data: { credits: { decrement: 1 } }
-                });
-            }
-            return { updatedCredits };
+        const prompt = `Problem: ${problemTitle}\nDescription: ${problemDescription}\nLanguage: ${language}\n\nStudent's Code:\n\`\`\`${language}\n${code}\n\`\`\`\n\nStudent's Question: ${userQuestion}`;
+
+        const selectedInfo = getNextModel();
+        let text = null;
+        let tokenUsage = 0;
+
+        console.log(`[AI] Routing request to ${selectedInfo.provider} model: ${selectedInfo.model}`);
+
+        if (selectedInfo.provider === 'gemma') {
+            const gemmaResult = await ai.models.generateContent({
+                model: selectedInfo.model,
+                contents: prompt,
+                config: {
+                    systemInstruction: SYSTEM_INSTRUCTION,
+                    maxOutputTokens: 8192,
+                    temperature: 0.3,
+                }
+            });
+            text = extractText(gemmaResult);
+            // Estimate tokens if usage not directly available
+            tokenUsage = (prompt.length + (text ? text.length : 0)) / 4; 
+        } else if (selectedInfo.provider === 'groq') {
+            const apiKey = process.env.GROQ_API_KEY;
+            const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+                model: selectedInfo.model,
+                messages: [
+                    { role: 'system', content: SYSTEM_INSTRUCTION },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                max_completion_tokens: 500,
+                response_format: { type: 'json_object' }
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            text = response.data.choices?.[0]?.message?.content;
+            tokenUsage = response.data.usage?.total_tokens || (prompt.length / 4 + 500);
+        }
+
+        if (!text) {
+            console.error(`[AI] Empty response from ${selectedInfo.provider}.`);
+            throw new Error(`${selectedInfo.provider} returned an empty response`);
+        }
+
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const cleanJson = jsonMatch ? jsonMatch[0] : text;
+
+        let parsedData;
+        try {
+            parsedData = JSON.parse(cleanJson);
+        } catch (parseErr) {
+            console.error('[AI] JSON Parse Error:', text.slice(0, 500));
+            throw new Error(`${selectedInfo.provider} returned invalid JSON`);
+        }
+
+        // Increment user's daily usage
+        await prisma.user.update({
+            where: { id: userId },
+            data: { dailyAiTokensUsed: { increment: Math.round(tokenUsage) } }
         });
 
-        if (result.error) {
-            return res.status(403).json({ success: false, message: result.error, resetAt: result.resetAt });
-        }
-
-        try {
-            const prompt = `Problem: ${problemTitle}\nDescription: ${problemDescription}\nLanguage: ${language}\n\nStudent's Code:\n\`\`\`${language}\n${code}\n\`\`\`\n\nStudent's Question: ${userQuestion}`;
-
-            const selectedInfo = getNextModel();
-            let text = null;
-
-            console.log(`[AI] Routing request to ${selectedInfo.provider} model: ${selectedInfo.model}`);
-
-            if (selectedInfo.provider === 'gemma') {
-                const gemmaResult = await ai.models.generateContent({
-                    model: selectedInfo.model,
-                    contents: prompt,
-                    config: {
-                        systemInstruction: SYSTEM_INSTRUCTION,
-                        maxOutputTokens: 8192,
-                        temperature: 0.3,
-                    }
-                });
-                text = extractText(gemmaResult);
-            } else if (selectedInfo.provider === 'groq') {
-                const apiKey = process.env.GROQ_API_KEY;
-                const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-                    model: selectedInfo.model,
-                    messages: [
-                        { role: 'system', content: SYSTEM_INSTRUCTION },
-                        { role: 'user', content: prompt }
-                    ],
-                    temperature: 0.3,
-                    max_completion_tokens: 500,
-                    response_format: { type: 'json_object' }
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                text = response.data.choices?.[0]?.message?.content;
-            }
-
-            if (!text) {
-                console.error(`[AI] Empty response from ${selectedInfo.provider}.`);
-                throw new Error(`${selectedInfo.provider} returned an empty response`);
-            }
-
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            const cleanJson = jsonMatch ? jsonMatch[0] : text;
-
-            let parsedData;
-            try {
-                parsedData = JSON.parse(cleanJson);
-            } catch (parseErr) {
-                console.error('[AI] JSON Parse Error:', text.slice(0, 500));
-                throw new Error(`${selectedInfo.provider} returned invalid JSON`);
-            }
-
-            return res.json({
-                success: true,
-                data: parsedData,
-                creditsRemaining: result.updatedCredits.credits
-            });
-
-        } catch (modelErr) {
-            console.error('[AI] Model Provider Error:', modelErr.response ? modelErr.response.data : modelErr.message);
-            if (process.env.NODE_ENV !== 'development') {
-                await prisma.aiCredits.update({
-                    where: { userId },
-                    data: { credits: { increment: 1 } }
-                });
-            }
-            return res.status(500).json({
-                success: false,
-                message: 'AI analysis failed. Please try again. Your credit has been restored.'
-            });
-        }
+        return res.json({
+            success: true,
+            data: parsedData,
+            tokensUsed: Math.round(tokenUsage)
+        });
 
     } catch (error) {
         console.error('[AI] General Error:', error);
-        res.status(500).json({ success: false, message: 'An unexpected error occurred' });
+        res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred' });
     }
 });
 

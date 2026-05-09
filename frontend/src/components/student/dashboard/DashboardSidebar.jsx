@@ -209,38 +209,38 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
     });
 
     const navItems = [
-        { label: "Dashboard", to: "/dashboard/home", icon: LayoutDashboard },
-        { label: "Courses", to: "/dashboard/courses", icon: BookOpen },
+        { label: "Dashboard", to: "/home", icon: LayoutDashboard },
+        { label: "Courses", to: "/courses", icon: BookOpen },
         // { label: "Course Catalog", to: "/catalog", icon: Map },
         {
             label: "Learning",
             icon: ClipboardList,
             subItems: [
-                { label: "Problem Sheets", to: "/dashboard/sheets", badge: sheets.length || null },
-                { label: "Practical Assignments", to: "/dashboard/assignments", badge: assignments.length || null },
-                { label: "Technical Articles", to: "/dashboard/articles" },
+                { label: "Problem Sheets", to: "/sheets", badge: sheets.length || null },
+                { label: "Practical Assignments", to: "/assignments", badge: assignments.length || null },
+                { label: "Technical Articles", to: "/articles-list" },
             ],
         },
         {
             label: "Practice",
             icon: Trophy,
             subItems: [
-                { label: "Internal Contests", to: "/dashboard/contests" },
-                user?.studentType !== 'ONLINE' && { label: "AI Interviewer", to: "/dashboard/interview", badge: "New" },
-                { label: "Quick Compiler", to: "/dashboard/compiler" },
+                { label: "Internal Contests", to: "/contests" },
+                user?.studentType !== 'ONLINE' && { label: "AI Interviewer", to: "/interview", badge: "New" },
+                { label: "Quick Compiler", to: "/compiler" },
             ].filter(Boolean),
         },
         {
             label: "Community",
             icon: Zap,
             subItems: [
-                user?.studentType !== 'ONLINE' && { label: "Job Portal", to: "/dashboard/jobs" },
-                { label: "Interview Experiences", to: "/dashboard/interview/experience" },
-                { label: "Announcements", to: "/dashboard/announcements", badge: unreadAnnouncements.count || null },
-                user?.studentType !== 'ONLINE' && { label: "Leaderboard", to: "/dashboard/leaderboard" },
+                user?.studentType !== 'ONLINE' && { label: "Job Portal", to: "/jobs" },
+                { label: "Interview Experiences", to: "/interview/experience" },
+                { label: "Announcements", to: "/announcements", badge: unreadAnnouncements.count || null },
+                user?.studentType !== 'ONLINE' && { label: "Leaderboard", to: "/leaderboard" },
             ].filter(Boolean),
         },
-        { label: "Settings", to: "/dashboard/settings", icon: SettingsIcon },
+        { label: "Settings", to: "/settings", icon: SettingsIcon },
     ];
 
     // Close profile menu on click outside
@@ -358,14 +358,14 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
                                     <span className="font-medium">View Profile</span>
                                 </Link>
                                 <Link
-                                    to="/dashboard/settings"
+                                    to="/settings"
                                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <SettingsIcon size={18} />
                                     <span className="font-medium">Account Settings</span>
                                 </Link>
                                 <Link
-                                    to="/dashboard/announcements"
+                                    to="/announcements"
                                     className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-primary-500/20 rounded-xl transition-colors"
                                 >
                                     <BellIcon size={18} />

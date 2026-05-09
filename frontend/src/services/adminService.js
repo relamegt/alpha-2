@@ -157,6 +157,16 @@ const adminService = {
             throw error.response?.data || { message: 'Failed to fetch analytics' };
         }
     },
+
+    // Assign Plan to User → POST /admin/users/assign-plan
+    assignPlan: async (payload) => {
+        try {
+            const response = await apiClient.post('/admin/users/assign-plan', payload);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to assign plan' };
+        }
+    },
 };
 
 export default adminService;

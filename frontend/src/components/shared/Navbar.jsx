@@ -137,7 +137,36 @@ const Navbar = () => {
         }
     };
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <nav className="bg-white/70 dark:bg-[#0B0B0F]/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50 fixed top-0 left-0 right-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        <div className="flex items-center gap-2">
+                            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
+                                <img
+                                    src="/alphalogo.png"
+                                    alt="AlphaKnowledge"
+                                    className="h-6 sm:h-8 w-auto object-contain"
+                                />
+                                <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">AlphaKnowledge</span>
+                            </Link>
+                        </div>
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link to="/courses" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Courses</Link>
+                            <Link to="/articles-list" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Articles</Link>
+                            <Link to="/pricing" className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pricing</Link>
+                        </div>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <ThemeToggle size="sm" />
+                            <Link to="/login" className="btn-secondary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Log In</Link>
+                            <Link to="/signup" className="btn-primary !px-4 sm:!px-6 !py-1.5 sm:!py-2 text-xs sm:text-sm">Get Started</Link>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     const getNavLinks = () => {
         const Icons = {
@@ -154,91 +183,91 @@ const Navbar = () => {
             Map: <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>,
         };
 
-
-
         const menus = {
             admin: [
-                { to: '/admin/dashboard', label: 'Dashboard', icon: Icons.Dashboard },
-                { to: '/dashboard/interview', label: 'AI Interviewer', icon: Icons.Zap },
+                { to: '/home', label: 'Dashboard', icon: Icons.Dashboard },
+                { to: '/interview', label: 'AI Interviewer', icon: Icons.Zap },
                 { to: '/compiler', label: 'Quick Compiler', icon: Icons.Compiler, newTab: true },
-                { to: '/articles', label: 'Technical Articles', icon: Icons.Content },
-                { to: '/admin/batches', label: 'Batches', icon: Icons.Practice },
-                { to: '/admin/users', label: 'Users', icon: Icons.Profile },
+                { to: '/private-articles', label: 'Technical Articles', icon: Icons.Content },
+                { to: '/batches', label: 'Batches', icon: Icons.Practice },
+                { to: '/users', label: 'Users', icon: Icons.Profile },
                 {
                     label: 'Content',
                     icon: Icons.Content,
                     children: [
-                        { to: '/admin/problems', label: 'Coding Problems' },
-                        { to: '/admin/sql-problems', label: 'SQL Problems' },
-                        { to: '/admin/videos', label: 'Videos' },
-                        { to: '/admin/quizzes', label: 'Quizzes' },
-                        { to: '/admin/private-articles', label: 'Private Articles' },
-                        { to: '/admin/public-articles', label: 'Public Articles' },
-                        { to: '/admin/sheets', label: 'Practical Sheets' },
-                        { to: '/admin/assignments', label: 'Assignment Manager' },
-                        { to: '/admin/course-contests', label: 'Course Contests Manager' },
-                        { to: '/admin/jobs', label: 'Job Manager' },
-                        { to: '/dashboard/interview/experience', label: 'Interview Experiences' },
+                        { to: '/problems-manager', label: 'Coding Problems' },
+                        { to: '/sql-problems', label: 'SQL Problems' },
+                        { to: '/videos', label: 'Videos' },
+                        { to: '/quizzes', label: 'Quizzes' },
+                        { to: '/private-articles', label: 'Private Articles' },
+                        { to: '/public-articles-manager', label: 'Public Articles' },
+                        { to: '/sheets', label: 'Practical Sheets' },
+                        { to: '/assignments', label: 'Assignment Manager' },
+                        { to: '/course-contests-manager', label: 'Course Contests Manager' },
+                        { to: '/jobs', label: 'Job Manager' },
+                        { to: '/interview/experience', label: 'Interview Experiences' },
+                        { to: '/coupons', label: 'Coupon Manager' },
                     ]
                 },
-                { to: '/admin/courses', label: 'Course Manager', icon: Icons.Leaderboard },
-                { to: '/admin/contests', label: 'Contests', icon: Icons.Contest },
-                { to: '/dashboard/leaderboard', label: 'Leaderboard', icon: Icons.Map },
-                { to: '/admin/reports', label: 'Reports', icon: Icons.Dashboard },
+                { to: '/courses', label: 'Course Manager', icon: Icons.Leaderboard },
+                { to: '/contests', label: 'Contests', icon: Icons.Contest },
+                { to: '/leaderboard', label: 'Leaderboard', icon: Icons.Map },
+                { to: '/reports', label: 'Reports', icon: Icons.Dashboard },
                 {
                     label: 'Settings',
                     icon: Icons.Settings,
                     children: [
-                        { to: '/admin/settings/personal', label: 'Personal details' },
-                        { to: '/admin/settings/security', label: 'Change password' },
+                        { to: '/settings/personal', label: 'Personal details' },
+                        { to: '/settings/security', label: 'Change password' },
                     ]
                 },
             ],
             instructor: [
-                { to: '/instructor/dashboard', label: 'Dashboard', icon: Icons.Dashboard },
-                { to: '/instructor/contests', label: 'Contests', icon: Icons.Contest },
-                { to: '/instructor/reports', label: 'Reports', icon: Icons.Dashboard },
+                { to: '/home', label: 'Dashboard', icon: Icons.Dashboard },
+                { to: '/contests', label: 'Contests', icon: Icons.Contest },
+                { to: '/reports', label: 'Reports', icon: Icons.Dashboard },
                 { to: '/courses', label: 'Courses', icon: Icons.Practice },
-                { to: '/instructor/reset-profile', label: 'Reset Profile', icon: Icons.Profile },
+                { to: '/settings/personal', label: 'Personal details', icon: Icons.Profile },
                 {
                     label: 'Settings',
                     icon: Icons.Settings,
                     children: [
-                        { to: '/instructor/settings/personal', label: 'Personal details' },
-                        { to: '/instructor/settings/security', label: 'Change password' },
+                        { to: '/settings/personal', label: 'Personal details' },
+                        { to: '/settings/security', label: 'Change password' },
                     ]
                 },
             ],
             student: [
-                { to: '/student/dashboard', label: 'Dashboard', icon: Icons.Dashboard },
+                { to: '/home', label: 'Dashboard', icon: Icons.Dashboard },
                 { to: '/courses', label: 'Courses', icon: Icons.Courses },
                 {
                     label: 'Contests',
                     icon: Icons.Contest,
                     children: [
-                        { to: '/student/contests', label: 'Internal Contests' },
-                        { to: '/student/leaderboard?type=contest', label: 'External Contests' },
-                        { to: '/student/course-contests', label: 'Course Contests' },
+                        { to: '/contests', label: 'Internal Contests' },
+                        { to: '/leaderboard?type=contest', label: 'External Contests' },
+                        { to: '/contests', label: 'Course Contests' },
                     ]
                 },
                 {
                     label: 'Community',
                     icon: Icons.Content,
                     children: [
-                        { to: '/community/interview-experiences', label: 'Interview Experiences' },
-                        { to: '/articles', label: 'Technical Articles' },
+                        { to: '/interview/experience', label: 'Interview Experiences' },
+                        { to: '/articles-list', label: 'Technical Articles' },
                     ]
                 },
-                { to: '/student/sheets', label: 'Practice Sheets', icon: Icons.Practice },
+                { to: '/sheets', label: 'Practice Sheets', icon: Icons.Practice },
                 { to: `/${user?.batchName ? encodeURIComponent(user.batchName) : (user?.batchId || 'unassigned')}/leaderboard`, label: 'Batch Leaderboard', icon: Icons.Leaderboard, newTab: true },
+                { to: '/pricing', label: 'Subscription Plans', icon: Icons.Zap },
                 {
                     label: 'Settings',
                     icon: Icons.Settings,
                     children: [
-                        { to: '/student/settings/personal', label: 'Personal details' },
-                        { to: '/student/settings/professional', label: 'Professional details' },
-                        { to: '/student/settings/coding', label: 'Coding profiles' },
-                        { to: '/student/settings/security', label: 'Change password' },
+                        { to: '/settings/personal', label: 'Personal details' },
+                        { to: '/settings/professional', label: 'Professional details' },
+                        { to: '/settings/coding', label: 'Coding profiles' },
+                        { to: '/settings/security', label: 'Change password' },
                     ]
                 },
             ]
@@ -248,6 +277,7 @@ const Navbar = () => {
     };
 
     const links = getNavLinks();
+
 
     return (
         <nav className="bg-[#F1F3F4] dark:bg-[#111117] border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
