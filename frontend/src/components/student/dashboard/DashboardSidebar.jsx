@@ -226,7 +226,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             icon: Trophy,
             subItems: [
                 { label: "Internal Contests", to: "/contests" },
-                user?.studentType !== 'ONLINE' && { label: "AI Interviewer", to: "/interview", badge: "New" },
+                (user?.studentType !== 'ONLINE' || user?.plan !== 'FREE') && { label: "AI Interviewer", to: "/interview", badge: "New" },
                 { label: "Quick Compiler", to: "/compiler" },
             ].filter(Boolean),
         },
@@ -234,7 +234,7 @@ const DashboardSidebar = ({ isCollapsed, setIsCollapsed }) => {
             label: "Community",
             icon: Zap,
             subItems: [
-                user?.studentType !== 'ONLINE' && { label: "Job Portal", to: "/jobs" },
+                (user?.studentType !== 'ONLINE' || user?.plan !== 'FREE') && { label: "Job Portal", to: "/jobs" },
                 { label: "Interview Experiences", to: "/interview/experience" },
                 { label: "Announcements", to: "/announcements", badge: unreadAnnouncements.count || null },
                 user?.studentType !== 'ONLINE' && { label: "Leaderboard", to: "/leaderboard" },

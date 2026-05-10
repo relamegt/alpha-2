@@ -28,6 +28,8 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [plans, setPlans] = useState([]);
+    const [durationMode, setDurationMode] = useState('preset'); // 'preset' or 'custom'
 
 
     const fetchAvailableInstructors = async () => {
@@ -63,8 +65,9 @@ const UserManagement = () => {
 
     const [planFormData, setPlanFormData] = useState({
         email: '',
-        planId: 'BASIC',
-        durationMonths: 1
+        plan: '', // for legacy
+        planId: '', // for created plans
+        durationMonths: 12
     });
 
     useEffect(() => {
@@ -76,8 +79,19 @@ const UserManagement = () => {
             fetchBatchUsers();
         } else if (viewMode === 'admin') {
             fetchAdmins();
+        } else if (viewMode === 'subscription') {
+            fetchPlans();
         }
     }, [selectedBatch, viewMode]);
+
+    const fetchPlans = async () => {
+        try {
+            const data = await adminService.getAllPlans();
+            setPlans(data.plans || []);
+        } catch (error) {
+            console.error('Failed to fetch plans', error);
+        }
+    };
 
     const fetchBatches = async () => {
         try {
@@ -154,10 +168,15 @@ const UserManagement = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            if (!planFormData.plan && !planFormData.planId) {
+                toast.error('Please select a plan');
+                return;
+            }
             const response = await adminService.assignPlan(planFormData);
             toast.success(response.message);
             setShowAssignPlanModal(false);
-            setPlanFormData({ email: '', planId: 'BASIC', durationMonths: 1 });
+            setPlanFormData({ email: '', plan: '', planId: '', durationMonths: 12 });
+            setDurationMode('preset');
             if (viewMode === 'batch') fetchBatchUsers();
         } catch (error) {
             toast.error(error.message || 'Failed to assign plan');
@@ -888,34 +907,97 @@ const UserManagement = () => {
                                         required
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-5">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                            Plan Tier <span className="text-red-500">*</span>
+                                            Select Plan <span className="text-red-500">*</span>
                                         </label>
-                                        <CustomDropdown
-                                            options={[
-                                                { value: 'BASIC', label: 'Basic Plan' },
-                                                { value: 'PLUS', label: 'Plus Plan' },
-                                                { value: 'PRO', label: 'Pro Plan' },
-                                                { value: 'FREE', label: 'Free Plan' }
-                                            ]}
-                                            value={planFormData.planId}
-                                            onChange={(val) => setPlanFormData({ ...planFormData, planId: val })}
-                                        />
+                                        <div className="relative">
+                                            <select 
+                                                className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100 appearance-none font-bold"
+                                                value={planFormData.planId || planFormData.plan}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 10) {
+                                                        setPlanFormData({...planFormData, planId: val, plan: ''});
+                                                    } else {
+                                                        setPlanFormData({...planFormData, planId: '', plan: val});
+                                                    }
+                                                }}
+                                                required
+                                            >
+                                                <option value="">Choose a plan...</option>
+                                                <optgroup label="Created Plans">
+                                                    {plans.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>
+                                                    ))}
+                                                </optgroup>
+                                                <optgroup label="Legacy/Simple Roles">
+                                                    <option value="BASIC">BASIC</option>
+                                                    <option value="PLUS">PLUS</option>
+                                                    <option value="PRO">PRO</option>
+                                                    <option value="FREE">FREE</option>
+                                                </optgroup>
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                <Zap size={16} />
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                            Duration (Months)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={planFormData.durationMonths}
-                                            onChange={(e) => setPlanFormData({ ...planFormData, durationMonths: parseInt(e.target.value) })}
-                                            className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100"
-                                            min="1"
-                                            disabled={planFormData.planId === 'FREE'}
-                                        />
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Duration
+                                            </label>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setDurationMode(durationMode === 'preset' ? 'custom' : 'preset')}
+                                                className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 hover:underline"
+                                            >
+                                                {durationMode === 'preset' ? 'Custom Months' : 'Preset Options'}
+                                            </button>
+                                        </div>
+                                        
+                                        {durationMode === 'preset' ? (
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { label: '1 Mo', value: 1 },
+                                                    { label: '3 Mo', value: 3 },
+                                                    { label: '6 Mo', value: 6 },
+                                                    { label: '1 Year', value: 12 },
+                                                    { label: '2 Year', value: 24 },
+                                                    { label: 'Lifetime', value: 1200 }
+                                                ].map(opt => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        onClick={() => setPlanFormData({...planFormData, durationMonths: opt.value})}
+                                                        className={`py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                                                            planFormData.durationMonths === opt.value
+                                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                                                : 'bg-gray-50 dark:bg-[var(--color-bg-primary)] border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-blue-500/50'
+                                                        }`}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="relative">
+                                                <input 
+                                                    type="number" 
+                                                    className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100 font-bold"
+                                                    placeholder="Enter number of months..."
+                                                    value={planFormData.durationMonths}
+                                                    onChange={(e) => setPlanFormData({ ...planFormData, durationMonths: parseInt(e.target.value) || 0 })}
+                                                    min="1"
+                                                />
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                                                    Months
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -3,7 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import quizService from '../../services/quizService';
 import toast from 'react-hot-toast';
 import {
-    Plus, Search, Edit2, Trash2, List, FileText, X, CheckSquare, PlusCircle
+    Plus, Search, Edit2, Trash2, List, FileText, X, CheckSquare, PlusCircle, Layers
 } from 'lucide-react';
 
 const QuizManager = () => {

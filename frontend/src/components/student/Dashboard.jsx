@@ -299,12 +299,12 @@ const Dashboard = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-[10px] font-bold tracking-wider text-gray-500">
                                             <span>AI Interviews</span>
-                                            <span>{user.dailyAiInterviewsUsed || 0} / {user.planInstance?.aiInterviewsLimit || 0}</span>
+                                            <span>{user.dailyAiInterviewsUsed || 0} / {user.planInstance?.aiInterviewsLimit >= 100000 ? 'Unlimited' : (user.planInstance?.aiInterviewsLimit || 0)}</span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(245,158,11,0.4)]" 
-                                                style={{ width: `${Math.min(100, ((user.dailyAiInterviewsUsed || 0) / Math.max(1, user.planInstance?.aiInterviewsLimit || 0)) * 100)}%` }}
+                                                style={{ width: `${user.planInstance?.aiInterviewsLimit >= 100000 ? 0 : Math.min(100, ((user.dailyAiInterviewsUsed || 0) / Math.max(1, user.planInstance?.aiInterviewsLimit || 1)) * 100)}%` }}
                                             />
                                         </div>
                                     </div>

@@ -65,7 +65,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex gap-3">
                         <button
-                            onClick={() => navigate('/admin/reports')}
+                            onClick={() => navigate('/reports')}
                             className="btn-secondary flex items-center gap-2"
                         >
                             <Activity size={18} />

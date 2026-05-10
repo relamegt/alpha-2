@@ -19,7 +19,6 @@ const SEARCHABLE_PAGES = [
     { name: 'Job Portal', path: '/jobs', icon: Briefcase, category: 'Practice' },
     { name: 'Interview Experiences', path: '/interview/experience', icon: MessageSquare, category: 'Practice' },
     { name: 'Announcements', path: '/announcements', icon: Bell, category: 'Practice' },
-    { name: 'Leaderboard', path: '/leaderboard', icon: Trophy, category: 'Practice' },
     { name: 'Settings', path: '/settings', icon: SettingsIcon, category: 'Account' },
 ];
 

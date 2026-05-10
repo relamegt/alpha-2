@@ -79,59 +79,84 @@ const Pricing = () => {
     const PlanCard = ({ plan, compact = false }) => {
         const selectedDuration = selectedDurations[plan.id] || (plan.pricingOptions?.[0]?.duration || plan.durationInDays);
         const activeOption = plan.pricingOptions?.find(o => o.duration === selectedDuration) || { price: plan.price, duration: plan.durationInDays, label: `${plan.durationInDays / 30} Months` };
-        const isCurrent = currentPlan?.planId === plan.id && (currentPlan?.durationInDays === selectedDuration || plan.pricingOptions?.length === 0);
+        
         const isPro = plan.name.toUpperCase().includes('PRO');
         const isPlus = plan.name.toUpperCase().includes('PLUS');
-        const isPopular = isPro && !isCurrent;
+        const isPopular = isPro;
+        const currentPrice = currentPlan?.price || currentPlan?.planDetails?.price || 0;
+        
+        const tierRanking = { 'FREE': 0, 'BASIC': 1, 'PLUS': 2, 'PRO': 3 };
+        const getTierStr = (name) => {
+            const upper = (name || '').toUpperCase();
+            if (upper.includes('PRO')) return 'PRO';
+            if (upper.includes('PLUS')) return 'PLUS';
+            if (upper.includes('BASIC')) return 'BASIC';
+            return 'FREE';
+        };
+        
+        const currentTierLevel = tierRanking[getTierStr(currentPlan?.plan)];
+        const thisTierLevel = tierRanking[getTierStr(plan.name)];
+        
+        const isCurrentTier = currentPlan && currentPlan.plan !== 'FREE' && currentTierLevel === thisTierLevel && currentTierLevel > 0;
+        const isUpgradeTier = thisTierLevel > currentTierLevel;
+        const isLowerTier = currentPlan && currentPlan.plan !== 'FREE' && thisTierLevel < currentTierLevel;
+        const buttonDisabled = isCurrentTier || isLowerTier;
+        const isLifetime = activeOption.duration >= 3600; // Treat 10+ years as lifetime
 
         return (
             <div 
                 className={cn(
                     "bg-white dark:bg-[#111117] rounded-2xl border flex flex-col relative transition-all duration-300",
-                    isCurrent 
+                    isCurrentTier 
                         ? cn("border-primary-500 ring-4 ring-primary-500/10 shadow-2xl shadow-primary-500/5", compact ? "p-5" : "p-[24px]") 
                         : isPopular
                             ? cn("border-primary-500/50 ring-2 ring-primary-500/5 shadow-lg", compact ? "p-5" : "p-[24px]")
                             : cn("border-gray-200 dark:border-white/5 shadow-sm hover:shadow-md", compact ? "p-5" : "p-[24px]")
                 )}
             >
-                {isCurrent && (
-                    <div className="absolute -top-3 right-6 px-4 py-1.5 bg-gradient-to-r from-primary-600 to-primary-400 text-white text-[10px] font-black rounded-full tracking-[0.05em] shadow-lg shadow-primary-600/30 z-10 border border-white/10">
-                        Active
-                    </div>
-                )}
-
-                {isPopular && !isCurrent && (
-                    <div className="absolute top-6 right-6 px-3 py-1 bg-gray-100 dark:bg-white/10 text-[10px] font-black rounded-full tracking-wider border border-gray-200 dark:border-white/10 shadow-sm">
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">Popular</span>
-                    </div>
-                )}
+                <div className="absolute top-6 right-6 flex flex-col gap-2 items-end z-10">
+                    {isCurrentTier && (
+                        <div className="px-3 py-1 bg-primary-500 text-white text-[10px] font-black rounded-full tracking-wider shadow-sm">
+                            Active
+                        </div>
+                    )}
+                    {isPopular && (
+                        <div className="px-3 py-1 bg-gray-100 dark:bg-white/10 text-[10px] font-black rounded-full tracking-wider border border-gray-200 dark:border-white/10 shadow-sm">
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">Popular</span>
+                        </div>
+                    )}
+                </div>
 
                 <div className={compact ? "mb-3" : "mb-4"}>
                     <h3 className={cn("font-bold text-gray-900 dark:text-white mb-1", compact ? "text-lg" : "text-xl")}>
                         {plan.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                     </h3>
-                    <p className={cn("text-gray-500 dark:text-gray-400 leading-tight", compact ? "text-[13px]" : "text-sm")}>{plan.description || (activeOption.duration === 30 ? "Monthly paid plan." : activeOption.duration >= 36500 ? "Lifetime access plan." : `${Math.round(activeOption.duration / 30)} Month paid plan.`)}</p>
+                    <p className={cn("text-gray-500 dark:text-gray-400 leading-tight", compact ? "text-[13px]" : "text-sm")}>{plan.description || (isLifetime ? "Lifetime access plan." : activeOption.duration === 30 ? "Monthly paid plan." : `${Math.round(activeOption.duration / 30)} Month paid plan.`)}</p>
                 </div>
 
                 <div className={compact ? "mb-3" : "mb-4"}>
                     <div className="flex items-baseline gap-1">
-                        <span className={cn("font-black text-gray-900 dark:text-white", compact ? "text-2xl" : "text-3xl")}>₹{Math.round(activeOption.price / Math.max(1, Math.round(activeOption.duration / 30))).toLocaleString()}</span>
+                        <span className={cn("font-black text-gray-900 dark:text-white", compact ? "text-2xl" : "text-3xl")}>₹{isLifetime ? activeOption.price.toLocaleString() : Math.round(activeOption.price / Math.max(1, Math.round(activeOption.duration / 30))).toLocaleString()}</span>
                         <span className="text-gray-500 dark:text-gray-400 text-[10px] font-bold tracking-wider">
-                            {activeOption.duration >= 36500 ? '/lifetime' : '/month'}
+                            {isLifetime ? '/lifetime' : '/month'}
                         </span>
                     </div>
-                    {activeOption.duration > 30 && (
+                    {!isLifetime && activeOption.duration > 30 && (
                         <p className={cn("text-gray-400 dark:text-gray-500 mt-0.5 font-medium", compact ? "text-[12px]" : "text-[13px]")}>
-                            ₹{activeOption.price.toLocaleString()} for {activeOption.duration >= 36500 ? 'Lifetime access' : `${Math.round(activeOption.duration / 30)} months`}
+                            ₹{activeOption.price.toLocaleString()} for {Math.round(activeOption.duration / 30)} months
+                        </p>
+                    )}
+                    {isLifetime && (
+                        <p className={cn("text-gray-400 dark:text-gray-500 mt-0.5 font-medium", compact ? "text-[12px]" : "text-[13px]")}>
+                            One-time payment
                         </p>
                     )}
                     
-                    {!isCurrent && currentPlan && currentPlan.plan !== 'FREE' && activeOption.price > (currentPlan.planDetails?.price || 0) && (
+                    {isUpgradeTier && currentPlan && currentPlan.plan !== 'FREE' && currentPrice > 0 && activeOption.price > currentPrice && (
                         <p className={cn("font-bold text-primary-600 dark:text-primary-400 leading-tight", compact ? "text-sm mt-2" : "text-sm mt-4")}>
-                            Upgrade for just ₹{Math.round((activeOption.price - (currentPlan.planDetails?.price || 0)) / Math.max(1, Math.round(activeOption.duration / 30)))}/month 
+                            {isLifetime ? `Upgrade for just ₹${(activeOption.price - currentPrice).toLocaleString()}` : `Upgrade for just ₹${Math.round((activeOption.price - currentPrice) / Math.max(1, Math.round(activeOption.duration / 30))).toLocaleString()}/month`} 
                             {!compact && <br />}
-                            <span className="text-gray-400 dark:text-gray-600 font-normal"> (₹{activeOption.price.toLocaleString()} - ₹{currentPlan.planDetails?.price.toLocaleString()})</span>
+                            <span className="text-gray-400 dark:text-gray-600 font-normal"> (₹{activeOption.price.toLocaleString()} - ₹{currentPrice.toLocaleString()})</span>
                         </p>
                     )}
                 </div>
@@ -159,18 +184,16 @@ const Pricing = () => {
 
                 <button
                     onClick={() => handlePlanClick({ ...plan, selectedDuration })}
-                    disabled={isCurrent}
+                    disabled={buttonDisabled}
                     className={cn(
-                        "w-full rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98]",
+                        "w-full rounded-2xl font-bold transition-all shadow-lg text-white btn-primary shadow-primary-500/20",
                         compact ? "py-1.5 text-[12px] mb-3" : "py-2 text-[13px] mb-5",
-                        isCurrent 
-                            ? "bg-gray-200 dark:bg-[#25252b] text-gray-400 dark:text-gray-500 cursor-default shadow-none"
-                            : (isPopular || compact)
-                                ? "btn-primary shadow-primary-500/20"
-                                : "bg-gray-900 dark:bg-[#25252b] hover:bg-gray-800 dark:hover:bg-[#2e2e36] text-white dark:text-gray-300"
+                        buttonDisabled 
+                            ? "opacity-50 cursor-not-allowed"
+                            : "active:scale-[0.98] hover:opacity-90"
                     )}
                 >
-                    {isCurrent ? "Active" : currentPlan && currentPlan.plan !== 'FREE' ? "Upgrade Plan" : "Subscribe"}
+                    {isCurrentTier ? "Subscription Active" : isLowerTier ? "Subscribe" : currentPlan && currentPlan.plan !== 'FREE' ? "Upgrade Plan" : "Subscribe"}
                 </button>
 
                 <div>

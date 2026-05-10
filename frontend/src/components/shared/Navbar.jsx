@@ -13,61 +13,73 @@ const NavItem = ({ link, isDark, setIsMenuOpen }) => {
     if (link.children) {
         return (
             <div className="relative group/item">
-                <div className="px-2">
-                    <button 
-                        onClick={() => setIsSubmenuOpen(!isSubmenuOpen)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all text-sm font-medium ${isSubmenuOpen ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e]'}`}
-                    >
-                        <div className="flex items-center space-x-3">
-                            <span className={`opacity-70 group-hover/item:opacity-100 transition-opacity ${isSubmenuOpen ? 'opacity-100' : ''}`}>
-                                {link.icon}
-                            </span>
-                            <span>{link.label}</span>
-                        </div>
-                        {/* Mobile Chevron */}
-                        <svg className={`w-3.5 h-3.5 transition-transform duration-200 lg:hidden ${isSubmenuOpen ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                        </svg>
-                        {/* Desktop Chevron Indicator */}
-                        <svg className="w-3 h-3 text-gray-400 group-hover/item:text-primary-500 transition-colors hidden lg:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                </div>
+                <button 
+                    onClick={() => setIsSubmenuOpen(!isSubmenuOpen)}
+                    className={`w-[calc(100%-1rem)] flex items-center justify-between px-4 py-2.5 mx-2 rounded-md transition-all text-sm font-medium ${isSubmenuOpen ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e]'}`}
+                >
+                    <div className="flex items-center space-x-3">
+                        <span className={`opacity-70 group-hover/item:opacity-100 transition-opacity ${isSubmenuOpen ? 'opacity-100' : ''}`}>
+                            {link.icon}
+                        </span>
+                        <span>{link.label}</span>
+                    </div>
+                    <svg className={`w-3.5 h-3.5 transition-transform duration-200 lg:hidden ${isSubmenuOpen ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
                 
                 {/* Submenu - Accordion style on mobile */}
-                <div className={`${isSubmenuOpen ? 'block' : 'hidden'} lg:hidden bg-gray-50 dark:bg-[var(--color-bg-card)] mt-0.5 mx-2 rounded-lg overflow-hidden animate-in slide-in-from-top-1 duration-200`}>
+                <div className={`${isSubmenuOpen ? 'block' : 'hidden'} lg:hidden bg-gray-50 dark:bg-[#1a1a24] mx-2 mt-0.5 rounded-md overflow-hidden animate-in slide-in-from-top-1 duration-200`}>
                     {link.children.map((child, cIdx) => (
-                        <Link
-                            key={cIdx}
-                            to={child.to}
-                            target={child.newTab ? "_blank" : undefined}
-                            rel={child.newTab ? "noopener noreferrer" : undefined}
-                            onClick={() => setIsMenuOpen(false)}
-                            className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-[13px] font-medium transition-colors"
-                        >
-                            {child.label}
-                        </Link>
-                    ))}
-                </div>
- 
-                {/* Desktop Flyout Side Menu */}
-                <div className="absolute right-full top-0 pr-1 opacity-0 invisible lg:group-hover/item:visible lg:group-hover/item:opacity-100 transition-all duration-200 z-[1000] translate-x-2 lg:group-hover/item:translate-x-0">
-                    <div className="w-56 bg-white dark:bg-[#0d0d12] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-[0_10px_40px_rgba(0,0,0,0.2)] py-2">
-                        <div className="px-4 py-2 mb-1 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 rounded-t-2xl">
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">{link.label}</span>
-                        </div>
-                        {link.children.map((child, cIdx) => (
+                        child.newTab ? (
+                            <a
+                                key={cIdx}
+                                href={child.to}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-xs font-semibold transition-colors"
+                            >
+                                {child.label}
+                            </a>
+                        ) : (
                             <Link
                                 key={cIdx}
                                 to={child.to}
-                                target={child.newTab ? "_blank" : undefined}
-                                rel={child.newTab ? "noopener noreferrer" : undefined}
                                 onClick={() => setIsMenuOpen(false)}
-                                className="dropdown-item !py-2.5 !mx-2 rounded-lg"
+                                className="block px-11 py-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-xs font-semibold transition-colors"
                             >
                                 {child.label}
                             </Link>
+                        )
+                    ))}
+                </div>
+
+                {/* Desktop Flyout */}
+                <div className="absolute right-full top-0 pr-1 hidden lg:group-hover/item:block z-[500]">
+                    <div className={`w-56 bg-white dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 py-1 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                        {link.children.map((child, cIdx) => (
+                            child.newTab ? (
+                                <a
+                                    key={cIdx}
+                                    href={child.to}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all text-sm font-medium truncate"
+                                >
+                                    {child.label}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={cIdx}
+                                    to={child.to}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block px-4 py-2.5 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all text-sm font-medium truncate"
+                                >
+                                    {child.label}
+                                </Link>
+                            )
                         ))}
                     </div>
                 </div>
@@ -149,7 +161,7 @@ const Navbar = () => {
         return (
             <div className="fixed top-0 left-0 right-0 z-50">
                 <SaleBanner onHeightChange={setBannerHeight} />
-                <nav ref={navRef} className="bg-white/70 dark:bg-[#0B0B0F]/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50">
+                <nav ref={navRef} className="bg-white/70 dark:bg-[#111117]/70 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16">
                             <div className="flex items-center gap-2">
@@ -293,7 +305,7 @@ const Navbar = () => {
     return (
         <div className="fixed top-0 left-0 right-0 z-50">
             <SaleBanner onHeightChange={setBannerHeight} />
-            <nav ref={navRef} className="bg-[#F1F3F4] dark:bg-[#111117] border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
+            <nav ref={navRef} className="bg-white dark:bg-[#111117] border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo (Left side) */}
@@ -341,38 +353,38 @@ const Navbar = () => {
 
                             {/* Dropdown Menu */}
                             {isMenuOpen && (
-                                <div className="dropdown-menu top-[60px] right-0 w-64 !bg-[var(--color-bg-card)] dark:!bg-[#0f0f0f] !opacity-100 shadow-2xl border border-gray-100 dark:border-gray-800">
-                                    {/* Header in Dropdown (optional context) */}
-                                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 mb-1 bg-gray-50/50 dark:bg-white/5 rounded-t-xl">
-                                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                                    </div>
+                                <div className={`absolute top-[60px] right-0 w-64 bg-white dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 block z-[500] py-2 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                                {/* Header in Dropdown (optional context) */}
+                                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                </div>
 
-                                    {/* Menu Items */}
-                                    <div className="space-y-0.5 py-1">
-                                        {links.map((link, idx) => (
-                                            <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
-                                        ))}
-                                    </div>
+                                {/* Menu Items */}
+                                <div className="space-y-0.5">
+                                    {links.map((link, idx) => (
+                                        <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
+                                    ))}
+                                </div>
 
-                                    {/* Divider */}
-                                    <div className="dropdown-divider" />
+                                {/* Divider */}
+                                <div className="my-2 border-t border-gray-100 dark:border-gray-700" />
 
-                                    {/* Logout */}
-                                    <button
-                                        onClick={handleLogout}
-                                        disabled={isLoggingOut}
-                                        className="dropdown-item-danger !mx-2 !py-2.5 mb-1"
-                                    >
-                                        {isLoggingOut ? (
-                                            <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                        ) : (
-                                            <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                            </svg>
-                                        )}
-                                        <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
-                                    </button>
+                                {/* Logout */}
+                                <button
+                                    onClick={handleLogout}
+                                    disabled={isLoggingOut}
+                                    className="w-[calc(100%-1rem)] flex items-center space-x-3 px-4 py-2.5 mx-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-all text-sm font-medium text-left disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    {isLoggingOut ? (
+                                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                    )}
+                                    <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                                </button>
                                 </div>
                             )}
                         </div>

@@ -3,7 +3,7 @@ import {
     CreditCard, Search, Filter, Calendar, 
     CheckCircle, XCircle, Clock, Users, 
     ArrowUpRight, Download, Loader2, Mail,
-    Zap, Shield, ExternalLink, RefreshCw
+    Zap, Shield, ExternalLink, RefreshCw, Tag, ChevronDown
 } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import toast from 'react-hot-toast';
@@ -16,17 +16,31 @@ const SubscriptionManager = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [assignModalOpen, setAssignModalOpen] = useState(false);
     
+    const [plans, setPlans] = useState([]);
+    const [durationMode, setDurationMode] = useState('preset'); // 'preset' or 'custom'
+    
     // Assign Plan Form State
     const [assignData, setAssignData] = useState({
         email: '',
-        plan: 'PLUS',
+        plan: '', // Name for legacy
+        planId: '', // ID for created plans
         durationMonths: 12
     });
 
     useEffect(() => {
         fetchSubscriptions();
         fetchStats();
+        fetchPlans();
     }, [statusFilter]);
+
+    const fetchPlans = async () => {
+        try {
+            const response = await apiClient.get('/plans');
+            setPlans(response.data.plans || []);
+        } catch (error) {
+            console.error('Failed to fetch plans');
+        }
+    };
 
     const fetchSubscriptions = async () => {
         setLoading(true);
@@ -53,11 +67,20 @@ const SubscriptionManager = () => {
     const handleAssignPlan = async (e) => {
         e.preventDefault();
         try {
-            const response = await apiClient.post('/admin/users/assign-plan', assignData);
+            // Prepare data: if it's a legacy plan string, send 'plan'. If it's a planId, send 'planId'.
+            const payload = { ...assignData };
+            
+            // Validation
+            if (!payload.plan && !payload.planId) {
+                return toast.error('Please select a plan');
+            }
+
+            const response = await apiClient.post('/admin/users/assign-plan', payload);
             if (response.data.success) {
                 toast.success(response.data.message);
                 setAssignModalOpen(false);
-                setAssignData({ email: '', plan: 'PLUS', durationMonths: 12 });
+                setAssignData({ email: '', plan: '', planId: '', durationMonths: 12 });
+                setDurationMode('preset');
                 fetchSubscriptions();
             }
         } catch (error) {
@@ -266,31 +289,93 @@ const SubscriptionManager = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-6">
                                     <div>
-                                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Plan</label>
-                                        <select 
-                                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-2xl outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] appearance-none"
-                                            value={assignData.plan}
-                                            onChange={(e) => setAssignData({...assignData, plan: e.target.value})}
-                                        >
-                                            <option value="BASIC">BASIC</option>
-                                            <option value="PLUS">PLUS</option>
-                                            <option value="PRO">PRO</option>
-                                        </select>
+                                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Select Plan</label>
+                                        <div className="relative">
+                                            <select 
+                                                className="w-full px-5 py-3.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-2xl outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] appearance-none font-bold"
+                                                value={assignData.planId || assignData.plan}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    // Check if it's a planId (usually UUID or MongoDB ID length)
+                                                    if (val.length > 10) {
+                                                        setAssignData({...assignData, planId: val, plan: ''});
+                                                    } else {
+                                                        setAssignData({...assignData, planId: '', plan: val});
+                                                    }
+                                                }}
+                                                required
+                                            >
+                                                <option value="">Choose a plan...</option>
+                                                <optgroup label="Created Plans">
+                                                    {plans.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>
+                                                    ))}
+                                                </optgroup>
+                                                <optgroup label="Legacy/Simple Roles">
+                                                    <option value="BASIC">BASIC</option>
+                                                    <option value="PLUS">PLUS</option>
+                                                    <option value="PRO">PRO</option>
+                                                </optgroup>
+                                            </select>
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                <ChevronDown size={18} />
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div>
-                                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Duration</label>
-                                        <select 
-                                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-2xl outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] appearance-none"
-                                            value={assignData.durationMonths}
-                                            onChange={(e) => setAssignData({...assignData, durationMonths: parseInt(e.target.value)})}
-                                        >
-                                            <option value={1}>1 Month</option>
-                                            <option value={6}>6 Months</option>
-                                            <option value={12}>1 Year</option>
-                                            <option value={24}>2 Years</option>
-                                        </select>
+                                        <div className="flex items-center justify-between mb-2 ml-1">
+                                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-400">Duration</label>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setDurationMode(durationMode === 'preset' ? 'custom' : 'preset')}
+                                                className="text-[10px] font-black uppercase text-[var(--color-accent)] hover:underline"
+                                            >
+                                                {durationMode === 'preset' ? 'Custom Months' : 'Preset Options'}
+                                            </button>
+                                        </div>
+                                        
+                                        {durationMode === 'preset' ? (
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { label: '1 Mo', value: 1 },
+                                                    { label: '3 Mo', value: 3 },
+                                                    { label: '6 Mo', value: 6 },
+                                                    { label: '1 Year', value: 12 },
+                                                    { label: '2 Year', value: 24 },
+                                                    { label: 'Lifetime', value: 1200 }
+                                                ].map(opt => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        onClick={() => setAssignData({...assignData, durationMonths: opt.value})}
+                                                        className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                                                            assignData.durationMonths === opt.value
+                                                                ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white shadow-lg shadow-[var(--color-accent)]/20'
+                                                                : 'bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-[var(--color-accent)]/50'
+                                                        }`}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="relative">
+                                                <input 
+                                                    type="number" 
+                                                    className="w-full px-5 py-3.5 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-2xl outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] font-bold"
+                                                    placeholder="Enter number of months..."
+                                                    value={assignData.durationMonths}
+                                                    onChange={(e) => setAssignData({...assignData, durationMonths: parseInt(e.target.value) || 0})}
+                                                    min="1"
+                                                />
+                                                <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold uppercase tracking-widest">
+                                                    Months
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -304,8 +389,9 @@ const SubscriptionManager = () => {
                                     </button>
                                     <button 
                                         type="submit"
-                                        className="flex-2 px-10 py-4 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-bold hover:opacity-90 shadow-xl shadow-black/20 transition-all"
+                                        className="flex-[2] px-10 py-4 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-bold hover:opacity-90 shadow-xl shadow-black/20 transition-all flex items-center justify-center gap-2"
                                     >
+                                        <Zap size={18} />
                                         Assign Plan
                                     </button>
                                 </div>

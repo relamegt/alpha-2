@@ -812,23 +812,30 @@ const assignPlanByEmail = async (req, res) => {
             if (!planDetails) {
                 return res.status(404).json({ success: false, message: 'Plan not found' });
             }
-            expiryDate.setDate(expiryDate.getDate() + (planDetails.durationInDays || 30));
+            
+            // Priority: Admin provided durationMonths > Plan default duration
+            if (durationMonths) {
+                expiryDate.setMonth(expiryDate.getMonth() + parseInt(durationMonths));
+            } else {
+                expiryDate.setDate(expiryDate.getDate() + (planDetails.durationInDays || 30));
+            }
             
             await prisma.user.update({
                 where: { id: user.id },
                 data: {
                     planId,
-                    plan: 'PRO', // Set a default high-tier legacy role for backward compatibility
+                    plan: planDetails.name || 'PRO', 
                     subscriptionExpiresAt: expiryDate
                 }
             });
         } else {
-            // Legacy way
-            expiryDate.setMonth(expiryDate.getMonth() + (durationMonths || 1));
+            // Legacy way (Direct role assignment)
+            expiryDate.setMonth(expiryDate.getMonth() + (parseInt(durationMonths) || 1));
             await prisma.user.update({
                 where: { id: user.id },
                 data: {
                     plan: plan || 'FREE',
+                    planId: null, // Ensure planId is cleared if legacy plan is assigned
                     subscriptionExpiresAt: expiryDate
                 }
             });

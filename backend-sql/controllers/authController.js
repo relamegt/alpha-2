@@ -146,7 +146,15 @@ const login = async (req, res) => {
                 profileCompleted: user.profileCompleted || false,
                 isPublicProfile: user.isPublicProfile !== false, // defaults to true if undefined
                 isFirstLogin: user.isFirstLogin || false,
-                isSpotUser: false
+                isSpotUser: false,
+                plan: user.plan,
+                planId: user.planId,
+                planInstance: user.planInstance,
+                subscriptionExpiresAt: user.subscriptionExpiresAt,
+                dailyAiTokensUsed: user.dailyAiTokensUsed,
+                dailyCompilerUsed: user.dailyCompilerUsed,
+                dailySubmissionsUsed: user.dailySubmissionsUsed,
+                dailyAiInterviewsUsed: user.dailyAiInterviewsUsed
             }
         });
     } catch (error) {
@@ -324,7 +332,15 @@ const googleLogin = async (req, res) => {
                 isOnline: user.isOnline || false,
                 googleId: user.googleId,
                 profileCompleted: user.profileCompleted,
-                isFirstLogin: user.isFirstLogin || false
+                isFirstLogin: user.isFirstLogin || false,
+                plan: user.plan,
+                planId: user.planId,
+                planInstance: user.planInstance,
+                subscriptionExpiresAt: user.subscriptionExpiresAt,
+                dailyAiTokensUsed: user.dailyAiTokensUsed,
+                dailyCompilerUsed: user.dailyCompilerUsed,
+                dailySubmissionsUsed: user.dailySubmissionsUsed,
+                dailyAiInterviewsUsed: user.dailyAiInterviewsUsed
             }
         });
     } catch (error) {
@@ -632,7 +648,10 @@ const getCurrentUser = async (req, res) => {
                 isFirstLogin: user.isFirstLogin || false,
                 isSpotUser: req.user.isSpotUser || false,
                 registeredForContest: user.registeredForContest,
+                plan: user.plan,
+                planId: user.planId,
                 planInstance: user.planInstance,
+                subscriptionExpiresAt: user.subscriptionExpiresAt,
                 dailyAiTokensUsed: user.dailyAiTokensUsed,
                 dailyCompilerUsed: user.dailyCompilerUsed,
                 dailySubmissionsUsed: user.dailySubmissionsUsed,

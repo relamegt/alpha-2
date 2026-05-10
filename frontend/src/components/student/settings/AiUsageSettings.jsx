@@ -113,7 +113,8 @@ const AiUsageSettings = () => {
             {/* Usage Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {usageCards.map((card, idx) => {
-                    const percentage = Math.min(100, (card.value / card.limit) * 100);
+                    const isUnlimited = card.limit >= 100000;
+                    const percentage = isUnlimited ? 0 : card.limit > 0 ? Math.min(100, (card.value / card.limit) * 100) : 0;
                     const colorClass = card.color === 'amber' 
                         ? 'bg-gradient-to-r from-amber-500 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.4)]' 
                         : card.color === 'blue' 
@@ -140,7 +141,7 @@ const AiUsageSettings = () => {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-[10px] font-bold">
                                     <span className="text-gray-400">Progress</span>
-                                    <span className={textClass}>{Math.round(percentage)}%</span>
+                                    <span className={textClass}>{isUnlimited ? 'Unlimited' : card.limit > 0 ? `${Math.round(percentage)}%` : '0%'}</span>
                                 </div>
                                 <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                     <div 
@@ -150,7 +151,7 @@ const AiUsageSettings = () => {
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] text-gray-400 font-medium">
                                     <span>0</span>
-                                    <span>Limit: {card.limit.toLocaleString()} {card.unit}</span>
+                                    <span>{isUnlimited ? 'Unlimited' : `Limit: ${card.limit.toLocaleString()}`} {card.unit}</span>
                                 </div>
                             </div>
                         </div>

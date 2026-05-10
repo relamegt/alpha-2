@@ -167,6 +167,16 @@ const adminService = {
             throw error.response?.data || { message: 'Failed to assign plan' };
         }
     },
+
+    // Get All Plans → GET /api/plans
+    getAllPlans: async () => {
+        try {
+            const response = await apiClient.get('/plans');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to fetch plans' };
+        }
+    },
 };
 
 export default adminService;
