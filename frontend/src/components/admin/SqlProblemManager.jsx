@@ -460,7 +460,7 @@ const SqlProblemManager = () => {
                                                         }}
                                                         placeholder="Explanation for this example..."
                                                         rows={2}
-                                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded outline-none resize-none"
+                                                        className="w-full bg-[var(--color-bg-primary)] border border-gray-100 dark:border-gray-800 rounded-2xl p-4 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
                                                     />
                                                 </div>
                                                 <label className="flex items-center gap-2 cursor-pointer select-none">

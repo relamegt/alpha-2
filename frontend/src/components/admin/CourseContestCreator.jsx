@@ -111,7 +111,7 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
             <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Form Details */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-[#181820] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
+                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
                         <div className="flex items-center gap-2 text-lg font-bold border-b border-gray-50 pb-4">
                             <FileText size={20} className="text-indigo-500" /> Basic Information
                         </div>
@@ -166,7 +166,7 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#181820] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
+                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
                         <div className="flex items-center gap-2 text-lg font-bold border-b border-gray-50 pb-4">
                             <Shield size={20} className="text-indigo-500" /> Proctoring & Integrity
                         </div>
@@ -209,7 +209,7 @@ const CourseContestCreator = ({ onSuccess, onBack, initialData }) => {
 
                 {/* Right Column: Problem Selection */}
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-[#181820] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-[700px]">
+                    <div className="bg-white dark:bg-[var(--color-bg-card)] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-[700px]">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold flex items-center gap-2">
                                 <Code size={20} className="text-indigo-500" /> Problems

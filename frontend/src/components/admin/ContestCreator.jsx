@@ -446,7 +446,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                                     type="number"
                                                     value={formData.tabSwitchLimit}
                                                     onChange={(e) => setFormData({ ...formData, tabSwitchLimit: parseInt(e.target.value) || 0 })}
-                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-gray-100 placeholder:text-gray-500"
+                                                    className="input-field w-full text-sm py-1.5 dark:bg-[var(--color-bg-primary)] dark:border-gray-700 dark:text-gray-100 placeholder:text-gray-500"
                                                     min="0"
                                                     placeholder="e.g. 3"
                                                 />
@@ -457,7 +457,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                                     type="number"
                                                     value={formData.maxViolations}
                                                     onChange={(e) => setFormData({ ...formData, maxViolations: parseInt(e.target.value) || 1 })}
-                                                    className="input-field w-full text-sm py-1.5 dark:bg-[#111117] dark:border-gray-700 dark:text-white placeholder:text-gray-500"
+                                                    className="input-field w-full text-sm py-1.5 dark:bg-[var(--color-bg-primary)] dark:border-gray-700 dark:text-white placeholder:text-gray-500"
                                                     min="1"
                                                     placeholder="e.g. 5"
                                                 />
@@ -506,7 +506,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                 </h4>
                                 <div className="space-y-2">
                                     {newProblems.map((p, idx) => (
-                                        <div key={`new-problem-${idx}`} className="flex justify-between items-center bg-white dark:bg-[#111117] p-3 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">
+                                        <div key={`new-problem-${idx}`} className="flex justify-between items-center bg-white dark:bg-[var(--color-bg-card)] p-3 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">
                                             <div>
                                                 <span className="font-semibold text-gray-800">{p.title}</span>
                                                 <div className="flex items-center space-x-2 mt-1">
@@ -533,7 +533,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         )}
 
                         {/* Search and Filter */}
-                        <div className="flex flex-col md:flex-row gap-4 bg-gray-50 dark:bg-[#111117]/40 p-4 rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+                        <div className="flex flex-col md:flex-row gap-4 bg-gray-50 dark:bg-[var(--color-bg-card)]/40 p-4 rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <input
@@ -541,7 +541,7 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                     placeholder="Search existing problems..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white dark:bg-[#111117] border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/20 focus:border-purple-400 dark:focus:border-purple-500 transition-all shadow-sm dark:text-white"
+                                    className="w-full bg-white dark:bg-[var(--color-bg-primary)] border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/20 focus:border-purple-400 dark:focus:border-purple-500 transition-all shadow-sm dark:text-white"
                                 />
                             </div>
                             <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
@@ -559,8 +559,8 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                         </div>
 
                         {/* Existing Problems List */}
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[#111117]">
-                            <div className="bg-gray-50/50 dark:bg-[#111117]/50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[var(--color-bg-card)]">
+                            <div className="bg-gray-50/50 dark:bg-[var(--color-bg-primary)]/50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                 <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Available Problems</span>
                                 <span className="text-xs font-medium text-gray-400">
                                     Selected: {formData.existingProblemIds.length + newProblems.length}
@@ -585,10 +585,10 @@ const ContestCreator = ({ onSuccess, onBack, initialData }) => {
                                                     onClick={() => toggleExistingProblem(problemId)}
                                                     className={`flex items-center p-3 rounded-xl transition-all cursor-pointer border ${isSelected
                                                         ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700 shadow-sm'
-                                                        : 'bg-white dark:bg-[#111117] hover:bg-gray-50 dark:hover:bg-[#23232e] border-transparent hover:border-gray-100 dark:hover:border-gray-700'
+                                                        : 'bg-white dark:bg-[var(--color-bg-card)] hover:bg-gray-50 dark:hover:bg-[#23232e] border-transparent hover:border-gray-100 dark:hover:border-gray-700'
                                                         }`}
                                                 >
-                                                    <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center transition-colors ${isSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111117]'}`}>
+                                                    <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center transition-colors ${isSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-[var(--color-bg-primary)]'}`}>
                                                         {isSelected && <CheckSquare size={12} className="text-white" />}
                                                     </div>
 

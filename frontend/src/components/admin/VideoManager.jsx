@@ -302,30 +302,30 @@ const VideoManager = () => {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Title</label>
-                                    <input required type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input required type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Section/Topic</label>
-                                    <input type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="e.g. Recursion, DP" />
+                                    <input type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" placeholder="e.g. Recursion, DP" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold">Video URL (YouTube/Direct)</label>
-                                    <input required type="text" value={formData.videoUrl} onChange={e => setFormData({ ...formData, videoUrl: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="https://youtube.com/watch?v=..." />
+                                    <input required type="text" value={formData.videoUrl} onChange={e => setFormData({ ...formData, videoUrl: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" placeholder="https://youtube.com/watch?v=..." />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-primary-600 flex items-center gap-1.5"><FileText size={14} /> Summary Link (Optional)</label>
-                                    <input type="text" value={formData.summaryLink} onChange={e => setFormData({ ...formData, summaryLink: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" placeholder="https://docs.google.com/..." />
+                                    <input type="text" value={formData.summaryLink} onChange={e => setFormData({ ...formData, summaryLink: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" placeholder="https://docs.google.com/..." />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Description</label>
-                                <textarea rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none resize-none" />
+                                <textarea rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none resize-none" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold">Summary Content (Optional Markdown)</label>
-                                <textarea rows={4} value={formData.summary?.content || ''} onChange={e => setFormData({ ...formData, summary: { content: e.target.value } })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none resize-none" placeholder="Add study material or notes here..." />
+                                <textarea rows={4} value={formData.summary?.content || ''} onChange={e => setFormData({ ...formData, summary: { content: e.target.value } })} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none resize-none" placeholder="Add study material or notes here..." />
                             </div>
 
                             {/* Quiz Questions Section */}
@@ -348,7 +348,7 @@ const VideoManager = () => {
                                             <div className="flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-3">
                                                 <div className="flex-1 space-y-1">
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Question {qIdx + 1}</label>
-                                                    <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
+                                                    <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
                                                 </div>
                                                 <div className="flex flex-col items-center gap-1 min-w-[100px] pt-4">
                                                     <label className="text-[9px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-tighter">Multiple Correct?</label>
@@ -391,11 +391,11 @@ const VideoManager = () => {
                                                                 className="accent-primary-500 w-3 h-3"
                                                             />
                                                         )}
-                                                        <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-xs focus:border-primary-500 transition-colors" />
+                                                        <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none text-xs focus:border-primary-500 transition-colors" />
                                                     </div>
                                                 ))}
                                             </div>
-                                            <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-[10px] italic bg-transparent" />
+                                            <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none text-[10px] italic bg-transparent" />
                                         </div>
                                     ))}
                                     {(!formData.quizQuestions || formData.quizQuestions.length === 0) && (

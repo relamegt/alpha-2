@@ -652,46 +652,48 @@ const CourseManager = () => {
     };
 
     return (
-        <div className="admin-page-wrapper">
-            <div className="max-w-7xl mx-auto">
-                <header className="page-header-container flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        {viewMode === 'details' ? (
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => {
-                                        setViewMode('grid');
-                                        setActiveCourseId(null);
-                                        invalidateAll();
-                                    }}
-                                    className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300"
-                                >
-                                    <ArrowLeft size={20} />
-                                </button>
+        <div className="admin-page-wrapper transition-colors">
+            <div className="space-y-8 animate-fade-in">
+                <header className="page-header-container">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div className="flex items-center gap-4">
+                            {viewMode === 'details' ? (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            setViewMode('grid');
+                                            setActiveCourseId(null);
+                                            invalidateAll();
+                                        }}
+                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all text-gray-500 hover:text-primary-600"
+                                    >
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                    <div>
+                                        <h1 className="page-header-title">{activeCourse?.title}</h1>
+                                        <p className="page-header-desc">Manage sections, subsections, and content</p>
+                                    </div>
+                                </>
+                            ) : (
                                 <div>
-                                    <h1 className="page-header-title">{activeCourse.title}</h1>
-                                    <p className="page-header-desc">Manage sections, subsections, and content</p>
+                                    <h1 className="page-header-title">Course Manager</h1>
+                                    <p className="page-header-desc">Organize learning content into courses and sections.</p>
                                 </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <h1 className="page-header-title">Course Manager</h1>
-                                <p className="page-header-desc">Organize learning content into courses and sections.</p>
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        {viewMode === 'grid' ? (
-                            <button onClick={() => setShowCreateCourseModal(true)} className="btn-primary flex items-center gap-2">
-                                <Plus size={18} />
-                                <span>Create Course</span>
-                            </button>
-                        ) : (
-                            <button onClick={() => setShowCreateSectionModal(true)} className="btn-primary flex items-center gap-2">
-                                <Plus size={18} />
-                                <span>Add Section</span>
-                            </button>
-                        )}
+                            )}
+                        </div>
+                        <div>
+                            {viewMode === 'grid' ? (
+                                <button onClick={() => setShowCreateCourseModal(true)} className="btn-primary flex items-center gap-2">
+                                    <Plus size={18} />
+                                    <span>Create Course</span>
+                                </button>
+                            ) : (
+                                <button onClick={() => setShowCreateSectionModal(true)} className="btn-primary flex items-center gap-2">
+                                    <Plus size={18} />
+                                    <span>Add Section</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </header>
 
@@ -791,7 +793,7 @@ const CourseManager = () => {
             ) : (
                 <div className="space-y-4">
                     <div className="glass-panel p-2 shadow-sm border border-gray-100 dark:border-gray-800 rounded-xl">
-                        <div className="bg-gray-50/50 dark:bg-[#111117] p-2 space-y-3 animate-fade-in rounded-lg">
+                        <div className="bg-gray-50/50 dark:bg-[var(--color-bg-primary)] p-2 space-y-3 animate-fade-in rounded-lg">
                             {activeCourse.sections && activeCourse.sections.length > 0 ? (
                                 activeCourse.sections.map(section => (
                                     <div key={section._id} className="bg-white dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden transition-all hover:shadow-md">
@@ -1020,7 +1022,7 @@ const CourseManager = () => {
 
                                                             {/* Problems List */}
                                                             {expandedSubsection === sub._id && (
-                                                                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-[#111117]/20">
+                                                                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-[var(--color-bg-primary)]/20">
                                                                     {sub.problemIds && sub.problemIds.length > 0 ? (
                                                                         <>
                                                                             {selectedToRemove.length > 0 && (

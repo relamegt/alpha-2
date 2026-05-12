@@ -1,6 +1,6 @@
 import {
     Plus, Search, Edit2, Trash2, CheckCircle, XCircle,
-    Spotlight, Calendar, Type, Link as LinkIcon, Palette, Eye
+    Spotlight, Calendar, Type, Link as LinkIcon, Palette, Eye, X
 } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import { toast } from 'react-hot-toast';
@@ -184,7 +184,7 @@ const SaleManager = () => {
                                 {editingBanner ? 'Edit Sale Banner' : 'Create New Flash Sale'}
                             </h2>
                             <button onClick={() => setIsModalOpen(false)} className="modal-close">
-                                <XCircle size={24} />
+                                <X size={20} />
                             </button>
                         </div>
 
@@ -194,7 +194,7 @@ const SaleManager = () => {
                                     <label className="text-xs font-bold uppercase text-gray-500">Banner Title</label>
                                     <input
                                         type="text" required
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-bold"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none font-bold"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         placeholder="e.g. MEGA SUMMER SALE! 🔥"
@@ -204,7 +204,7 @@ const SaleManager = () => {
                                     <label className="text-xs font-bold uppercase text-gray-500">End Date & Time</label>
                                     <input
                                         type="datetime-local" required
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none"
                                         value={formData.endTime}
                                         onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                                     />
@@ -215,7 +215,7 @@ const SaleManager = () => {
                                 <label className="text-xs font-bold uppercase text-gray-500">Subtitle / Offer Text</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none"
                                     value={formData.subtitle}
                                     onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                                     placeholder="Get 50% OFF..."
@@ -226,7 +226,7 @@ const SaleManager = () => {
                                 <label className="text-xs font-bold uppercase text-gray-500">Coupon Code</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-mono font-bold uppercase"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none font-mono font-bold uppercase"
                                     value={formData.couponCode}
                                     onChange={(e) => setFormData({ ...formData, couponCode: e.target.value.toUpperCase() })}
                                     placeholder="e.g. FLASH50"
@@ -238,7 +238,7 @@ const SaleManager = () => {
                                     <label className="text-xs font-bold uppercase text-gray-500">Button Text</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none"
                                         value={formData.buttonText}
                                         onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
                                     />
@@ -247,7 +247,7 @@ const SaleManager = () => {
                                     <label className="text-xs font-bold uppercase text-gray-500">Button Link</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none"
                                         value={formData.buttonLink}
                                         onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
                                     />

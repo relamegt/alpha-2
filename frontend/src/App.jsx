@@ -132,7 +132,7 @@ const ProtectedRoute = ({ children, allowedRoles, hideNavbar = false }) => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors">
+            <div className="flex justify-center items-center h-screen bg-[var(--color-bg-primary)] transition-colors">
                 <div className="spinner"></div>
             </div>
         );
@@ -161,7 +161,7 @@ const ProtectedRoute = ({ children, allowedRoles, hideNavbar = false }) => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors">{children}</div>
+        <div className="min-h-screen bg-[var(--color-bg-primary)] transition-colors">{children}</div>
     );
 };
 
@@ -208,7 +208,7 @@ const PublicRoute = ({ children }) => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors">
+            <div className="flex justify-center items-center h-screen bg-[var(--color-bg-primary)] transition-colors">
                 <div className="spinner"></div>
             </div>
         );
@@ -370,8 +370,8 @@ function App() {
 
                             {/* Fallbacks */}
                             <Route path="/" element={<><Navbar /><Home /></>} />
-                            <Route path="/unauthorized" element={<div className="flex justify-center items-center h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors"><div className="text-center"><h1 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-4">403 - Unauthorized</h1><p className="text-gray-600 dark:text-gray-400">You don't have permission to access this page.</p></div></div>} />
-                            <Route path="*" element={<div className="flex justify-center items-center h-screen bg-[#F7F5FF] dark:bg-[#111117] transition-colors"><div className="text-center"><h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">404 - Not Found</h1><p className="text-gray-600 dark:text-gray-400">The page you're looking for doesn't exist.</p></div></div>} />
+                            <Route path="/unauthorized" element={<div className="flex justify-center items-center h-screen bg-[var(--color-bg-primary)] transition-colors"><div className="text-center"><h1 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-4">403 - Unauthorized</h1><p className="text-gray-600 dark:text-gray-400">You don't have permission to access this page.</p></div></div>} />
+                            <Route path="*" element={<div className="flex justify-center items-center h-screen bg-[var(--color-bg-primary)] transition-colors"><div className="text-center"><h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">404 - Not Found</h1><p className="text-gray-600 dark:text-gray-400">The page you're looking for doesn't exist.</p></div></div>} />
                         </Routes>
                     </SecurityWrapper>
                 </AuthProvider>

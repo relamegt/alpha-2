@@ -643,7 +643,7 @@ const ProblemManager = () => {
                 <div className="modal-backdrop" onClick={() => { setShowCreateModal(false); setShowEditModal(false); }}>
                     <div className="modal-content max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         {/* ... Modal Header ... */}
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[var(--color-bg-primary)]/30">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                     {showEditModal ? <Edit2 size={20} /> : <Plus size={20} />}
@@ -804,7 +804,7 @@ const ProblemManager = () => {
                                                 </button>
                                             </div>
                                             {formData.testCases.map((tc, idx) => (
-                                                <div key={idx} className="bg-gray-900 rounded-xl p-4 border border-gray-800 relative group">
+                                                <div key={idx} className="bg-[var(--color-bg-primary)] rounded-xl p-4 border border-gray-800 relative group">
                                                     <button type="button" onClick={() => removeItem('testCase', idx)} className="absolute right-2 top-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <X size={16} />
                                                     </button>
@@ -966,7 +966,7 @@ const ProblemManager = () => {
                                 )}
                             </form>
                         </div>
-                        <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-800/30 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-[var(--color-bg-primary)]/30 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
                             <button onClick={() => { setShowCreateModal(false); setShowEditModal(false); }} className="btn-secondary">Cancel</button>
                             <button type="submit" form="problemForm" className="btn-primary" disabled={isSubmitting}>
                                 {isSubmitting ? 'Saving...' : showEditModal ? 'Update Problem' : 'Create Problem'}
@@ -979,7 +979,7 @@ const ProblemManager = () => {
             {showBulkModal && (
                 <div className="modal-backdrop" onClick={() => setShowBulkModal(false)}>
                     <div className="modal-content max-w-md" onClick={(e) => e.stopPropagation()}>
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/30">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[var(--color-bg-primary)]/30">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Bulk Upload</h2>
                             <button onClick={() => setShowBulkModal(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
                         </div>
@@ -1012,7 +1012,7 @@ const ProblemManager = () => {
                         </div>
                         <div className="modal-body p-0">
 
-                        <div className="flex bg-gray-900 p-1 border-b border-gray-800 overflow-x-auto">
+                        <div className="flex bg-[var(--color-bg-primary)] p-1 border-b border-gray-800 overflow-x-auto">
                             {['c', 'cpp', 'java', 'python', 'javascript'].map(id => (
                                 <button
                                     key={id}

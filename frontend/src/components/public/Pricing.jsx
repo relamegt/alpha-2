@@ -101,7 +101,7 @@ const Pricing = () => {
         const isUpgradeTier = thisTierLevel > currentTierLevel;
         const isLowerTier = currentPlan && currentPlan.plan !== 'FREE' && thisTierLevel < currentTierLevel;
         const buttonDisabled = isCurrentTier || isLowerTier;
-        const isLifetime = activeOption.duration >= 3600; // Treat 10+ years as lifetime
+        const isLifetime = activeOption.duration >= 360000 || activeOption.label?.toLowerCase() === 'lifetime'; // Treat 1000 years or label as lifetime
 
         return (
             <div 

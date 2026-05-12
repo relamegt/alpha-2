@@ -3,7 +3,7 @@ import {
     CreditCard, Search, Filter, Calendar, 
     CheckCircle, XCircle, Clock, Users, 
     ArrowUpRight, Download, Loader2, Mail,
-    Zap, Shield, ExternalLink, RefreshCw, Tag, ChevronDown
+    Zap, Shield, ExternalLink, RefreshCw, Tag, ChevronDown, X
 } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import toast from 'react-hot-toast';
@@ -115,32 +115,36 @@ const SubscriptionManager = () => {
     const paidRevenue = subscriptions.filter(s => !isManual(s) && s.status === 'COMPLETED').reduce((acc, s) => acc + s.amount, 0);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
+        <div className="admin-page-wrapper transition-colors">
+            <div className="space-y-8 animate-fade-in">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                        <CreditCard className="text-[var(--color-accent)]" />
-                        Subscription Management
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor revenue, track orders, and manually assign plans to users.</p>
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="page-header-title flex items-center gap-3">
+                            <CreditCard className="text-primary-600" />
+                            Subscription Management
+                        </h1>
+                        <p className="page-header-desc">Monitor revenue, track orders, and manually assign plans to users.</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => fetchSubscriptions()}
+                            className="p-2.5 bg-[var(--color-bg-card)] border border-gray-200 dark:border-gray-800 rounded-xl text-gray-500 hover:text-primary-600 transition-all shadow-sm"
+                            title="Refresh"
+                        >
+                            <RefreshCw size={20} />
+                        </button>
+                        <button 
+                            onClick={() => setAssignModalOpen(true)}
+                            className="btn-primary flex items-center gap-2"
+                        >
+                            <Zap size={18} />
+                            <span>Assign Manual Plan</span>
+                        </button>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                    <button 
-                        onClick={() => fetchSubscriptions()}
-                        className="p-3 bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-500 hover:text-[var(--color-accent)] transition-all shadow-sm"
-                    >
-                        <RefreshCw size={20} />
-                    </button>
-                    <button 
-                        onClick={() => setAssignModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-accent)] text-white rounded-2xl font-bold hover:opacity-90 shadow-lg shadow-[var(--color-accent)]/20 transition-all"
-                    >
-                        <Zap size={20} />
-                        Assign Manual Plan
-                    </button>
-                </div>
-            </div>
+            </header>
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -150,7 +154,7 @@ const SubscriptionManager = () => {
                     { label: 'Active (Paid)', value: stats.total - manualCount, icon: <CheckCircle />, color: 'green' },
                     { label: 'Pending Orders', value: stats.pending, icon: <Clock />, color: 'yellow' }
                 ].map((stat, i) => (
-                    <div key={i} className="p-6 bg-white dark:bg-[#0f0f0f] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-sm">
+                    <div key={i} className="p-6 bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-sm">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-${stat.color}-500/10 text-${stat.color}-500`}>
                             {stat.icon}
                         </div>
@@ -161,50 +165,50 @@ const SubscriptionManager = () => {
             </div>
 
             {/* Tab Switcher & Filters */}
-            <div className="flex flex-col xl:flex-row gap-6 mb-8">
-                <div className="flex p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-max">
-                    {[
-                        { id: 'all', label: 'All Subscriptions' },
-                        { id: 'paid', label: 'Standard Paid' },
-                        { id: 'manual', label: 'Manual Assignments' }
-                    ].map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id)}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                                activeTab === t.id 
-                                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                            }`}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
+            <div className="space-y-4 mb-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="page-tab-container overflow-x-auto custom-thin-scrollbar">
+                        {[
+                            { id: 'all', label: 'All Subscriptions' },
+                            { id: 'paid', label: 'Standard Paid' },
+                            { id: 'manual', label: 'Manual Assignments' }
+                        ].map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setActiveTab(t.id)}
+                                className={`page-tab-item ${activeTab === t.id ? 'active' : ''}`}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <div className="page-search-wrapper w-full lg:w-96">
+                        <Search className="page-search-icon" size={18} />
                         <input 
                             type="text" 
-                            placeholder="Search by email or Order ID..."
-                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] outline-none transition-all shadow-sm"
+                            placeholder="Search email or order..."
+                            className="page-search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex gap-2">
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 whitespace-nowrap">Filter Status</span>
+                    <div className="page-tab-container overflow-x-auto custom-thin-scrollbar">
                         {['all', 'COMPLETED', 'PENDING', 'FAILED'].map(s => (
                             <button 
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
-                                className={`px-5 py-3 rounded-2xl text-sm font-bold capitalize transition-all ${
+                                className={`page-tab-item !px-4 !py-1.5 ${
                                     statusFilter === s 
-                                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md' 
-                                        : 'bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50'
+                                        ? 'active' 
+                                        : ''
                                 }`}
                             >
-                                {s === 'all' ? 'All Orders' : s.toLowerCase()}
+                                <span className="text-[11px] font-bold uppercase">{s === 'all' ? 'Show All' : s}</span>
                             </button>
                         ))}
                     </div>
@@ -212,7 +216,7 @@ const SubscriptionManager = () => {
             </div>
 
             {/* Subscriptions Table */}
-            <div className="bg-white dark:bg-[#0f0f0f] border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-xl shadow-black/5">
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-xl shadow-black/5">
                 {loading ? (
                     <div className="p-20 flex flex-col items-center gap-4">
                         <Loader2 className="animate-spin text-[var(--color-accent)]" size={40} />
@@ -227,18 +231,18 @@ const SubscriptionManager = () => {
                         <p className="text-gray-500 mt-2">Try adjusting your filters or search term.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">User</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Plan Details</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Transaction</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 text-right">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Plan Details</th>
+                                <th>Transaction</th>
+                                <th>Status</th>
+                                <th className="text-right">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                                 {filteredSubs.map((sub) => (
                                     <tr key={sub.id} className="hover:bg-gray-50/30 dark:hover:bg-white/[0.01] transition-colors">
                                         <td className="px-6 py-5">
@@ -296,22 +300,20 @@ const SubscriptionManager = () => {
                 )}
             </div>
 
-            {/* Assign Plan Modal */}
             {assignModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-[#0f0f0f] w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800">
-                        <div className="p-8">
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                                    <Zap className="text-yellow-500" />
-                                    Assign Manual Plan
-                                </h2>
-                                <button onClick={() => setAssignModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
-                                    <XCircle size={24} />
-                                </button>
-                            </div>
+                <div className="modal-backdrop" onClick={() => setAssignModalOpen(false)}>
+                    <div className="modal-content max-w-md" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title flex items-center gap-3">
+                                <Zap className="text-yellow-500" />
+                                Assign Manual Plan
+                            </h2>
+                            <button onClick={() => setAssignModalOpen(false)} className="modal-close">
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                            <form onSubmit={handleAssignPlan} className="space-y-6">
+                        <form onSubmit={handleAssignPlan} className="modal-body space-y-6">
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Student Email</label>
                                     <input 
@@ -380,7 +382,7 @@ const SubscriptionManager = () => {
                                                     { label: '6 Mo', value: 6 },
                                                     { label: '1 Year', value: 12 },
                                                     { label: '2 Year', value: 24 },
-                                                    { label: 'Lifetime', value: 1200 }
+                                                    { label: 'Lifetime', value: 12000 }
                                                 ].map(opt => (
                                                     <button
                                                         key={opt.value}
@@ -414,27 +416,27 @@ const SubscriptionManager = () => {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-4">
+                                <div className="modal-footer">
                                     <button 
                                         type="button"
                                         onClick={() => setAssignModalOpen(false)}
-                                        className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                        className="btn-secondary"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit"
-                                        className="flex-[2] px-10 py-4 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-bold hover:opacity-90 shadow-xl shadow-black/20 transition-all flex items-center justify-center gap-2"
+                                        className="btn-primary"
                                     >
                                         <Zap size={18} />
-                                        Assign Plan
+                                        <span>Assign Plan</span>
                                     </button>
                                 </div>
                             </form>
-                        </div>
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

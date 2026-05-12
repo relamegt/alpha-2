@@ -122,8 +122,12 @@ exports.createSubscriptionOrder = async (req, res, next) => {
                 }
             });
 
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + duration);
+            let expiryDate = new Date();
+            if (duration >= 360000) {
+                expiryDate = new Date('9999-12-31');
+            } else {
+                expiryDate.setDate(expiryDate.getDate() + duration);
+            }
 
             await prisma.user.update({
                 where: { id: userId },
@@ -221,8 +225,12 @@ exports.verifySubscriptionPayment = async (req, res, next) => {
             data: { status: 'COMPLETED' }
         });
 
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + durationInDays);
+        let expiryDate = new Date();
+        if (durationInDays >= 360000) {
+            expiryDate = new Date('9999-12-31');
+        } else {
+            expiryDate.setDate(expiryDate.getDate() + durationInDays);
+        }
 
         // Map plan name to PlanType enum
         let planType = order.planType || 'PRO';

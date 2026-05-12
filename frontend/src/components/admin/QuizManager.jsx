@@ -300,15 +300,15 @@ const QuizManager = () => {
                             <div className="grid grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Quiz Details</label>
-                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
-                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" />
+                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" />
                                 </div>
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Meta</label>
-                                    <select value={formData.difficulty} onChange={e => setFormData({ ...formData, difficulty: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none">
+                                    <select value={formData.difficulty} onChange={e => setFormData({ ...formData, difficulty: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none">
                                         <option>Easy</option><option>Medium</option><option>Hard</option>
                                     </select>
-                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({ ...formData, points: parseInt(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({ ...formData, points: parseInt(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none" />
                                 </div>
                             </div>
 
@@ -328,7 +328,7 @@ const QuizManager = () => {
                                         <div className="flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-3">
                                             <div className="flex-1 space-y-2">
                                                 <label className="text-xs font-bold text-gray-500 uppercase">Question {qIdx + 1}</label>
-                                                <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-medium" />
+                                                <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none font-medium" />
                                             </div>
                                             <div className="flex flex-col items-center gap-1 min-w-[120px] pt-5">
                                                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-tighter">Multiple Correct?</label>
@@ -372,11 +372,11 @@ const QuizManager = () => {
                                                             className="w-4 h-4 accent-primary-600"
                                                         />
                                                     )}
-                                                    <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm" />
+                                                    <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none text-sm" />
                                                 </div>
                                             ))}
                                         </div>
-                                        <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-xs italic" />
+                                        <input placeholder="Explanation (Optional)" type="text" value={q.explanation} onChange={e => updateQuestion(qIdx, 'explanation', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[var(--color-bg-primary)] outline-none text-xs italic" />
                                     </div>
                                 ))}
                             </div>

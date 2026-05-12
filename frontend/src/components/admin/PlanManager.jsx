@@ -1,6 +1,6 @@
 import {
     Plus, Search, Edit2, Trash2, CheckCircle, XCircle,
-    Layers, DollarSign, Clock, List, Layout, Shield, Zap, Check
+    Layers, DollarSign, Clock, List, Layout, Shield, Zap, Check, X
 } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import { toast } from 'react-hot-toast';
@@ -156,24 +156,26 @@ const PlanManager = () => {
     );
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
-            {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                        <Shield className="text-primary-600" />
-                        Subscription Plans
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Manage dynamic pricing and course access tiers</p>
+        <div className="admin-page-wrapper transition-colors">
+            <div className="space-y-8 animate-fade-in">
+            <header className="page-header-container">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="page-header-title flex items-center gap-3">
+                            <Shield className="text-primary-600" />
+                            Subscription Plans
+                        </h1>
+                        <p className="page-header-desc">Manage dynamic pricing and course access tiers</p>
+                    </div>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="btn-primary flex items-center gap-2"
+                    >
+                        <Plus size={20} />
+                        Create New Plan
+                    </button>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-primary-600/20 active:scale-95"
-                >
-                    <Plus size={20} />
-                    Create New Plan
-                </button>
-            </div>
+            </header>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -182,7 +184,7 @@ const PlanManager = () => {
                     { label: 'Active Tiers', value: plans.filter(p => p.isActive).length, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
                     { label: 'Currency', value: 'INR (₹)', icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-[#181820] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                    <div key={i} className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
                         <div className={`p-3 rounded-xl ${stat.bg} dark:bg-opacity-10 ${stat.color}`}>
                             <stat.icon size={24} />
                         </div>
@@ -195,14 +197,14 @@ const PlanManager = () => {
             </div>
 
             {/* Table/List View */}
-            <div className="bg-white dark:bg-[#181820] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="bg-[var(--color-bg-card)] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="page-controls-bar">
+                    <div className="page-search-wrapper w-full max-w-md">
+                        <Search className="page-search-icon" size={18} />
                         <input
                             type="text"
                             placeholder="Search plans..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none text-sm"
+                            className="page-search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -219,19 +221,19 @@ const PlanManager = () => {
                         <p className="text-gray-500 font-medium">No plans found</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="table-wrapper">
+                        <table className="admin-custom-table">
                             <thead>
-                                <tr className="bg-gray-50/50 dark:bg-white/[0.02] text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">
-                                    <th className="px-6 py-4">Plan Name</th>
-                                    <th className="px-6 py-4">Price</th>
-                                    <th className="px-6 py-4">Duration</th>
-                                    <th className="px-6 py-4">Access</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
+                                <tr>
+                                    <th>Plan Name</th>
+                                    <th>Price</th>
+                                    <th>Duration</th>
+                                    <th>Access</th>
+                                    <th>Status</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            <tbody>
                                 {filteredPlans.map((plan) => (
                                     <tr key={plan.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors group">
                                         <td className="px-6 py-4">
@@ -268,17 +270,19 @@ const PlanManager = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <td className="actions-td">
+                                            <div className="action-row">
                                                 <button
                                                     onClick={() => handleOpenModal(plan)}
-                                                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition-all"
+                                                    className="icon-btn build"
+                                                    title="Edit"
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(plan.id)}
-                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                                    className="icon-btn delete"
+                                                    title="Delete"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -292,20 +296,19 @@ const PlanManager = () => {
                 )}
             </div>
 
-            {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#181820] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-gray-800">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between sticky top-0 bg-white dark:bg-[#181820] z-10">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">
                                 {editingPlan ? 'Edit Plan' : 'Create New Subscription Plan'}
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
-                                <Plus className="rotate-45" size={24} />
+                            <button onClick={() => setIsModalOpen(false)} className="modal-close">
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="modal-body space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Plan Name</label>
@@ -335,15 +338,15 @@ const PlanManager = () => {
                                     <div className="flex gap-2">
                                         <input
                                             type="number" required
-                                            disabled={formData.durationInDays >= 36500}
+                                            disabled={formData.durationInDays >= 365000}
                                             className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none disabled:opacity-50"
-                                            value={formData.durationInDays >= 36500 ? 999 : Math.round(formData.durationInDays / 30)}
+                                            value={formData.durationInDays >= 365000 ? 999 : Math.round(formData.durationInDays / 30)}
                                             onChange={(e) => setFormData({ ...formData, durationInDays: parseInt(e.target.value) * 30 })}
                                         />
                                         <button 
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, durationInDays: formData.durationInDays >= 36500 ? 365 : 36500 })}
-                                            className={`px-4 rounded-xl text-xs font-bold transition-all border ${formData.durationInDays >= 36500 ? 'bg-amber-500 border-amber-500 text-white' : 'border-gray-200 dark:border-gray-800 text-gray-500'}`}
+                                            onClick={() => setFormData({ ...formData, durationInDays: formData.durationInDays >= 365000 ? 365 : 365000 })}
+                                            className={`px-4 rounded-xl text-xs font-bold transition-all border ${formData.durationInDays >= 365000 ? 'bg-amber-500 border-amber-500 text-white' : 'border-gray-200 dark:border-gray-800 text-gray-500'}`}
                                         >
                                             Lifetime
                                         </button>
@@ -384,9 +387,9 @@ const PlanManager = () => {
                                                 <div className="relative group">
                                                     <input 
                                                         type="number" placeholder="Months"
-                                                        disabled={opt.duration >= 36500}
+                                                        disabled={opt.duration >= 365000}
                                                         className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs outline-none disabled:opacity-50"
-                                                        value={opt.duration >= 36500 ? 999 : Math.round(opt.duration / 30)}
+                                                        value={opt.duration >= 365000 ? 999 : Math.round(opt.duration / 30)}
                                                         onChange={(e) => {
                                                             const newOpts = [...formData.pricingOptions];
                                                             newOpts[idx].duration = parseInt(e.target.value) * 30;
@@ -397,11 +400,11 @@ const PlanManager = () => {
                                                         type="button"
                                                         onClick={() => {
                                                             const newOpts = [...formData.pricingOptions];
-                                                            newOpts[idx].duration = opt.duration >= 36500 ? 365 : 36500;
-                                                            newOpts[idx].label = newOpts[idx].duration >= 36500 ? 'Lifetime' : `${Math.round(newOpts[idx].duration / 30)} Months`;
+                                                            newOpts[idx].duration = opt.duration >= 365000 ? 365 : 365000;
+                                                            newOpts[idx].label = newOpts[idx].duration >= 365000 ? 'Lifetime' : `${Math.round(newOpts[idx].duration / 30)} Months`;
                                                             setFormData({...formData, pricingOptions: newOpts});
                                                         }}
-                                                        className={`absolute right-1 top-1 bottom-1 px-2 rounded-md text-[9px] font-black uppercase transition-all ${opt.duration >= 36500 ? 'bg-amber-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}
+                                                        className={`absolute right-1 top-1 bottom-1 px-3 rounded-lg text-[9px] font-black uppercase transition-all z-10 ${opt.duration >= 365000 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                                                     >
                                                         ∞
                                                     </button>
@@ -592,17 +595,17 @@ const PlanManager = () => {
                                 </label>
                             </div>
 
-                            <div className="flex gap-3 pt-4">
+                            <div className="modal-footer">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold transition-all"
+                                    className="btn-secondary"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-[2] py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+                                    className="btn-primary"
                                 >
                                     {editingPlan ? 'Update Plan' : 'Create Plan'}
                                 </button>
@@ -611,6 +614,7 @@ const PlanManager = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

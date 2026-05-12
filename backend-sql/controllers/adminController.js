@@ -823,9 +823,19 @@ const assignPlanByEmail = async (req, res) => {
             
             // Priority: Admin provided durationMonths > Plan default duration
             if (durationMonths) {
-                expiryDate.setMonth(expiryDate.getMonth() + parseInt(durationMonths));
+                const months = parseInt(durationMonths);
+                if (months >= 12000) {
+                    expiryDate = new Date('9999-12-31');
+                } else {
+                    expiryDate.setMonth(expiryDate.getMonth() + months);
+                }
             } else {
-                expiryDate.setDate(expiryDate.getDate() + (planDetails.durationInDays || 30));
+                const days = planDetails.durationInDays || 30;
+                if (days >= 360000) {
+                    expiryDate = new Date('9999-12-31');
+                } else {
+                    expiryDate.setDate(expiryDate.getDate() + days);
+                }
             }
             
             await prisma.user.update({
@@ -851,7 +861,13 @@ const assignPlanByEmail = async (req, res) => {
             });
         } else {
             // Legacy way (Direct role assignment)
-            expiryDate.setMonth(expiryDate.getMonth() + (parseInt(durationMonths) || 1));
+            const months = parseInt(durationMonths) || 1;
+            if (months >= 12000) {
+                expiryDate = new Date('9999-12-31');
+            } else {
+                expiryDate.setMonth(expiryDate.getMonth() + months);
+            }
+            
             await prisma.user.update({
                 where: { id: user.id },
                 data: {

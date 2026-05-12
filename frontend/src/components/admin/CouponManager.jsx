@@ -5,7 +5,7 @@ import {
     CheckCircle, XCircle, Percent, 
     DollarSign, Users, ArrowRight,
     RefreshCw, ChevronLeft, ChevronRight,
-    Loader2, AlertCircle
+    Loader2, AlertCircle, X
 } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import toast from 'react-hot-toast';
@@ -129,24 +129,26 @@ const CouponManager = () => {
     });
 
     return (
-        <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                        <Tag className="text-[var(--color-accent)]" />
-                        Coupon Management
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Create and manage discount codes for courses and subscriptions.</p>
-                </div>
-                <button 
-                    onClick={() => { resetForm(); setEditingCoupon(null); setIsModalOpen(true); }}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-accent)] text-white rounded-2xl font-bold hover:opacity-90 shadow-lg shadow-[var(--color-accent)]/20 transition-all"
-                >
-                    <Plus size={20} />
-                    Create New Coupon
-                </button>
-            </div>
+        <div className="admin-page-wrapper">
+            <div className="space-y-8 animate-in fade-in duration-500">
+                <header className="page-header-container">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 className="page-header-title flex items-center gap-3">
+                                <Tag className="text-primary-600" />
+                                Coupon Management
+                            </h1>
+                            <p className="page-header-desc">Create and manage discount codes for courses and subscriptions.</p>
+                        </div>
+                        <button 
+                            onClick={() => { resetForm(); setEditingCoupon(null); setIsModalOpen(true); }}
+                            className="btn-primary flex items-center gap-2"
+                        >
+                            <Plus size={20} />
+                            <span>Create New Coupon</span>
+                        </button>
+                    </div>
+                </header>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -167,29 +169,25 @@ const CouponManager = () => {
             </div>
 
             {/* Filters and Search */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="page-controls-bar">
+                <div className="page-search-wrapper w-full max-w-md">
+                    <Search className="page-search-icon" size={18} />
                     <input 
                         type="text" 
                         placeholder="Search by coupon code..."
-                        className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] outline-none transition-all shadow-sm"
+                        className="page-search-input"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="page-tab-container overflow-x-auto custom-thin-scrollbar">
                     {['all', 'active', 'inactive'].map(t => (
                         <button 
                             key={t}
                             onClick={() => setFilterType(t)}
-                            className={`px-5 py-3 rounded-2xl text-sm font-bold capitalize transition-all ${
-                                filterType === t 
-                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md' 
-                                    : 'bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50'
-                            }`}
+                            className={`page-tab-item ${filterType === t ? 'active' : ''}`}
                         >
-                            {t}
+                            <span className="text-[11px] font-bold uppercase">{t}</span>
                         </button>
                     ))}
                 </div>
@@ -211,19 +209,19 @@ const CouponManager = () => {
                         <p className="text-gray-500 mt-2">Try adjusting your search or create a new coupon.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Code</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Discount</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Usage</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Expiry</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="table-wrapper">
+                    <table className="admin-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Usage</th>
+                                <th>Expiry</th>
+                                <th>Status</th>
+                                <th className="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                                 {filteredCoupons.map((coupon) => {
                                     const isExpired = new Date(coupon.expiryDate) < new Date();
                                     const isInactive = !coupon.isActive || isExpired;
@@ -271,28 +269,26 @@ const CouponManager = () => {
                                                     {isExpired ? 'Expired' : (coupon.isActive ? 'Active' : 'Inactive')}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td className="actions-td">
+                                                <div className="action-row">
                                                     <button 
                                                         onClick={() => toggleStatus(coupon)}
                                                         title={coupon.isActive ? 'Deactivate' : 'Activate'}
-                                                        className={`p-2 rounded-lg transition-colors ${
-                                                            coupon.isActive 
-                                                                ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' 
-                                                                : 'text-gray-400 hover:text-green-500 hover:bg-green-50'
-                                                        }`}
+                                                        className={`icon-btn ${coupon.isActive ? 'delete' : 'build'}`}
                                                     >
                                                         {coupon.isActive ? <XCircle size={18} /> : <CheckCircle size={18} />}
                                                     </button>
                                                     <button 
                                                         onClick={() => openEditModal(coupon)}
-                                                        className="p-2 text-gray-400 hover:text-[var(--color-accent)] hover:bg-[var(--color-accent)]/5 rounded-lg transition-colors"
+                                                        className="icon-btn build"
+                                                        title="Edit"
                                                     >
                                                         <Edit2 size={18} />
                                                     </button>
                                                     <button 
                                                         onClick={() => handleDelete(coupon.id)}
-                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="icon-btn delete"
+                                                        title="Delete"
                                                     >
                                                         <Trash2 size={18} />
                                                     </button>
@@ -307,21 +303,19 @@ const CouponManager = () => {
                 )}
             </div>
 
-            {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-[#0f0f0f] w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800">
-                        <div className="p-8">
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}
-                                </h2>
-                                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
-                                    <XCircle size={24} />
-                                </button>
-                            </div>
+                <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-content max-w-xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">
+                                {editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}
+                            </h2>
+                            <button onClick={() => setIsModalOpen(false)} className="modal-close">
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="modal-body space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="col-span-2">
                                         <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1">Coupon Code</label>
@@ -426,26 +420,26 @@ const CouponManager = () => {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-4">
+                                <div className="modal-footer">
                                     <button 
                                         type="button"
                                         onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                        className="btn-secondary"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit"
-                                        className="flex-2 px-10 py-4 bg-[var(--color-accent)] text-white rounded-2xl font-bold hover:opacity-90 shadow-xl shadow-[var(--color-accent)]/20 transition-all"
+                                        className="btn-primary"
                                     >
                                         {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                                     </button>
                                 </div>
                             </form>
-                        </div>
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };
