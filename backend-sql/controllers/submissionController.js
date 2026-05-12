@@ -453,8 +453,20 @@ const markProblemComplete = async (req, res) => {
 
                         const correctVal = q.correctOptionIndex !== undefined ? q.correctOptionIndex : (q.correctOption !== undefined ? q.correctOption : q.correctAnswer);
                         
-                        if (studentAns !== undefined && String(studentAns) === String(correctVal)) {
-                            testCasesPassed++;
+                        if (studentAns !== undefined) {
+                            // Multiple Correct Options Logic
+                            if (Array.isArray(correctVal)) {
+                                const studentArr = Array.isArray(studentAns) ? studentAns : [studentAns];
+                                if (studentArr.length === correctVal.length && 
+                                    studentArr.every(v => correctVal.map(String).includes(String(v)))) {
+                                    testCasesPassed++;
+                                }
+                            } else {
+                                // Single Correct Option Logic
+                                if (String(studentAns) === String(correctVal)) {
+                                    testCasesPassed++;
+                                }
+                            }
                         }
                     });
                 }

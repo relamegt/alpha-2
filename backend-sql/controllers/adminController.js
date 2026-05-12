@@ -805,7 +805,15 @@ const assignPlanByEmail = async (req, res) => {
         }
 
         let expiryDate = new Date();
-        
+
+        const getPlanType = (name) => {
+            const upper = name.toUpperCase();
+            if (upper.includes('PLUS')) return 'PLUS';
+            if (upper.includes('BASIC')) return 'BASIC';
+            if (upper.includes('FREE')) return 'FREE';
+            return 'PRO'; // Default for custom premium plans
+        };
+
         // If planId is provided, get plan details
         if (planId) {
             const planDetails = await prisma.subscriptionPlan.findUnique({ where: { id: planId } });
@@ -824,8 +832,21 @@ const assignPlanByEmail = async (req, res) => {
                 where: { id: user.id },
                 data: {
                     planId,
-                    plan: planDetails.name || 'PRO', 
+                    plan: getPlanType(planDetails.name || 'PRO'), 
                     subscriptionExpiresAt: expiryDate
+                }
+            });
+
+            // Create a manual subscription record so it shows up in the admin table
+            await prisma.subscriptionOrder.create({
+                data: {
+                    userId: user.id,
+                    amount: 0, // Manual assignment should not count in revenue
+                    currency: 'INR',
+                    status: 'COMPLETED',
+                    razorpayOrderId: `MANUAL_${Date.now()}_${Math.random().toString(36).substring(7).toUpperCase()}`,
+                    planType: getPlanType(planDetails.name || 'PRO'),
+                    planId: planId
                 }
             });
         } else {
@@ -837,6 +858,19 @@ const assignPlanByEmail = async (req, res) => {
                     plan: plan || 'FREE',
                     planId: null, // Ensure planId is cleared if legacy plan is assigned
                     subscriptionExpiresAt: expiryDate
+                }
+            });
+
+            // Create a manual subscription record for legacy assignment
+            await prisma.subscriptionOrder.create({
+                data: {
+                    userId: user.id,
+                    amount: 0, // Manual assignment usually free/internal
+                    currency: 'INR',
+                    status: 'COMPLETED',
+                    razorpayOrderId: `ADMIN_ASSIGN_${Date.now()}`,
+                    planType: plan || 'FREE',
+                    planId: null
                 }
             });
         }

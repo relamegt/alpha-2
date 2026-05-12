@@ -13,7 +13,7 @@ const QuizManager = () => {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
-    
+
     // Search & Filter
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -28,7 +28,7 @@ const QuizManager = () => {
         description: '',
         section: '',
         quizQuestions: [
-            { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }
+            { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '', isMultipleAnswers: false }
         ]
     });
 
@@ -66,7 +66,7 @@ const QuizManager = () => {
             description: '',
             section: '',
             quizQuestions: [
-                { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }
+                { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '', isMultipleAnswers: false }
             ]
         });
     };
@@ -93,7 +93,7 @@ const QuizManager = () => {
         try {
             const { title, type, difficulty, points, description, section, quizQuestions } = formData;
             const updatePayload = { title, type, difficulty, points, description, section, quizQuestions };
-            
+
             await quizService.update(editingQuiz.id || editingQuiz._id, updatePayload);
             toast.success('Quiz updated');
             setShowEditModal(false);
@@ -132,7 +132,7 @@ const QuizManager = () => {
     };
 
     const toggleSelect = (id) => {
-        setSelectedIds(prev => 
+        setSelectedIds(prev =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
     };
@@ -148,7 +148,7 @@ const QuizManager = () => {
     const addQuestion = () => {
         setFormData({
             ...formData,
-            quizQuestions: [...formData.quizQuestions, { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }]
+            quizQuestions: [...formData.quizQuestions, { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '', isMultipleAnswers: false }]
         });
     };
 
@@ -167,6 +167,7 @@ const QuizManager = () => {
 
     const updateOption = (qIdx, oIdx, val) => {
         const updated = [...formData.quizQuestions];
+        updated[qIdx].options = [...updated[qIdx].options];
         updated[qIdx].options[oIdx] = val;
         setFormData({ ...formData, quizQuestions: updated });
     };
@@ -215,8 +216,8 @@ const QuizManager = () => {
                         <thead>
                             <tr>
                                 <th className="w-10">
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={filteredQuizzes.length > 0 && selectedIds.length === filteredQuizzes.length}
                                         onChange={toggleSelectAll}
                                         className="rounded border-gray-300 dark:bg-gray-800"
@@ -232,8 +233,8 @@ const QuizManager = () => {
                             {filteredQuizzes.map(q => (
                                 <tr key={q._id} className={selectedIds.includes(q._id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
                                     <td>
-                                        <input 
-                                            type="checkbox" 
+                                        <input
+                                            type="checkbox"
                                             checked={selectedIds.includes(q._id)}
                                             onChange={() => toggleSelect(q._id)}
                                             className="rounded border-gray-300 dark:bg-gray-800"
@@ -255,14 +256,14 @@ const QuizManager = () => {
                                     </td>
                                     <td className="actions-td">
                                         <div className="action-row">
-                                            <button onClick={() => { 
-                                                setEditingQuiz(q); 
+                                            <button onClick={() => {
+                                                setEditingQuiz(q);
                                                 setFormData({
                                                     ...q,
                                                     type: 'quiz',
                                                     quizQuestions: q.quizQuestions || []
-                                                }); 
-                                                setShowEditModal(true); 
+                                                });
+                                                setShowEditModal(true);
                                             }} className="icon-btn build" title="Edit">
                                                 <Edit2 size={16} />
                                             </button>
@@ -299,15 +300,15 @@ const QuizManager = () => {
                             <div className="grid grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Quiz Details</label>
-                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
-                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input required placeholder="Quiz Title" type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="Topic/Section" type="text" value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                                 <div className="space-y-4">
                                     <label className="text-sm font-bold block">Meta</label>
-                                    <select value={formData.difficulty} onChange={e => setFormData({...formData, difficulty: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none">
+                                    <select value={formData.difficulty} onChange={e => setFormData({ ...formData, difficulty: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none">
                                         <option>Easy</option><option>Medium</option><option>Hard</option>
                                     </select>
-                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({...formData, points: parseInt(e.target.value)})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
+                                    <input placeholder="Points" type="number" value={formData.points} onChange={e => setFormData({ ...formData, points: parseInt(e.target.value) })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none" />
                                 </div>
                             </div>
 
@@ -324,14 +325,53 @@ const QuizManager = () => {
                                         <button type="button" onClick={() => removeQuestion(qIdx)} className="absolute top-4 right-4 text-red-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Trash2 size={16} />
                                         </button>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">Question {qIdx + 1}</label>
-                                            <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-medium" />
+                                        <div className="flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                                            <div className="flex-1 space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase">Question {qIdx + 1}</label>
+                                                <input required placeholder="Enter question text..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none font-medium" />
+                                            </div>
+                                            <div className="flex flex-col items-center gap-1 min-w-[120px] pt-5">
+                                                <label className="text-[10px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-tighter">Multiple Correct?</label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const isNowMultiple = !q.isMultipleAnswers;
+                                                        const updated = [...formData.quizQuestions];
+                                                        updated[qIdx].isMultipleAnswers = isNowMultiple;
+                                                        // Reset correct answer type
+                                                        updated[qIdx].correctAnswer = isNowMultiple ? [0] : 0;
+                                                        setFormData({ ...formData, quizQuestions: updated });
+                                                    }}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${q.isMultipleAnswers ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${q.isMultipleAnswers ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             {q.options.map((opt, oIdx) => (
                                                 <div key={oIdx} className="flex items-center gap-2">
-                                                    <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)} />
+                                                    {q.isMultipleAnswers ? (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oIdx) : false}
+                                                            onChange={() => {
+                                                                const current = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                                                                const next = current.includes(oIdx)
+                                                                    ? current.filter(i => i !== oIdx)
+                                                                    : [...current, oIdx];
+                                                                updateQuestion(qIdx, 'correctAnswer', next);
+                                                            }}
+                                                            className="w-4 h-4 rounded accent-primary-600"
+                                                        />
+                                                    ) : (
+                                                        <input
+                                                            type="radio"
+                                                            checked={q.correctAnswer === oIdx}
+                                                            onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)}
+                                                            className="w-4 h-4 accent-primary-600"
+                                                        />
+                                                    )}
                                                     <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm" />
                                                 </div>
                                             ))}

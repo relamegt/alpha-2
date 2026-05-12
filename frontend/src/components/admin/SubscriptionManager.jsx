@@ -27,11 +27,19 @@ const SubscriptionManager = () => {
         durationMonths: 12
     });
 
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'paid', 'manual'
+    
     useEffect(() => {
         fetchSubscriptions();
         fetchStats();
         fetchPlans();
     }, [statusFilter]);
+
+    // Helper to identify manual vs paid
+    const isManual = (sub) => {
+        const id = sub.razorpayOrderId || '';
+        return id.startsWith('MANUAL_') || id.startsWith('ADMIN_ASSIGN_');
+    };
 
     const fetchPlans = async () => {
         try {
@@ -46,7 +54,7 @@ const SubscriptionManager = () => {
         setLoading(true);
         try {
             const statusParam = statusFilter !== 'all' ? `&status=${statusFilter}` : '';
-            const response = await apiClient.get(`/admin/subscriptions?limit=100${statusParam}`);
+            const response = await apiClient.get(`/admin/subscriptions?limit=150${statusParam}`);
             setSubscriptions(response.data.subscriptions || []);
         } catch (error) {
             toast.error('Failed to fetch subscriptions');
@@ -67,10 +75,7 @@ const SubscriptionManager = () => {
     const handleAssignPlan = async (e) => {
         e.preventDefault();
         try {
-            // Prepare data: if it's a legacy plan string, send 'plan'. If it's a planId, send 'planId'.
             const payload = { ...assignData };
-            
-            // Validation
             if (!payload.plan && !payload.planId) {
                 return toast.error('Please select a plan');
             }
@@ -97,10 +102,17 @@ const SubscriptionManager = () => {
         }
     };
 
-    const filteredSubs = subscriptions.filter(sub => 
-        sub.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.razorpayOrderId?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSubs = subscriptions.filter(sub => {
+        const matchesSearch = sub.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             sub.razorpayOrderId?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (activeTab === 'paid') return matchesSearch && !isManual(sub);
+        if (activeTab === 'manual') return matchesSearch && isManual(sub);
+        return matchesSearch;
+    });
+
+    const manualCount = subscriptions.filter(s => isManual(s) && s.status === 'COMPLETED').length;
+    const paidRevenue = subscriptions.filter(s => !isManual(s) && s.status === 'COMPLETED').reduce((acc, s) => acc + s.amount, 0);
 
     return (
         <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
@@ -131,11 +143,12 @@ const SubscriptionManager = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {[
-                    { label: 'Active Subscriptions', value: stats.total, icon: <CheckCircle />, color: 'green' },
-                    { label: 'Pending Orders', value: stats.pending, icon: <Clock />, color: 'yellow' },
-                    { label: 'Total Revenue', value: `₹${(subscriptions.filter(s => s.status === 'COMPLETED').reduce((acc, s) => acc + s.amount, 0)).toLocaleString()}`, icon: <Shield />, color: 'purple' }
+                    { label: 'Paid Revenue', value: `₹${paidRevenue.toLocaleString()}`, icon: <Shield />, color: 'purple' },
+                    { label: 'Manual Allotments', value: manualCount, icon: <Users />, color: 'blue' },
+                    { label: 'Active (Paid)', value: stats.total - manualCount, icon: <CheckCircle />, color: 'green' },
+                    { label: 'Pending Orders', value: stats.pending, icon: <Clock />, color: 'yellow' }
                 ].map((stat, i) => (
                     <div key={i} className="p-6 bg-white dark:bg-[#0f0f0f] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-sm">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-${stat.color}-500/10 text-${stat.color}-500`}>
@@ -147,32 +160,54 @@ const SubscriptionManager = () => {
                 ))}
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by email or Order ID..."
-                        className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] outline-none transition-all shadow-sm"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex gap-2">
-                    {['all', 'COMPLETED', 'PENDING', 'FAILED'].map(s => (
-                        <button 
-                            key={s}
-                            onClick={() => setStatusFilter(s)}
-                            className={`px-5 py-3 rounded-2xl text-sm font-bold capitalize transition-all ${
-                                statusFilter === s 
-                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md' 
-                                    : 'bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50'
+            {/* Tab Switcher & Filters */}
+            <div className="flex flex-col xl:flex-row gap-6 mb-8">
+                <div className="flex p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-max">
+                    {[
+                        { id: 'all', label: 'All Subscriptions' },
+                        { id: 'paid', label: 'Standard Paid' },
+                        { id: 'manual', label: 'Manual Assignments' }
+                    ].map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setActiveTab(t.id)}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                activeTab === t.id 
+                                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                         >
-                            {s === 'all' ? 'All Orders' : s.toLowerCase()}
+                            {t.label}
                         </button>
                     ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Search by email or Order ID..."
+                            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 rounded-2xl focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] outline-none transition-all shadow-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        {['all', 'COMPLETED', 'PENDING', 'FAILED'].map(s => (
+                            <button 
+                                key={s}
+                                onClick={() => setStatusFilter(s)}
+                                className={`px-5 py-3 rounded-2xl text-sm font-bold capitalize transition-all ${
+                                    statusFilter === s 
+                                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md' 
+                                        : 'bg-white dark:bg-[#0f0f0f] border border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                {s === 'all' ? 'All Orders' : s.toLowerCase()}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -208,14 +243,14 @@ const SubscriptionManager = () => {
                                     <tr key={sub.id} className="hover:bg-gray-50/30 dark:hover:bg-white/[0.01] transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                                                     <Mail size={18} className="text-gray-400" />
                                                 </div>
-                                                <div>
-                                                    <span className="font-bold text-gray-900 dark:text-white block">
-                                                        {sub.user?.firstName} {sub.user?.lastName}
+                                                <div className="min-w-0">
+                                                    <span className="font-bold text-gray-900 dark:text-white block truncate">
+                                                        {sub.user?.firstName || 'User'} {sub.user?.lastName || ''}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">{sub.user?.email}</span>
+                                                    <span className="text-xs text-gray-500 block truncate">{sub.user?.email}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -237,10 +272,10 @@ const SubscriptionManager = () => {
                                             )}
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="text-xs font-mono text-gray-500 block truncate max-w-[120px]" title={sub.razorpayOrderId}>
+                                            <span className="text-xs font-mono text-gray-500 dark:text-gray-400 block break-all leading-relaxed" title={sub.razorpayOrderId}>
                                                 {sub.razorpayOrderId}
                                             </span>
-                                            <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-medium">Razorpay Order ID</p>
+                                            <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-medium">Transaction ID</p>
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(sub.status)}`}>

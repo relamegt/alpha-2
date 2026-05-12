@@ -124,9 +124,9 @@ const OptimizationList = ({ items }) => (
             <Zap size={11} className="text-amber-400" /> Optimizations
         </p>
         {items.map((opt, i) => (
-            <div key={i} className="flex gap-3 p-3.5 bg-zinc-800/40 border border-zinc-700/40 rounded-xl">
-                <Lightbulb size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-zinc-300 leading-relaxed">{opt}</p>
+            <div key={i} className="flex gap-3 p-3.5 bg-gray-50 dark:bg-zinc-800/40 border border-gray-200 dark:border-zinc-700/40 rounded-xl">
+                <Lightbulb size={14} className="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">{opt}</p>
             </div>
         ))}
     </div>
@@ -138,17 +138,17 @@ const VerdictBadge = ({ verdict }) => {
     const map = {
         correct: {
             icon: ShieldCheck,
-            cls: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+            cls: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
             label: 'Correct'
         },
         partially_correct: {
             icon: ShieldAlert,
-            cls: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+            cls: 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400',
             label: 'Partially Correct'
         },
         incorrect: {
             icon: ShieldX,
-            cls: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+            cls: 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400',
             label: 'Incorrect'
         },
     };
@@ -172,8 +172,8 @@ const Stage1 = ({ aiResult, onNext }) => {
             <div className="flex items-start gap-3 p-4 bg-violet-500/8 border border-violet-500/20 rounded-xl">
                 <FileText className="text-violet-400 shrink-0 mt-0.5" size={18} />
                 <div>
-                    <p className="text-sm font-bold text-zinc-100">Code Analysis</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-sm font-bold text-gray-900 dark:text-zinc-100">Code Analysis</p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-500 mt-0.5">
                         Here's a breakdown of your code vs. the problem.
                     </p>
                 </div>
@@ -181,48 +181,48 @@ const Stage1 = ({ aiResult, onNext }) => {
             </div>
 
             {/* Section 1 — What the problem asks */}
-            <div className="bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-4 space-y-2">
+            <div className="bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/60 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
-                    <Target size={12} className="text-blue-400" />
-                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
+                    <Target size={12} className="text-blue-500 dark:text-blue-400" />
+                    <p className="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest">
                         What the problem asks
                     </p>
                 </div>
-                <p className="text-sm text-zinc-200 leading-relaxed">
+                <p className="text-sm text-gray-700 dark:text-zinc-200 leading-relaxed">
                     {codeSummary.problemExpects}
                 </p>
             </div>
 
             {/* Section 2 — What you wrote + how it differs */}
-            <div className="bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-4 space-y-3">
+            <div className="bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/60 rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                    <CircleDot size={12} className="text-violet-400" />
-                    <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest">
+                    <CircleDot size={12} className="text-violet-600 dark:text-violet-400" />
+                    <p className="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">
                         What your code does
                     </p>
                 </div>
-                <p className="text-sm text-zinc-200 leading-relaxed">
+                <p className="text-sm text-gray-700 dark:text-zinc-200 leading-relaxed">
                     {codeSummary.whatUserWrote}
                 </p>
 
                 {/* Differs row */}
                 <div className="flex gap-2.5 items-start pt-1 border-t border-zinc-700/50">
-                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                    <p className="text-xs text-amber-300 leading-relaxed">
+                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0" />
+                    <p className="text-xs text-amber-600 dark:text-amber-300 leading-relaxed">
                         {codeSummary.howItDiffers}
                     </p>
                 </div>
             </div>
 
             {/* Section 3 — What's missed */}
-            <div className="bg-rose-500/6 border border-rose-500/20 rounded-xl p-4 space-y-2">
+            <div className="bg-rose-500/5 dark:bg-rose-500/6 border border-rose-500/20 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2">
-                    <AlertCircle size={12} className="text-rose-400" />
-                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">
+                    <AlertCircle size={12} className="text-rose-600 dark:text-rose-400" />
+                    <p className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest">
                         What's missing / incorrect
                     </p>
                 </div>
-                <p className="text-sm text-zinc-300 leading-relaxed">
+                <p className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
                     {codeSummary.whatIsMissed}
                 </p>
             </div>
@@ -243,7 +243,7 @@ const Stage2 = ({ aiResult, onNext, onNobugs }) => (
     <motion.div key="s2" {...fadeSlide} className="space-y-5">
         <div className="flex items-center gap-2">
             <Bug className="text-rose-400" size={18} />
-            <h3 className="font-bold text-zinc-100 text-sm">Code Diagnosis</h3>
+            <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm">Code Diagnosis</h3>
             <span className="ml-auto text-[10px] font-bold text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">
                 {aiResult.bugs.length} issue{aiResult.bugs.length !== 1 ? 's' : ''} found
             </span>
@@ -278,7 +278,7 @@ const Stage2 = ({ aiResult, onNext, onNobugs }) => (
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm text-zinc-200">{bug.diagnosis}</p>
+                        <p className="text-sm text-gray-700 dark:text-zinc-200">{bug.diagnosis}</p>
                         <div className="relative overflow-hidden rounded-lg">
                             <div className="blur-sm select-none pointer-events-none text-xs p-3 bg-emerald-950/40 border border-emerald-500/15 text-emerald-400 opacity-50">
                                 Fix hidden — revealed in guided mode
@@ -308,7 +308,7 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
     <motion.div key="s3" {...fadeSlide} className="space-y-5">
         <div className="flex items-center gap-2">
             <CheckCircle className="text-emerald-400" size={18} />
-            <h3 className="font-bold text-zinc-100 text-sm">Guided Fixes</h3>
+            <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm">Guided Fixes</h3>
             <span className="ml-auto text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
                 {fixIndex + 1} / {aiResult.bugs.length}
             </span>
@@ -331,8 +331,8 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
                         <p className="text-sm text-gray-700 dark:text-zinc-300">{bug.diagnosis}</p>
                     </div>
                     <div className="p-3.5 bg-emerald-500/8 border border-emerald-500/25 rounded-xl">
-                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1.5">✅ Fix</p>
-                        <p className="text-sm text-emerald-300 leading-relaxed font-medium">{bug.fix}</p>
+                        <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mb-1.5">✅ Fix</p>
+                        <p className="text-sm text-emerald-600 dark:text-emerald-300 leading-relaxed font-medium">{bug.fix}</p>
                     </div>
                 </motion.div>
             ))}
@@ -349,7 +349,7 @@ const Stage3 = ({ aiResult, fixIndex, setFixIndex, onShowSolution }) => (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 pt-2">
                 <OptimizationList items={aiResult.optimizations} />
                 <div className="p-4 bg-violet-500/8 border border-violet-500/20 rounded-xl text-center">
-                    <p className="text-xs text-violet-300 font-medium">
+                    <p className="text-xs text-violet-600 dark:text-violet-300 font-medium">
                         💪 Try fixing your code yourself before viewing the solution
                     </p>
                 </div>
@@ -380,7 +380,7 @@ const Stage4 = ({ aiResult, onReset, isCodingType }) => {
         <motion.div key="s4" {...fadeSlide} className="space-y-5">
             <div className="flex items-center gap-2">
                 <Trophy className="text-amber-400" size={18} />
-                <h3 className="font-bold text-zinc-100 text-sm">{labels.solutionLabel}</h3>
+                <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm">{labels.solutionLabel}</h3>
             </div>
 
             {/* ✅ Strictly only for algo/coding problems */}
@@ -741,15 +741,15 @@ const AIChatPanel = ({ problemTitle, problemDescription, language, code, isCodin
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="relative z-10 bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-5"
+                            className="relative z-10 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-5"
                         >
                             <div className="flex flex-col items-center gap-3 text-center">
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center">
-                                    <AlertCircle size={24} className="text-amber-400" />
+                                    <AlertCircle size={24} className="text-amber-500 dark:text-amber-400" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-zinc-100">Reveal full solution?</h3>
-                                    <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                                    <h3 className="font-bold text-gray-900 dark:text-zinc-100">Reveal full solution?</h3>
+                                    <p className="text-xs text-gray-500 dark:text-zinc-500 mt-1.5 leading-relaxed">
                                         You'll learn more by attempting the fix first. Are you sure you want to see the answer?
                                     </p>
                                 </div>

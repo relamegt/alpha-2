@@ -59,28 +59,35 @@ const checkLimit = async (userId, type, tokensRequested = 1000) => {
         submissionsPerDay: 20
     };
 
+    const planDetails = PLANS[currentPlan] || PLANS.FREE;
+    const globalDefaults = planDetails.features || {};
+
     if (user.planId) {
         const plan = await prisma.subscriptionPlan.findUnique({
             where: { id: user.planId }
         });
         if (plan) {
             limits = {
-                aiTokensPerDay: plan.aiTokensLimit || 5000,
-                compilerPerDay: plan.compilerLimit || 20,
-                submissionsPerDay: plan.submissionsLimit || 20,
-                aiInterviewsPerDay: plan.aiInterviewsLimit || 0
+                aiTokensPerDay: plan.aiTokensLimit ?? globalDefaults.aiTokensPerDay ?? 5000,
+                compilerPerDay: plan.compilerLimit ?? globalDefaults.compilerPerDay ?? 20,
+                submissionsPerDay: plan.submissionsLimit ?? globalDefaults.submissionsPerDay ?? 20,
+                aiInterviewsPerDay: plan.aiInterviewsLimit ?? globalDefaults.aiInterviewsLimit ?? 0
+            };
+        } else {
+            limits = {
+                aiTokensPerDay: globalDefaults.aiTokensPerDay ?? 5000,
+                compilerPerDay: globalDefaults.compilerPerDay ?? 20,
+                submissionsPerDay: globalDefaults.submissionsPerDay ?? 20,
+                aiInterviewsPerDay: globalDefaults.aiInterviewsLimit ?? 0
             };
         }
     } else {
-        // Fallback for default PlanType if planId is missing but plan string is set
-        const PLAN_FALLBACKS = {
-            FREE: { aiTokensPerDay: 5000, compilerPerDay: 20, submissionsPerDay: 20, aiInterviewsPerDay: 0 },
-            BASIC: { aiTokensPerDay: 25000, compilerPerDay: 50, submissionsPerDay: 50, aiInterviewsPerDay: 2 },
-            PLUS: { aiTokensPerDay: 50000, compilerPerDay: 100, submissionsPerDay: 100, aiInterviewsPerDay: 5 },
-            PRO: { aiTokensPerDay: 75000, compilerPerDay: 300, submissionsPerDay: 300, aiInterviewsPerDay: 10 }
+        limits = {
+            aiTokensPerDay: globalDefaults.aiTokensPerDay ?? 5000,
+            compilerPerDay: globalDefaults.compilerPerDay ?? 20,
+            submissionsPerDay: globalDefaults.submissionsPerDay ?? 20,
+            aiInterviewsPerDay: globalDefaults.aiInterviewsLimit ?? 0
         };
-        const fallback = PLAN_FALLBACKS[currentPlan] || PLAN_FALLBACKS.FREE;
-        limits = fallback;
     }
 
     if (type === 'ai') {

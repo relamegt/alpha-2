@@ -286,8 +286,8 @@ const UserManagement = () => {
                             <button
                                 onClick={() => setViewMode('batch')}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'batch'
-                                        ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
-                                        : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
+                                    ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
+                                    : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <Users size={16} />
@@ -296,8 +296,8 @@ const UserManagement = () => {
                             <button
                                 onClick={() => setViewMode('admin')}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'admin'
-                                        ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
-                                        : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
+                                    ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
+                                    : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <Shield size={16} />
@@ -306,8 +306,8 @@ const UserManagement = () => {
                             <button
                                 onClick={() => setViewMode('subscription')}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'subscription'
-                                        ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
-                                        : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
+                                    ? 'bg-[var(--color-tab-bg-active)] text-[var(--color-tab-text-active)] shadow-md ring-1 ring-[var(--color-tab-ring-active)]'
+                                    : 'text-[var(--color-tab-text-inactive)] hover:text-gray-900 dark:hover:text-gray-300'
                                     }`}
                             >
                                 <Zap size={16} />
@@ -579,7 +579,7 @@ const UserManagement = () => {
                         <div className="relative z-10">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Subscription & Financial Aid</h2>
                             <p className="text-gray-500 dark:text-gray-400 max-w-2xl">
-                                Manually assign premium plans to students for financial aid, scholarships, or promotional purposes. 
+                                Manually assign premium plans to students for financial aid, scholarships, or promotional purposes.
                                 This bypasses payment requirements and grants instant access to all premium features.
                             </p>
                             <button
@@ -913,15 +913,15 @@ const UserManagement = () => {
                                             Select Plan <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
-                                            <select 
+                                            <select
                                                 className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100 appearance-none font-bold"
                                                 value={planFormData.planId || planFormData.plan}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     if (val.length > 10) {
-                                                        setPlanFormData({...planFormData, planId: val, plan: ''});
+                                                        setPlanFormData({ ...planFormData, planId: val, plan: '' });
                                                     } else {
-                                                        setPlanFormData({...planFormData, planId: '', plan: val});
+                                                        setPlanFormData({ ...planFormData, planId: '', plan: val });
                                                     }
                                                 }}
                                                 required
@@ -950,7 +950,7 @@ const UserManagement = () => {
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                                 Duration
                                             </label>
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={() => setDurationMode(durationMode === 'preset' ? 'custom' : 'preset')}
                                                 className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 hover:underline"
@@ -958,7 +958,7 @@ const UserManagement = () => {
                                                 {durationMode === 'preset' ? 'Custom Months' : 'Preset Options'}
                                             </button>
                                         </div>
-                                        
+
                                         {durationMode === 'preset' ? (
                                             <div className="grid grid-cols-3 gap-2">
                                                 {[
@@ -972,12 +972,11 @@ const UserManagement = () => {
                                                     <button
                                                         key={opt.value}
                                                         type="button"
-                                                        onClick={() => setPlanFormData({...planFormData, durationMonths: opt.value})}
-                                                        className={`py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                                                            planFormData.durationMonths === opt.value
+                                                        onClick={() => setPlanFormData({ ...planFormData, durationMonths: opt.value })}
+                                                        className={`py-2.5 rounded-xl text-xs font-bold transition-all border ${planFormData.durationMonths === opt.value
                                                                 ? 'bg-blue-600 border-blue-600 text-white shadow-md'
                                                                 : 'bg-gray-50 dark:bg-[var(--color-bg-primary)] border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-blue-500/50'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {opt.label}
                                                     </button>
@@ -985,8 +984,8 @@ const UserManagement = () => {
                                             </div>
                                         ) : (
                                             <div className="relative">
-                                                <input 
-                                                    type="number" 
+                                                <input
+                                                    type="number"
                                                     className="input-field w-full dark:bg-[var(--color-bg-primary)] dark:border-gray-800 dark:text-gray-100 font-bold"
                                                     placeholder="Enter number of months..."
                                                     value={planFormData.durationMonths}

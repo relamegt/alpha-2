@@ -11,6 +11,13 @@ const { calculatePlatformScore } = require('../utils/scoreCalculator');
 // Get comprehensive report data (MEMORY OPTIMIZED)
 const getReportData = async (batchId, filters = {}) => {
     try {
+        const batch = await prisma.batch.findUnique({
+            where: { id: batchId },
+            select: { type: true }
+        });
+
+        const isOnlineBatch = batch?.type === 'ONLINE';
+
         const leaderboard = await prisma.leaderboard.findMany({
             where: { batchId },
             orderBy: { overallScore: 'desc' }
@@ -29,14 +36,14 @@ const getReportData = async (batchId, filters = {}) => {
             currentChunk.push(entry);
 
             if (currentChunk.length >= CHUNK_SIZE) {
-                await processChunk(currentChunk, reportData, batchContestIds, index);
+                await processChunk(currentChunk, reportData, batchContestIds, index, isOnlineBatch);
                 index += currentChunk.length;
                 currentChunk = [];
             }
         }
 
         if (currentChunk.length > 0) {
-            await processChunk(currentChunk, reportData, batchContestIds, index);
+            await processChunk(currentChunk, reportData, batchContestIds, index, isOnlineBatch);
         }
 
         // Apply Filters
@@ -52,7 +59,7 @@ const getReportData = async (batchId, filters = {}) => {
             entry.rank = idx + 1;
         });
 
-        return filteredData;
+        return { data: filteredData, isOnline: isOnlineBatch };
 
     } catch (error) {
         console.error('Error generating report data:', error);
@@ -61,7 +68,7 @@ const getReportData = async (batchId, filters = {}) => {
 };
 
 // Helper to process a chunk of students
-const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
+const processChunk = async (chunk, reportData, batchContestIds, startRank, isOnlineBatch = false) => {
     const studentIds = chunk.map(e => e.studentId);
 
     const [users, allExternalProfiles, allContestSubmissions] = await Promise.all([
@@ -74,10 +81,11 @@ const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
                 email: true,
                 education: true,
                 profile: true,
-                username: true
+                username: true,
+                alphaCoins: true
             }
         }),
-        prisma.externalProfile.findMany({ where: { studentId: { in: studentIds } } }),
+        isOnlineBatch ? Promise.resolve([]) : prisma.externalProfile.findMany({ where: { studentId: { in: studentIds } } }),
         prisma.contestSubmission.findMany({
             where: {
                 studentId: { in: studentIds },
@@ -113,24 +121,30 @@ const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
         const user = userMap.get(userId);
         if (!user) return;
 
-        const externalProfiles = profilesMap.get(userId) || [];
         const detailedStats = {};
         const platforms = ['leetcode', 'codechef', 'codeforces', 'hackerrank', 'interviewbit'];
 
-        platforms.forEach(p => {
-            const profile = externalProfiles.find(ep => ep.platform === p);
-            if (profile && profile.stats) {
-                detailedStats[p] = {
-                    problemsSolved: profile.stats.problemsSolved || 0,
-                    rating: profile.stats.rating || 0,
-                    totalContests: profile.stats.totalContests || 0,
-                    dsScore: profile.stats.dsScore || 0,
-                    algoScore: profile.stats.algoScore || 0
-                };
-            } else {
+        if (!isOnlineBatch) {
+            const externalProfiles = profilesMap.get(userId) || [];
+            platforms.forEach(p => {
+                const profile = externalProfiles.find(ep => ep.platform === p);
+                if (profile && profile.stats) {
+                    detailedStats[p] = {
+                        problemsSolved: profile.stats.problemsSolved || 0,
+                        rating: profile.stats.rating || 0,
+                        totalContests: profile.stats.totalContests || 0,
+                        dsScore: profile.stats.dsScore || 0,
+                        algoScore: profile.stats.algoScore || 0
+                    };
+                } else {
+                    detailedStats[p] = { problemsSolved: 0, rating: 0, totalContests: 0, dsScore: 0, algoScore: 0 };
+                }
+            });
+        } else {
+            platforms.forEach(p => {
                 detailedStats[p] = { problemsSolved: 0, rating: 0, totalContests: 0, dsScore: 0, algoScore: 0 };
-            }
-        });
+            });
+        }
 
         const contestSubmissions = submissionsMap.get(userId) || [];
         const uniqueContestIds = [...new Set(contestSubmissions.map(cs => cs.contestId))];
@@ -152,6 +166,14 @@ const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
             internalContestsData[contestId] = totalScore;
         }
 
+        const alphaCoins = user.alphaCoins || entry.alphaCoins || 0;
+        let externalTotal = 0;
+        if (!isOnlineBatch) {
+            Object.keys(entry.externalScores || {}).forEach(k => {
+                externalTotal += entry.externalScores[k] || 0;
+            });
+        }
+
         reportData.push({
             rank: startRank + idx + 1,
             globalRank: entry.globalRank || 0,
@@ -160,27 +182,27 @@ const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
             branch: user.education?.branch || 'N/A',
             section: user.profile?.section || 'N/A',
             username: user.username || entry.username || user.email.split('@')[0],
-            alphaCoins: entry.alphaCoins || 0,
+            alphaCoins: alphaCoins,
             lastUpdated: entry.lastUpdated,
-            hr_ds: detailedStats.hackerrank.dsScore,
-            hr_algo: detailedStats.hackerrank.algoScore,
-            hr_total: entry.externalScores?.hackerrank || 0,
-            lc_problems: detailedStats.leetcode.problemsSolved,
-            lc_rating: detailedStats.leetcode.rating,
-            lc_contests: detailedStats.leetcode.totalContests,
-            lc_total: entry.externalScores?.leetcode || 0,
-            ib_problems: detailedStats.interviewbit.problemsSolved,
-            ib_score: detailedStats.interviewbit.rating,
-            ib_total: entry.externalScores?.interviewbit || 0,
-            cc_problems: detailedStats.codechef.problemsSolved,
-            cc_rating: detailedStats.codechef.rating,
-            cc_contests: detailedStats.codechef.totalContests,
-            cc_total: entry.externalScores?.codechef || 0,
-            cf_problems: detailedStats.codeforces.problemsSolved,
-            cf_rating: detailedStats.codeforces.rating,
-            cf_contests: detailedStats.codeforces.totalContests,
-            cf_total: entry.externalScores?.codeforces || 0,
-            overallScore: entry.overallScore || 0,
+            hr_ds: isOnlineBatch ? 0 : detailedStats.hackerrank.dsScore,
+            hr_algo: isOnlineBatch ? 0 : detailedStats.hackerrank.algoScore,
+            hr_total: isOnlineBatch ? 0 : (entry.externalScores?.hackerrank || 0),
+            lc_problems: isOnlineBatch ? 0 : detailedStats.leetcode.problemsSolved,
+            lc_rating: isOnlineBatch ? 0 : detailedStats.leetcode.rating,
+            lc_contests: isOnlineBatch ? 0 : detailedStats.leetcode.totalContests,
+            lc_total: isOnlineBatch ? 0 : (entry.externalScores?.leetcode || 0),
+            ib_problems: isOnlineBatch ? 0 : detailedStats.interviewbit.problemsSolved,
+            ib_score: isOnlineBatch ? 0 : detailedStats.interviewbit.rating,
+            ib_total: isOnlineBatch ? 0 : (entry.externalScores?.interviewbit || 0),
+            cc_problems: isOnlineBatch ? 0 : detailedStats.codechef.problemsSolved,
+            cc_rating: isOnlineBatch ? 0 : detailedStats.codechef.rating,
+            cc_contests: isOnlineBatch ? 0 : detailedStats.codechef.totalContests,
+            cc_total: isOnlineBatch ? 0 : (entry.externalScores?.codechef || 0),
+            cf_problems: isOnlineBatch ? 0 : detailedStats.codeforces.problemsSolved,
+            cf_rating: isOnlineBatch ? 0 : detailedStats.codeforces.rating,
+            cf_contests: isOnlineBatch ? 0 : detailedStats.codeforces.totalContests,
+            cf_total: isOnlineBatch ? 0 : (entry.externalScores?.codeforces || 0),
+            overallScore: isOnlineBatch ? alphaCoins : (entry.overallScore || 0),
             internalContests: internalContestsData
         });
     });
@@ -189,7 +211,10 @@ const processChunk = async (chunk, reportData, batchContestIds, startRank) => {
 // Generate CSV report
 const generateCSVReport = async (batchId, filters = {}) => {
     try {
-        const data = await getReportData(batchId, filters);
+        const result = await getReportData(batchId, filters);
+        const data = result.data;
+        const isOnline = result.isOnline;
+
         const Contest = require('../models/Contest');
         const allContests = await Contest.findByBatchId(batchId);
         const sortedContests = allContests.sort((a, b) => new Date(a.startTime || 0) - new Date(b.startTime || 0));
@@ -227,28 +252,36 @@ const generateCSVReport = async (batchId, filters = {}) => {
             { key: 'name', label: 'Name' },
             { key: 'branch', label: 'Branch' },
             { key: 'username', label: 'Username' },
-            { key: 'alphaCoins', label: 'Alpha Coins' },
-            { key: 'hr_ds', label: 'HR(DS)' },
-            { key: 'hr_algo', label: 'HR(Algo)' },
-            { key: 'hr_total', label: 'HR(Total)' },
-            { key: 'lc_problems', label: 'LC(Probs)' },
-            { key: 'lc_rating', label: 'LC(Rating)' },
-            { key: 'lc_contests', label: 'LC(Contests)' },
-            { key: 'lc_total', label: 'LC(Total)' },
-            { key: 'ib_problems', label: 'IB(Probs)' },
-            { key: 'ib_score', label: 'IB(Score)' },
-            { key: 'ib_total', label: 'IB(Total)' },
-            { key: 'cc_problems', label: 'CC(Probs)' },
-            { key: 'cc_rating', label: 'CC(Rating)' },
-            { key: 'cc_contests', label: 'CC(Contests)' },
-            { key: 'cc_total', label: 'CC(Total)' },
-            { key: 'cf_problems', label: 'CF(Probs)' },
-            { key: 'cf_rating', label: 'CF(Rating)' },
-            { key: 'cf_contests', label: 'CF(Contests)' },
-            { key: 'cf_total', label: 'CF(Total)' },
+            { key: 'alphaCoins', label: 'Alpha Coins' }
+        ];
+
+        if (!isOnline) {
+            headers.push(
+                { key: 'hr_ds', label: 'HR(DS)' },
+                { key: 'hr_algo', label: 'HR(Algo)' },
+                { key: 'hr_total', label: 'HR(Total)' },
+                { key: 'lc_problems', label: 'LC(Probs)' },
+                { key: 'lc_rating', label: 'LC(Rating)' },
+                { key: 'lc_contests', label: 'LC(Contests)' },
+                { key: 'lc_total', label: 'LC(Total)' },
+                { key: 'ib_problems', label: 'IB(Probs)' },
+                { key: 'ib_score', label: 'IB(Score)' },
+                { key: 'ib_total', label: 'IB(Total)' },
+                { key: 'cc_problems', label: 'CC(Probs)' },
+                { key: 'cc_rating', label: 'CC(Rating)' },
+                { key: 'cc_contests', label: 'CC(Contests)' },
+                { key: 'cc_total', label: 'CC(Total)' },
+                { key: 'cf_problems', label: 'CF(Probs)' },
+                { key: 'cf_rating', label: 'CF(Rating)' },
+                { key: 'cf_contests', label: 'CF(Contests)' },
+                { key: 'cf_total', label: 'CF(Total)' }
+            );
+        }
+
+        headers.push(
             ...internalContestHeaders.map(c => ({ key: `contest_${c.id}`, label: c.fullLabel })),
             { key: 'overallScore', label: 'Overall Score' }
-        ];
+        );
 
         const csv = generateCSV(flattenedData, headers);
 
@@ -266,22 +299,25 @@ const generateCSVReport = async (batchId, filters = {}) => {
 // Generate PDF report
 const generatePDFReport = async (batchId, filters = {}) => {
     try {
-        const data = await getReportData(batchId, filters);
-        const Contest = require('../models/Contest');
-        const allContests = await Contest.findByBatchId(batchId);
-        const sortedContests = allContests.sort((a, b) => new Date(a.startTime || 0) - new Date(b.startTime || 0));
+        return new Promise(async (resolve, reject) => {
+            const result = await getReportData(batchId, filters);
+            const data = result.data;
+            const isOnlineBatch = result.isOnline;
 
-        const internalContestHeaders = sortedContests.map(c => {
-            const contestId = c.id;
-            let maxScore = 0;
-            data.forEach(row => {
-                const score = row.internalContests?.[contestId];
-                if (score && score > maxScore) maxScore = score;
+            const Contest = require('../models/Contest');
+            const allContests = await Contest.findByBatchId(batchId);
+            const sortedContests = allContests.sort((a, b) => new Date(a.startTime || 0) - new Date(b.startTime || 0));
+
+            const internalContestHeaders = sortedContests.map(c => {
+                const contestId = c.id;
+                let maxScore = 0;
+                data.forEach(row => {
+                    const score = row.internalContests?.[contestId];
+                    if (score && score > maxScore) maxScore = score;
+                });
+                return { id: contestId, title: c.title, maxScore: maxScore };
             });
-            return { id: contestId, title: c.title, maxScore: maxScore };
-        });
 
-        return new Promise((resolve, reject) => {
             const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 20 });
             const chunks = [];
             doc.on('data', chunk => chunks.push(chunk));
@@ -300,26 +336,31 @@ const generatePDFReport = async (batchId, filters = {}) => {
                 { header: 'Rank', key: 'rank', width: 25 },
                 { header: 'Roll', key: 'rollNumber', width: 50 },
                 { header: 'Name', key: 'name', width: 70 },
-                { header: 'Coins', key: 'alphaCoins', width: 35 },
-                { header: 'HR(DS)', key: 'hr_ds', width: 30 },
-                { header: 'HR(Al)', key: 'hr_algo', width: 30 },
-                { header: 'HR(T)', key: 'hr_total', width: 25 },
-                { header: 'LC(P)', key: 'lc_problems', width: 25 },
-                { header: 'LC(R)', key: 'lc_rating', width: 30 },
-                { header: 'LC(C)', key: 'lc_contests', width: 25 },
-                { header: 'LC(T)', key: 'lc_total', width: 30 },
-                { header: 'IB(P)', key: 'ib_problems', width: 25 },
-                { header: 'IB(S)', key: 'ib_score', width: 30 },
-                { header: 'IB(T)', key: 'ib_total', width: 30 },
-                { header: 'CC(P)', key: 'cc_problems', width: 25 },
-                { header: 'CC(R)', key: 'cc_rating', width: 30 },
-                { header: 'CC(C)', key: 'cc_contests', width: 25 },
-                { header: 'CC(T)', key: 'cc_total', width: 30 },
-                { header: 'CF(P)', key: 'cf_problems', width: 25 },
-                { header: 'CF(R)', key: 'cf_rating', width: 30 },
-                { header: 'CF(C)', key: 'cf_contests', width: 25 },
-                { header: 'CF(T)', key: 'cf_total', width: 30 },
+                { header: 'Coins', key: 'alphaCoins', width: 35 }
             ];
+
+            if (!isOnlineBatch) {
+                columns.push(
+                    { header: 'HR(DS)', key: 'hr_ds', width: 30 },
+                    { header: 'HR(Al)', key: 'hr_algo', width: 30 },
+                    { header: 'HR(T)', key: 'hr_total', width: 25 },
+                    { header: 'LC(P)', key: 'lc_problems', width: 25 },
+                    { header: 'LC(R)', key: 'lc_rating', width: 30 },
+                    { header: 'LC(C)', key: 'lc_contests', width: 25 },
+                    { header: 'LC(T)', key: 'lc_total', width: 30 },
+                    { header: 'IB(P)', key: 'ib_problems', width: 25 },
+                    { header: 'IB(S)', key: 'ib_score', width: 30 },
+                    { header: 'IB(T)', key: 'ib_total', width: 30 },
+                    { header: 'CC(P)', key: 'cc_problems', width: 25 },
+                    { header: 'CC(R)', key: 'cc_rating', width: 30 },
+                    { header: 'CC(C)', key: 'cc_contests', width: 25 },
+                    { header: 'CC(T)', key: 'cc_total', width: 30 },
+                    { header: 'CF(P)', key: 'cf_problems', width: 25 },
+                    { header: 'CF(R)', key: 'cf_rating', width: 30 },
+                    { header: 'CF(C)', key: 'cf_contests', width: 25 },
+                    { header: 'CF(T)', key: 'cf_total', width: 30 }
+                );
+            }
 
             internalContestHeaders.forEach((c, idx) => {
                 columns.push({ header: `C${idx + 1}`, key: `contest_${c.id}`, width: 25 });

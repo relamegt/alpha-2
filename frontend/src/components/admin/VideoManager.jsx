@@ -113,7 +113,7 @@ const VideoManager = () => {
     const addQuestion = () => {
         setFormData({
             ...formData,
-            quizQuestions: [...(formData.quizQuestions || []), { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }]
+            quizQuestions: [...(formData.quizQuestions || []), { question: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '', isMultipleAnswers: false }]
         });
     };
 
@@ -345,14 +345,52 @@ const VideoManager = () => {
                                             <button type="button" onClick={() => removeQuestion(qIdx)} className="absolute top-3 right-3 text-red-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Trash2 size={16} />
                                             </button>
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Question {qIdx + 1}</label>
-                                                <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
+                                            <div className="flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                                                <div className="flex-1 space-y-1">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Question {qIdx + 1}</label>
+                                                    <input required placeholder="Enter question..." type="text" value={q.question} onChange={e => updateQuestion(qIdx, 'question', e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-sm font-medium focus:border-primary-500 transition-colors" />
+                                                </div>
+                                                <div className="flex flex-col items-center gap-1 min-w-[100px] pt-4">
+                                                    <label className="text-[9px] font-black text-gray-400 dark:text-gray-300 uppercase tracking-tighter">Multiple Correct?</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const isNowMultiple = !q.isMultipleAnswers;
+                                                            const updated = [...formData.quizQuestions];
+                                                            updated[qIdx].isMultipleAnswers = isNowMultiple;
+                                                            updated[qIdx].correctAnswer = isNowMultiple ? [0] : 0;
+                                                            setFormData({ ...formData, quizQuestions: updated });
+                                                        }}
+                                                        className={`w-10 h-5 rounded-full transition-all relative ${q.isMultipleAnswers ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                                    >
+                                                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${q.isMultipleAnswers ? 'left-5.5' : 'left-0.5'}`} />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {q.options.map((opt, oIdx) => (
                                                     <div key={oIdx} className="flex items-center gap-2">
-                                                        <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)} className="accent-primary-500 w-3 h-3" />
+                                                        {q.isMultipleAnswers ? (
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(oIdx) : false}
+                                                                onChange={() => {
+                                                                    const current = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+                                                                    const next = current.includes(oIdx)
+                                                                        ? current.filter(i => i !== oIdx)
+                                                                        : [...current, oIdx];
+                                                                    updateQuestion(qIdx, 'correctAnswer', next);
+                                                                }}
+                                                                className="w-3.5 h-3.5 rounded accent-primary-500"
+                                                            />
+                                                        ) : (
+                                                            <input
+                                                                type="radio"
+                                                                checked={q.correctAnswer === oIdx}
+                                                                onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)}
+                                                                className="accent-primary-500 w-3 h-3"
+                                                            />
+                                                        )}
                                                         <input required placeholder={`Option ${oIdx + 1}`} type="text" value={opt} onChange={e => updateOption(qIdx, oIdx, e.target.value)} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1c1c26] outline-none text-xs focus:border-primary-500 transition-colors" />
                                                     </div>
                                                 ))}

@@ -283,11 +283,23 @@ exports.getCurrentPlan = async (req, res, next) => {
         }
 
         const planDetails = PLANS[currentPlan] || PLANS['FREE'];
+        
+        // Effective limits combining DB instance and global defaults
+        const dbInstance = user.planInstance || {};
+        const globalDefaults = planDetails.features || {};
+        const effectiveLimits = {
+            aiTokensLimit: dbInstance.aiTokensLimit ?? globalDefaults.aiTokensPerDay ?? 5000,
+            compilerLimit: dbInstance.compilerLimit ?? globalDefaults.compilerPerDay ?? 20,
+            submissionsLimit: dbInstance.submissionsLimit ?? globalDefaults.submissionsPerDay ?? 20,
+            aiInterviewsLimit: dbInstance.aiInterviewsLimit ?? globalDefaults.aiInterviewsLimit ?? 0
+        };
+
         res.json({ 
             success: true, 
             plan: currentPlan, 
             planId: user.planId,
             planDetails: user.planInstance,
+            effectiveLimits,
             details: planDetails, 
             expiresAt: user.subscriptionExpiresAt, 
             usage: {

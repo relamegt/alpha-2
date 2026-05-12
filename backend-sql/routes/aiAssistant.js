@@ -4,6 +4,7 @@ const { GoogleGenAI } = require('@google/genai');
 const prisma = require('../config/db');
 const { protect } = require('../middleware/auth');
 const { checkAiLimit } = require('../middleware/usageMiddleware');
+const { PLANS } = require('../config/plans');
 const axios = require('axios'); // Added axios for Groq requests
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -112,18 +113,19 @@ router.get('/credits', protect, async (req, res) => {
         const userId = req.user.userId;
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { plan: true, dailyAiTokensUsed: true }
+            select: { plan: true, planId: true, planInstance: true, dailyAiTokensUsed: true }
         });
 
-        const PLAN_LIMITS = {
-            FREE: 5000,
-            BASIC: 25000,
-            PLUS: 50000,
-            PRO: 75000
-        };
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
         const plan = user.plan || 'FREE';
-        const limit = PLAN_LIMITS[plan] || 5000;
+        const planDetails = PLANS[plan] || PLANS['FREE'];
+        const dbInstance = user.planInstance || {};
+        const globalDefaults = planDetails.features || {};
+
+        const limit = dbInstance.aiTokensLimit ?? globalDefaults.aiTokensPerDay ?? 5000;
         const used = user.dailyAiTokensUsed || 0;
 
         res.json({

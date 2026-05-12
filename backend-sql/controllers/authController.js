@@ -7,7 +7,26 @@ const { OAuth2Client } = require('google-auth-library');
 const UAParser = require('ua-parser-js');
 const prisma = require('../config/db');
 
+const { PLANS } = require('../config/plans');
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+/**
+ * Combines global plan defaults with user-specific plan instance limits
+ * to provide a single source of truth for the frontend.
+ */
+const getEffectiveLimits = (user) => {
+    const planType = user.plan || 'FREE';
+    const globalDefaults = PLANS[planType]?.features || PLANS['FREE'].features;
+    const dbInstance = user.planInstance || {};
+
+    return {
+        aiTokensLimit: dbInstance.aiTokensLimit ?? globalDefaults.aiTokensPerDay ?? 5000,
+        compilerLimit: dbInstance.compilerLimit ?? globalDefaults.compilerPerDay ?? 20,
+        submissionsLimit: dbInstance.submissionsLimit ?? globalDefaults.submissionsPerDay ?? 20,
+        aiInterviewsLimit: dbInstance.aiInterviewsLimit ?? globalDefaults.aiInterviewsLimit ?? 0
+    };
+};
 
 // OTP helpers — stored in Redis for multi-instance safety (TTL: 10 minutes)
 const OTP_TTL_SECONDS = 10 * 60;
@@ -150,6 +169,7 @@ const login = async (req, res) => {
                 plan: user.plan,
                 planId: user.planId,
                 planInstance: user.planInstance,
+                effectiveLimits: getEffectiveLimits(user),
                 subscriptionExpiresAt: user.subscriptionExpiresAt,
                 dailyAiTokensUsed: user.dailyAiTokensUsed,
                 dailyCompilerUsed: user.dailyCompilerUsed,
@@ -336,6 +356,7 @@ const googleLogin = async (req, res) => {
                 plan: user.plan,
                 planId: user.planId,
                 planInstance: user.planInstance,
+                effectiveLimits: getEffectiveLimits(user),
                 subscriptionExpiresAt: user.subscriptionExpiresAt,
                 dailyAiTokensUsed: user.dailyAiTokensUsed,
                 dailyCompilerUsed: user.dailyCompilerUsed,
@@ -651,6 +672,8 @@ const getCurrentUser = async (req, res) => {
                 plan: user.plan,
                 planId: user.planId,
                 planInstance: user.planInstance,
+                effectiveLimits: getEffectiveLimits(user),
+
                 subscriptionExpiresAt: user.subscriptionExpiresAt,
                 dailyAiTokensUsed: user.dailyAiTokensUsed,
                 dailyCompilerUsed: user.dailyCompilerUsed,

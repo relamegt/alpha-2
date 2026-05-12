@@ -237,8 +237,8 @@ const Dashboard = () => {
                                         <Award size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                            {user.plan || 'FREE'} PLAN
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white uppercase">
+                                            {user.planInstance?.name || user.plan || 'FREE'} PLAN
                                         </h3>
                                         <p className="text-xs text-gray-500">
                                             {user.plan === 'FREE' || !user.subscriptionExpiresAt || isNaN(new Date(user.subscriptionExpiresAt).getTime())
@@ -255,14 +255,20 @@ const Dashboard = () => {
                                             <span>AI Tokens</span>
                                             <span>
                                                 {user.dailyAiTokensUsed >= 1000 
-                                                    ? `${Math.round(user.dailyAiTokensUsed / 1000)}K` 
-                                                    : user.dailyAiTokensUsed || 0} / {user.planInstance?.aiTokensLimit >= 1000 ? `${Math.round(user.planInstance.aiTokensLimit / 1000)}K` : user.planInstance?.aiTokensLimit || (user.plan === 'PRO' ? '75K' : user.plan === 'PLUS' ? '50K' : user.plan === 'BASIC' ? '25K' : '5K')}
+                                                    ? `${(user.dailyAiTokensUsed / 1000).toFixed(1)}K` 
+                                                    : user.dailyAiTokensUsed || 0} / {(() => {
+                                                        const limit = user.effectiveLimits?.aiTokensLimit;
+                                                        if (!limit && limit !== 0) return '...';
+                                                        if (limit >= 100000) return 'Unlimited';
+                                                        if (limit >= 1000) return `${Math.round(limit / 1000)}K`;
+                                                        return limit;
+                                                    })()}
                                             </span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(59,130,246,0.4)]" 
-                                                style={{ width: `${Math.min(100, ((user.dailyAiTokensUsed || 0) / (user.planInstance?.aiTokensLimit || (user.plan === 'PRO' ? 75000 : user.plan === 'PLUS' ? 50000 : user.plan === 'BASIC' ? 25000 : 5000))) * 100)}%` }}
+                                                style={{ width: `${(user.effectiveLimits?.aiTokensLimit >= 100000) ? 0 : Math.min(100, ((user.dailyAiTokensUsed || 0) / Math.max(1, user.effectiveLimits?.aiTokensLimit || 0)) * 100)}%` }}
                                             />
                                         </div>
                                     </div>
@@ -271,12 +277,12 @@ const Dashboard = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-[10px] font-bold tracking-wider text-gray-500">
                                             <span>Compiler</span>
-                                            <span>{user.dailyCompilerUsed || 0} / {user.planInstance?.compilerLimit || (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20)}</span>
+                                            <span>{user.dailyCompilerUsed || 0} / {user.effectiveLimits?.compilerLimit >= 100000 ? 'Unlimited' : (user.effectiveLimits?.compilerLimit ?? '...')}</span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
-                                                style={{ width: `${Math.min(100, ((user.dailyCompilerUsed || 0) / (user.planInstance?.compilerLimit || (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20))) * 100)}%` }}
+                                                style={{ width: `${user.effectiveLimits?.compilerLimit >= 100000 ? 0 : Math.min(100, ((user.dailyCompilerUsed || 0) / Math.max(1, user.effectiveLimits?.compilerLimit || 0)) * 100)}%` }}
                                             />
                                         </div>
                                     </div>
@@ -285,12 +291,12 @@ const Dashboard = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-[10px] font-bold tracking-wider text-gray-500">
                                             <span>Submissions</span>
-                                            <span>{user.dailySubmissionsUsed || 0} / {user.planInstance?.submissionsLimit || (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20)}</span>
+                                            <span>{user.dailySubmissionsUsed || 0} / {user.effectiveLimits?.submissionsLimit >= 100000 ? 'Unlimited' : (user.effectiveLimits?.submissionsLimit ?? '...')}</span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
-                                                style={{ width: `${Math.min(100, ((user.dailySubmissionsUsed || 0) / (user.planInstance?.submissionsLimit || (user.plan === 'PRO' ? 300 : user.plan === 'PLUS' ? 100 : user.plan === 'BASIC' ? 50 : 20))) * 100)}%` }}
+                                                style={{ width: `${user.effectiveLimits?.submissionsLimit >= 100000 ? 0 : Math.min(100, ((user.dailySubmissionsUsed || 0) / Math.max(1, user.effectiveLimits?.submissionsLimit || 0)) * 100)}%` }}
                                             />
                                         </div>
                                     </div>
@@ -299,12 +305,12 @@ const Dashboard = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-[10px] font-bold tracking-wider text-gray-500">
                                             <span>AI Interviews</span>
-                                            <span>{user.dailyAiInterviewsUsed || 0} / {user.planInstance?.aiInterviewsLimit >= 100000 ? 'Unlimited' : (user.planInstance?.aiInterviewsLimit || 0)}</span>
+                                            <span>{user.dailyAiInterviewsUsed || 0} / {user.effectiveLimits?.aiInterviewsLimit >= 100000 ? 'Unlimited' : (user.effectiveLimits?.aiInterviewsLimit ?? '...')}</span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                             <div 
-                                                className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(245,158,11,0.4)]" 
-                                                style={{ width: `${user.planInstance?.aiInterviewsLimit >= 100000 ? 0 : Math.min(100, ((user.dailyAiInterviewsUsed || 0) / Math.max(1, user.planInstance?.aiInterviewsLimit || 1)) * 100)}%` }}
+                                                className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.4)]" 
+                                                style={{ width: `${user.effectiveLimits?.aiInterviewsLimit >= 100000 ? 0 : Math.min(100, ((user.dailyAiInterviewsUsed || 0) / Math.max(1, user.effectiveLimits?.aiInterviewsLimit || 0)) * 100)}%` }}
                                             />
                                         </div>
                                     </div>

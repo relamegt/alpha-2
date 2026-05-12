@@ -41,9 +41,9 @@ const CustomDropdown = ({
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                 </div>
-                <ChevronDown 
-                    size={size === 'small' ? 14 : 16} 
-                    className={`text-gray-400 dark:text-gray-500 transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 text-primary-500' : ''}`} 
+                <ChevronDown
+                    size={size === 'small' ? 14 : 16}
+                    className={`text-gray-400 dark:text-gray-500 transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 text-primary-500' : ''}`}
                 />
             </button>
 

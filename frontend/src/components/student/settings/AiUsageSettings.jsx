@@ -45,14 +45,14 @@ const AiUsageSettings = () => {
         );
     }
 
-    const { usage, details } = subData;
+    const { usage, effectiveLimits } = subData;
 
-    // Numerical limits from backend features
+    // Numerical limits from backend (DB planDetails has priority over hardcoded details via effectiveLimits)
     const limits = {
-        aiTokens: details?.features?.aiTokensPerDay || 5000,
-        compiler: details?.features?.compilerPerDay || 20,
-        submissions: details?.features?.submissionsPerDay || 20,
-        aiInterviews: details?.aiInterviewsLimit || 0
+        aiTokens: effectiveLimits?.aiTokensLimit ?? 0,
+        compiler: effectiveLimits?.compilerLimit ?? 0,
+        submissions: effectiveLimits?.submissionsLimit ?? 0,
+        aiInterviews: effectiveLimits?.aiInterviewsLimit ?? 0
     };
 
     const usageCards = [
@@ -89,7 +89,7 @@ const AiUsageSettings = () => {
             limit: limits.aiInterviews,
             unit: 'Sessions',
             icon: Users,
-            color: 'blue',
+            color: 'indigo',
             desc: 'Participate in AI-powered mock interview sessions.'
         }
     ];
@@ -111,7 +111,7 @@ const AiUsageSettings = () => {
             </div>
 
             {/* Usage Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {usageCards.map((card, idx) => {
                     const isUnlimited = card.limit >= 100000;
                     const percentage = isUnlimited ? 0 : card.limit > 0 ? Math.min(100, (card.value / card.limit) * 100) : 0;
@@ -119,9 +119,12 @@ const AiUsageSettings = () => {
                         ? 'bg-gradient-to-r from-amber-500 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.4)]' 
                         : card.color === 'blue' 
                             ? 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.4)]' 
-                            : 'bg-gradient-to-r from-purple-500 to-purple-600 shadow-[0_0_8px_rgba(168,85,247,0.4)]';
-                    const textClass = card.color === 'amber' ? 'text-amber-600' : card.color === 'blue' ? 'text-blue-600' : 'text-purple-600';
-                    const bgClass = card.color === 'amber' ? 'bg-amber-50' : card.color === 'blue' ? 'bg-blue-50' : 'bg-purple-50';
+                            : card.color === 'purple'
+                                ? 'bg-gradient-to-r from-purple-500 to-purple-600 shadow-[0_0_8px_rgba(168,85,247,0.4)]'
+                                : 'bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)]';
+                    
+                    const textClass = card.color === 'amber' ? 'text-amber-600' : card.color === 'blue' ? 'text-blue-600' : card.color === 'purple' ? 'text-purple-600' : 'text-indigo-600';
+                    const bgClass = card.color === 'amber' ? 'bg-amber-50' : card.color === 'blue' ? 'bg-blue-50' : card.color === 'purple' ? 'bg-purple-50' : 'bg-indigo-50';
 
                     return (
                         <div key={idx} className="bg-[var(--color-bg-primary)] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:shadow-md">
@@ -136,7 +139,7 @@ const AiUsageSettings = () => {
                             </div>
 
                             <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{card.title}</h4>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed mb-4">{card.desc}</p>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed mb-4 min-h-[30px]">{card.desc}</p>
 
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-[10px] font-bold">
@@ -146,7 +149,7 @@ const AiUsageSettings = () => {
                                 <div className="h-2 bg-gray-200 dark:bg-gray-800/80 rounded-full overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner">
                                     <div 
                                         className={`h-full rounded-full transition-all duration-1000 ${colorClass}`}
-                                        style={{ width: `${percentage}%` }}
+                                        style={{ width: `${isUnlimited ? 0 : percentage}%` }}
                                     />
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] text-gray-400 font-medium">
@@ -158,48 +161,9 @@ const AiUsageSettings = () => {
                     );
                 })}
             </div>
-
-            {/* Performance Insights Section */}
-            <div className="bg-[var(--color-bg-primary)] p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                        <TrendingUp size={20} />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">Usage Insights</h3>
-                        <p className="text-xs text-gray-500">How you've been using your premium features</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0">
-                            <Cpu size={20} />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Efficiency Score</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">
-                                You are using approximately <strong>{Math.round(usage.aiTokens / 100)} tokens</strong> per query. 
-                                This is within the optimal efficiency range for your plan.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0">
-                            <Zap size={20} />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Peak Usage Time</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">
-                                Most of your activity occurs between <strong>08:00 PM and 11:00 PM</strong>. 
-                                You have enough remaining limits to support your peak hours.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
 
 export default AiUsageSettings;
+

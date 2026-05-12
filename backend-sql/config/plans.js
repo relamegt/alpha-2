@@ -8,6 +8,7 @@ const PLANS = {
             aiTokensPerDay: 5000,
             compilerPerDay: 20,
             submissionsPerDay: 20,
+            aiInterviewsLimit: 0,
             allCourseAccess: false
         },
         displayFeatures: [
@@ -27,6 +28,7 @@ const PLANS = {
             aiTokensPerDay: 25000,
             compilerPerDay: 50,
             submissionsPerDay: 50,
+            aiInterviewsLimit: 1,
             allCourseAccess: true
         },
         displayFeatures: [
@@ -47,6 +49,7 @@ const PLANS = {
             aiTokensPerDay: 50000,
             compilerPerDay: 100,
             submissionsPerDay: 100,
+            aiInterviewsLimit: 2,
             allCourseAccess: true
         },
         displayFeatures: [
@@ -67,6 +70,7 @@ const PLANS = {
             aiTokensPerDay: 75000,
             compilerPerDay: 300,
             submissionsPerDay: 300,
+            aiInterviewsLimit: 3,
             allCourseAccess: true
         },
         displayFeatures: [

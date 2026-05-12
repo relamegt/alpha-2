@@ -14,21 +14,13 @@ const BATCH_LB_CACHE_TTL = 60; // 60s — fresh enough for a live session
 // Get FULL batch leaderboard (NO FILTERS)
 const getBatchLeaderboard = async (req, res) => {
     try {
-        const { studentType } = req.user;
-
-        if (studentType === 'ONLINE') {
-            return res.status(403).json({
-                success: false,
-                message: 'Batch leaderboard is only available for offline students. Please use course leaderboards.'
-            });
-        }
-
         let { batchId } = req.params;
 
         // Resolve batchId if it's a name/slug
         const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(batchId);
+        let batch;
         if (batchId && !isUUID) {
-            const batch = await prisma.batch.findFirst({
+            batch = await prisma.batch.findFirst({
                 where: { name: { equals: decodeURIComponent(batchId), mode: 'insensitive' } }
             });
             if (batch) {
@@ -36,7 +28,15 @@ const getBatchLeaderboard = async (req, res) => {
             } else {
                 return res.status(404).json({ success: false, message: 'Batch not found' });
             }
+        } else if (isUUID) {
+            batch = await prisma.batch.findUnique({ where: { id: batchId } });
         }
+
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+
+        const isOnlineBatch = batch.type === 'ONLINE';
 
         const redis = getRedis();
         const cacheKey = `cache:batchlb:${batchId}`;
@@ -45,7 +45,10 @@ const getBatchLeaderboard = async (req, res) => {
         try {
             const cached = await redis.get(cacheKey);
             if (cached) {
-                return res.json(JSON.parse(cached));
+                const parsed = JSON.parse(cached);
+                // Ensure isOnline flag is in the response
+                parsed.isOnline = isOnlineBatch;
+                return res.json(parsed);
             }
         } catch (e) { /* proceed without cache on Redis error */ }
 
@@ -63,13 +66,16 @@ const getBatchLeaderboard = async (req, res) => {
         leaderboard.forEach(entry => leaderboardMap.set(entry.studentId, entry));
 
         // Pre-fetch ALL external profiles for this batch to avoid N+1 queries
-        const externalProfiles = await ExternalProfile.getBatchExternalStats(batchId);
+        // Skip for ONLINE batches
         const externalProfilesMap = new Map();
-        externalProfiles.forEach(p => {
-            const sid = p.studentId.toString();
-            if (!externalProfilesMap.has(sid)) externalProfilesMap.set(sid, []);
-            externalProfilesMap.get(sid).push(p);
-        });
+        if (!isOnlineBatch) {
+            const externalProfiles = await ExternalProfile.getBatchExternalStats(batchId);
+            externalProfiles.forEach(p => {
+                const sid = p.studentId.toString();
+                if (!externalProfilesMap.has(sid)) externalProfilesMap.set(sid, []);
+                externalProfilesMap.get(sid).push(p);
+            });
+        }
 
         // Compute the actual leaderboard scores for all contests in this batch using a single bulk query
         const contestScoresByStudent = new Map(); // studentId -> Map(contestId -> score)
@@ -78,7 +84,6 @@ const getBatchLeaderboard = async (req, res) => {
         const batchContestIdsArray = Array.from(batchContestIds).map(id => String(id));
 
         // CRIT-2 FIX: prisma.findMany returns a standard Array, not an async cursor.
-        // Using for...of instead of for await...of.
         const allContestSubmissions = await prisma.contestSubmission.findMany({
             where: { contestId: { in: batchContestIdsArray } },
             select: { studentId: true, contestId: true, verdict: true, problemId: true, createdAt: true }
@@ -135,9 +140,6 @@ const getBatchLeaderboard = async (req, res) => {
             studentMap.set(cid, (studentMap.get(cid) || 0) + points);
         });
 
-        // CRIT-2 FIX: Process students in chunks of 50 instead of Promise.all on all 1000 at once.
-        // Running 1000 concurrent async operations in Promise.all saturates Node.js's thread pool
-        // and blocks the event loop for seconds. Chunking keeps each burst small.
         const scoreCalculator = require('../utils/scoreCalculator');
         const CHUNK_SIZE = 50;
         const enrichedLeaderboard = [];
@@ -164,35 +166,40 @@ const getBatchLeaderboard = async (req, res) => {
                 };
 
                 // Compute externalTotal from profiles map (NO N+1)
-                const studentProfiles = externalProfilesMap.get(studentId) || [];
                 let externalTotal = 0;
-                studentProfiles.forEach(profile => {
-                    externalTotal += scoreCalculator.calculatePlatformScore(profile.platform, profile.stats) || 0;
-                });
-
-                // Detailed Stats Builder
                 const detailedStats = {};
-                const platforms = ['leetcode', 'codechef', 'codeforces', 'hackerrank', 'interviewbit'];
-                platforms.forEach(p => {
-                    const profile = studentProfiles.find(ep => ep.platform === p);
-                    if (profile) {
-                        detailedStats[p] = {
-                            problemsSolved: profile.stats.problemsSolved || 0,
-                            rating: profile.stats.rating || 0,
-                            totalContests: profile.stats.totalContests || 0
-                        };
-                    } else {
-                        detailedStats[p] = { problemsSolved: 0, rating: 0, totalContests: 0 };
-                    }
-                });
-
-                // Social stats builder
                 const socialProfiles = { github: null, linkedin: null };
-                studentProfiles.forEach(profile => {
-                    if (['linkedin', 'github'].includes(profile.platform)) {
-                        socialProfiles[profile.platform] = profile.username;
-                    }
-                });
+
+                if (!isOnlineBatch) {
+                    const studentProfiles = externalProfilesMap.get(studentId) || [];
+                    studentProfiles.forEach(profile => {
+                        externalTotal += scoreCalculator.calculatePlatformScore(profile.platform, profile.stats) || 0;
+                        if (['linkedin', 'github'].includes(profile.platform)) {
+                            socialProfiles[profile.platform] = profile.username;
+                        }
+                    });
+
+                    // Detailed Stats Builder
+                    const platforms = ['leetcode', 'codechef', 'codeforces', 'hackerrank', 'interviewbit'];
+                    platforms.forEach(p => {
+                        const profile = studentProfiles.find(ep => ep.platform === p);
+                        if (profile) {
+                            detailedStats[p] = {
+                                problemsSolved: profile.stats.problemsSolved || 0,
+                                rating: profile.stats.rating || 0,
+                                totalContests: profile.stats.totalContests || 0
+                            };
+                        } else {
+                            detailedStats[p] = { problemsSolved: 0, rating: 0, totalContests: 0 };
+                        }
+                    });
+                } else {
+                    // Fill with defaults for ONLINE batch
+                    const platforms = ['leetcode', 'codechef', 'codeforces', 'hackerrank', 'interviewbit'];
+                    platforms.forEach(p => {
+                        detailedStats[p] = { problemsSolved: 0, rating: 0, totalContests: 0 };
+                    });
+                }
 
                 // Internal Contests Data - ONLY for this batch
                 const internalContestsData = {};
@@ -225,7 +232,7 @@ const getBatchLeaderboard = async (req, res) => {
                     username: entry.username || user.username || 'N/A',
                     overallScore,
                     alphaCoins,
-                    externalScores: entry.externalScores || {},
+                    externalScores: isOnlineBatch ? {} : (entry.externalScores || {}),
                     detailedStats: detailedStats,
                     socialProfiles: socialProfiles,
                     internalContests: internalContestsData,
@@ -236,8 +243,7 @@ const getBatchLeaderboard = async (req, res) => {
 
             enrichedLeaderboard.push(...chunkResults);
 
-            // Allow the event loop to breathe between chunks so we don't block
-            // incoming requests while computing leaderboards for 1000 users.
+            // Allow the event loop to breathe
             await new Promise(resolve => setImmediate(resolve));
         }
 
@@ -245,12 +251,11 @@ const getBatchLeaderboard = async (req, res) => {
         enrichedLeaderboard.sort((a, b) => b.overallScore - a.overallScore);
 
         // === GLOBAL RANK CALCULATION ===
-        // Assign batch rank first
         enrichedLeaderboard.forEach((item, index) => {
             item.rank = index + 1;
         });
 
-        // Use Redis ZSET pipeline for O(1) multi-fetch of Global Ranks instead of O(N) sequential DB queries
+        // Use Redis ZSET pipeline for Global Ranks
         try {
             const redis = require('../config/redis').getRedis();
             const GLOBAL_RANK_KEY = 'leaderboard:global';
@@ -266,17 +271,16 @@ const getBatchLeaderboard = async (req, res) => {
                 if (!err && rank !== null) {
                     item.globalRank = rank + 1;
                 } else {
-                    item.globalRank = item.rank; // fallback to batch rank
+                    item.globalRank = item.rank;
                 }
             });
         } catch (e) {
-            console.error('[GlobalRank Calculation] Pipeline failed:', e.message);
             enrichedLeaderboard.forEach((item) => {
                 if (!item.globalRank) item.globalRank = item.rank;
             });
         }
 
-        // Calculate max score for each contest across all students
+        // Calculate max score for each contest
         const contestsWithMaxScore = allContests.map(c => {
             const contestId = c.id;
             let maxScore = 0;
@@ -298,21 +302,19 @@ const getBatchLeaderboard = async (req, res) => {
             };
         });
 
-        // Fetch batch details
-        const batch = await Batch.findById(batchId);
-
         const responsePayload = {
             success: true,
             count: enrichedLeaderboard.length,
             batchName: batch?.name || 'Batch Leaderboard',
+            isOnline: isOnlineBatch,
             contests: contestsWithMaxScore,
             leaderboard: enrichedLeaderboard
         };
 
-        // CRIT-2 FIX: Write result to Redis cache (60s) so subsequent requests skip recompute.
+        // Write result to Redis cache (60s)
         try {
             await redis.setex(cacheKey, BATCH_LB_CACHE_TTL, JSON.stringify(responsePayload));
-        } catch (e) { /* non-fatal — serve fresh data */ }
+        } catch (e) { /* non-fatal */ }
 
         res.json(responsePayload);
     } catch (error) {
@@ -323,7 +325,6 @@ const getBatchLeaderboard = async (req, res) => {
             error: error.message
         });
     }
-
 };
 
 
@@ -334,8 +335,9 @@ const getAllExternalData = async (req, res) => {
 
         // Resolve batchId if it's a name/slug
         const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(batchId);
+        let batch;
         if (batchId && !isUUID) {
-            const batch = await prisma.batch.findFirst({
+            batch = await prisma.batch.findFirst({
                 where: { name: { equals: decodeURIComponent(batchId), mode: 'insensitive' } }
             });
             if (batch) {
@@ -343,6 +345,20 @@ const getAllExternalData = async (req, res) => {
             } else {
                 return res.status(404).json({ success: false, message: 'Batch not found' });
             }
+        } else if (isUUID) {
+            batch = await prisma.batch.findUnique({ where: { id: batchId } });
+        }
+
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+
+        // Block external data for ONLINE batches
+        if (batch.type === 'ONLINE') {
+            return res.status(403).json({
+                success: false,
+                message: 'External data is not available for online batches.'
+            });
         }
 
         // Get ALL external profiles for the batch

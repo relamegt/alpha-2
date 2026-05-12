@@ -140,23 +140,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
         setShowOptions(prev => !prev);
     };
 
-    const [activeTab, setActiveTab] = useState(() => {
-        if (contestId) return 'internal';
-        if (viewType === 'contest') return 'external';
-        return 'practice';
-    });
-
-    useEffect(() => {
-        if (viewType === 'contest') {
-            setActiveTab('external');
-        } else if (contestId) {
-            setActiveTab('internal');
-        } else if (!contestId && viewType !== 'contest') {
-            // If we are just visiting /student/leaderboard, default to practice
-            setActiveTab('practice');
-        }
-    }, [viewType, contestId]);
-
+    const [isOnline, setIsOnline] = useState(false);
     const [viewMode, setViewMode] = useState('summary'); // 'summary' | 'detailed'
 
     // RAW DATA (fetched ONCE from backend or cache)
@@ -165,6 +149,27 @@ const Leaderboard = ({ batchId, isBatchView }) => {
     const [rawInternalData, setRawInternalData] = useState([]);
     const [contestInfo, setContestInfo] = useState(null);
     const [internalContestsMeta, setInternalContestsMeta] = useState([]); // List of internal contests for columns
+
+    const [activeTab, setActiveTab] = useState(() => {
+        if (contestId) return 'internal';
+        if (viewType === 'contest') return 'external';
+        return 'practice';
+    });
+
+    useEffect(() => {
+        if (isOnline && activeTab === 'external') {
+            setActiveTab('practice');
+            return;
+        }
+
+        if (viewType === 'contest') {
+            setActiveTab('external');
+        } else if (contestId) {
+            setActiveTab('internal');
+        } else if (!contestId && viewType !== 'contest') {
+            setActiveTab('practice');
+        }
+    }, [viewType, contestId, isOnline]);
 
     // Loading states
     const [practiceLoading, setPracticeLoading] = useState(false);
@@ -327,6 +332,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
             const data = await leaderboardService.getBatchLeaderboard(targetBatchId, forceRefresh);
             setRawPracticeData(data.leaderboard || []);
             if (data.batchName) setBatchName(data.batchName);
+            setIsOnline(!!data.isOnline);
             const contestsMeta = data.contests || [];
             setInternalContestsMeta(contestsMeta);
 
@@ -758,9 +764,12 @@ const Leaderboard = ({ batchId, isBatchView }) => {
 
         const headers = [
             'Rank', 'Global Rank', 'Roll Number', 'Full Name', 'Username', 'Branch',
-            'Overall Score', 'Alpha Coins',
-            'HackerRank', 'LeetCode', 'InterviewBit', 'CodeChef', 'CodeForces'
+            'Overall Score', 'Alpha Coins'
         ];
+
+        if (!isOnline) {
+            headers.push('HackerRank', 'LeetCode', 'InterviewBit', 'CodeChef', 'CodeForces');
+        }
 
         internalContestsMeta.forEach((contest, idx) => {
             headers.push(`Contest-${idx + 1} (${contest.maxScore})`);
@@ -781,13 +790,18 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                 entry.username,
                 entry.branch,
                 entry.overallScore,
-                entry.alphaCoins || 0,
-                entry.externalScores?.hackerrank || 0,
-                entry.externalScores?.leetcode || 0,
-                entry.externalScores?.interviewbit || 0,
-                entry.externalScores?.codechef || 0,
-                entry.externalScores?.codeforces || 0
+                entry.alphaCoins || 0
             ];
+
+            if (!isOnline) {
+                row.push(
+                    entry.externalScores?.hackerrank || 0,
+                    entry.externalScores?.leetcode || 0,
+                    entry.externalScores?.interviewbit || 0,
+                    entry.externalScores?.codechef || 0,
+                    entry.externalScores?.codeforces || 0
+                );
+            }
 
             internalContestsMeta.forEach((contest) => {
                 row.push(entry.internalContests?.[contest.id] || 0);
@@ -1132,75 +1146,83 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                 {/* Detailed Columns */}
                                                 {viewMode === 'detailed' ? (
                                                     <>
-                                                        {/* HackerRank - Single Column even in Detailed */}
-                                                        <th
-                                                            className="px-4 py-3 text-center text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase bg-[#f0fdf4] dark:bg-[#061a11] cursor-pointer hover:bg-emerald-100 dark:hover:bg-[#082217] border-r border-emerald-200 dark:border-gray-700 min-w-[120px]"
-                                                            rowSpan={2}
-                                                            onClick={() => handleSort('externalScores.hackerrank')}
-                                                        >
-                                                            <div>HackerRank</div>
-                                                            <div className="text-[10px] font-normal text-emerald-600 dark:text-emerald-500/70 mt-1 normal-case">(DS+Algo)</div>
-                                                        </th>
+                                                        {!isOnline && (
+                                                            <>
+                                                                {/* HackerRank - Single Column even in Detailed */}
+                                                                <th
+                                                                    className="px-4 py-3 text-center text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase bg-[#f0fdf4] dark:bg-[#061a11] cursor-pointer hover:bg-emerald-100 dark:hover:bg-[#082217] border-r border-emerald-200 dark:border-gray-700 min-w-[120px]"
+                                                                    rowSpan={2}
+                                                                    onClick={() => handleSort('externalScores.hackerrank')}
+                                                                >
+                                                                    <div>HackerRank</div>
+                                                                    <div className="text-[10px] font-normal text-emerald-600 dark:text-emerald-500/70 mt-1 normal-case">(DS+Algo)</div>
+                                                                </th>
 
-                                                        {/* LeetCode */}
-                                                        <th
-                                                            className="px-2 py-2 text-center text-xs font-bold text-amber-800 dark:text-amber-400 uppercase bg-[#fffbeb] dark:bg-[#1a1205] cursor-pointer hover:bg-amber-100 dark:hover:bg-[#251b08] border-r border-amber-200 dark:border-gray-700"
-                                                            colSpan="4"
-                                                            onClick={() => handleSort('externalScores.leetcode')}
-                                                        >
-                                                            LeetCode (LC)
-                                                        </th>
+                                                                {/* LeetCode */}
+                                                                <th
+                                                                    className="px-2 py-2 text-center text-xs font-bold text-amber-800 dark:text-amber-400 uppercase bg-[#fffbeb] dark:bg-[#1a1205] cursor-pointer hover:bg-amber-100 dark:hover:bg-[#251b08] border-r border-amber-200 dark:border-gray-700"
+                                                                    colSpan="4"
+                                                                    onClick={() => handleSort('externalScores.leetcode')}
+                                                                >
+                                                                    LeetCode (LC)
+                                                                </th>
 
-                                                        {/* InterviewBit */}
-                                                        <th
-                                                            className="px-2 py-2 text-center text-xs font-bold text-blue-800 dark:text-sky-400 uppercase bg-[#f0f9ff] dark:bg-[#05121a] cursor-pointer hover:bg-blue-100 dark:hover:bg-[#081b25] border-r border-blue-200 dark:border-gray-700"
-                                                            colSpan="3"
-                                                            onClick={() => handleSort('externalScores.interviewbit')}
-                                                        >
-                                                            InterviewBit (IB)
-                                                        </th>
+                                                                {/* InterviewBit */}
+                                                                <th
+                                                                    className="px-2 py-2 text-center text-xs font-bold text-blue-800 dark:text-sky-400 uppercase bg-[#f0f9ff] dark:bg-[#05121a] cursor-pointer hover:bg-blue-100 dark:hover:bg-[#081b25] border-r border-blue-200 dark:border-gray-700"
+                                                                    colSpan="3"
+                                                                    onClick={() => handleSort('externalScores.interviewbit')}
+                                                                >
+                                                                    InterviewBit (IB)
+                                                                </th>
 
-                                                        {/* CodeChef */}
-                                                        <th
-                                                            className="px-2 py-2 text-center text-xs font-bold text-orange-800 dark:text-orange-400 uppercase bg-[#fff7ed] dark:bg-[#1a0f05] cursor-pointer hover:bg-orange-100 dark:hover:bg-[#251608] border-r border-orange-200 dark:border-gray-700"
-                                                            colSpan="4"
-                                                            onClick={() => handleSort('externalScores.codechef')}
-                                                        >
-                                                            CodeChef (CC)
-                                                        </th>
+                                                                {/* CodeChef */}
+                                                                <th
+                                                                    className="px-2 py-2 text-center text-xs font-bold text-orange-800 dark:text-orange-400 uppercase bg-[#fff7ed] dark:bg-[#1a0f05] cursor-pointer hover:bg-orange-100 dark:hover:bg-[#251608] border-r border-orange-200 dark:border-gray-700"
+                                                                    colSpan="4"
+                                                                    onClick={() => handleSort('externalScores.codechef')}
+                                                                >
+                                                                    CodeChef (CC)
+                                                                </th>
 
-                                                        {/* Codeforces */}
-                                                        <th
-                                                            className="px-2 py-2 text-center text-xs font-bold text-rose-800 dark:text-rose-400 uppercase bg-[#fff1f2] dark:bg-[#1a0508] cursor-pointer hover:bg-rose-100 dark:hover:bg-[#25080c] border-r border-rose-200 dark:border-gray-700"
-                                                            colSpan="4"
-                                                            onClick={() => handleSort('externalScores.codeforces')}
-                                                        >
-                                                            Codeforces (CF)
-                                                        </th>
+                                                                {/* Codeforces */}
+                                                                <th
+                                                                    className="px-2 py-2 text-center text-xs font-bold text-rose-800 dark:text-rose-400 uppercase bg-[#fff1f2] dark:bg-[#1a0508] cursor-pointer hover:bg-rose-100 dark:hover:bg-[#25080c] border-r border-rose-200 dark:border-gray-700"
+                                                                    colSpan="4"
+                                                                    onClick={() => handleSort('externalScores.codeforces')}
+                                                                >
+                                                                    Codeforces (CF)
+                                                                </th>
+                                                            </>
+                                                        )}
                                                     </>
                                                 ) : (
                                                     // Summary Platform Columns - Full Names as requested
                                                     <>
-                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[120px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.hackerrank')}>
-                                                            <div>HackerRank</div>
-                                                            <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[120px] mx-auto">(DS+Algo)</div>
-                                                        </th>
-                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.leetcode')}>
-                                                            <div>LeetCode</div>
-                                                            <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(LCPS*10 + (LCR-1300)²/10 + LCNC*50)</div>
-                                                        </th>
-                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[120px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.interviewbit')}>
-                                                            <div>InterviewBit</div>
-                                                            <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[110px] mx-auto">(Score / 5)</div>
-                                                        </th>
-                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.codechef')}>
-                                                            <div>CodeChef</div>
-                                                            <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(CCPS*2 + (CCR-1200)²/10 + CCNC*50)</div>
-                                                        </th>
-                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.codeforces')}>
-                                                            <div>Codeforces</div>
-                                                            <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(CFPS*2 + (CFR-800)²/10 + CFNC*50)</div>
-                                                        </th>
+                                                        {!isOnline && (
+                                                            <>
+                                                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[120px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.hackerrank')}>
+                                                                    <div>HackerRank</div>
+                                                                    <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[120px] mx-auto">(DS+Algo)</div>
+                                                                </th>
+                                                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.leetcode')}>
+                                                                    <div>LeetCode</div>
+                                                                    <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(LCPS*10 + (LCR-1300)²/10 + LCNC*50)</div>
+                                                                </th>
+                                                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[120px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.interviewbit')}>
+                                                                    <div>InterviewBit</div>
+                                                                    <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[110px] mx-auto">(Score / 5)</div>
+                                                                </th>
+                                                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.codechef')}>
+                                                                    <div>CodeChef</div>
+                                                                    <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(CCPS*2 + (CCR-1200)²/10 + CCNC*50)</div>
+                                                                </th>
+                                                                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider cursor-pointer border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#23232e] min-w-[180px] whitespace-nowrap transition-colors" onClick={() => handleSort('externalScores.codeforces')}>
+                                                                    <div>Codeforces</div>
+                                                                    <div className="text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-1 normal-case leading-tight text-wrap max-w-[170px] mx-auto">(CFPS*2 + (CFR-800)²/10 + CFNC*50)</div>
+                                                                </th>
+                                                            </>
+                                                        )}
                                                     </>
                                                 )}
 
@@ -1363,7 +1385,7 @@ const Leaderboard = ({ batchId, isBatchView }) => {
                                                             className={`px-4 py-3 whitespace-nowrap font-bold static md:sticky md:left-[220px] z-40 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 w-[260px] min-w-[260px] truncate ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)] group-hover:bg-[var(--color-bg-hover)]'}`}
                                                             title={entry.name}
                                                         >
-                                                            {entry.socialProfiles?.linkedin ? (
+                                                            {entry.socialProfiles?.linkedin && !isOnline ? (
                                                                 <a
                                                                     href={entry.socialProfiles.linkedin.startsWith('http') ? entry.socialProfiles.linkedin : `https://www.linkedin.com/in/${entry.socialProfiles.linkedin}`}
                                                                     target="_blank"
@@ -1395,49 +1417,57 @@ const Leaderboard = ({ batchId, isBatchView }) => {
 
                                                         {viewMode === 'detailed' ? (
                                                             <>
-                                                                {/* HR - Single Column */}
-                                                                <td style={currentUserBg} className={`px-2 py-2 text-center border-r border-gray-200 dark:border-gray-800 border-b border-gray-100 dark:border-gray-700 font-medium text-emerald-800 dark:text-emerald-400 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
-                                                                    {entry.externalScores?.hackerrank || 0}
-                                                                </td>
+                                                                {!isOnline && (
+                                                                    <>
+                                                                        {/* HR - Single Column */}
+                                                                        <td style={currentUserBg} className={`px-2 py-2 text-center border-r border-gray-200 dark:border-gray-800 border-b border-gray-100 dark:border-gray-700 font-medium text-emerald-800 dark:text-emerald-400 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
+                                                                            {entry.externalScores?.hackerrank || 0}
+                                                                        </td>
 
-                                                                {/* LC */}
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.problemsSolved || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.rating || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.totalContests || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-amber-800 dark:text-amber-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
-                                                                    {entry.externalScores?.leetcode || 0}
-                                                                </td>
+                                                                        {/* LC */}
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.problemsSolved || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.rating || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.leetcode?.totalContests || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-amber-800 dark:text-amber-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
+                                                                            {entry.externalScores?.leetcode || 0}
+                                                                        </td>
 
-                                                                {/* IB */}
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.interviewbit?.problemsSolved || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.interviewbit?.rating || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-blue-800 dark:text-sky-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
-                                                                    {entry.externalScores?.interviewbit || 0}
-                                                                </td>
+                                                                        {/* IB */}
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.interviewbit?.problemsSolved || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.interviewbit?.rating || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-blue-800 dark:text-sky-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
+                                                                            {entry.externalScores?.interviewbit || 0}
+                                                                        </td>
 
-                                                                {/* CC */}
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.problemsSolved || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.rating || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.totalContests || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-orange-800 dark:text-orange-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
-                                                                    {entry.externalScores?.codechef || 0}
-                                                                </td>
+                                                                        {/* CC */}
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.problemsSolved || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.rating || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codechef?.totalContests || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-orange-800 dark:text-orange-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
+                                                                            {entry.externalScores?.codechef || 0}
+                                                                        </td>
 
-                                                                {/* CF */}
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.problemsSolved || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.rating || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.totalContests || 0}</td>
-                                                                <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-rose-800 dark:text-rose-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
-                                                                    {entry.externalScores?.codeforces || 0}
-                                                                </td>
+                                                                        {/* CF */}
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.problemsSolved || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.rating || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center border-b border-gray-100 dark:border-gray-700 text-xs dark:text-gray-300 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.detailedStats?.codeforces?.totalContests || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-1 py-1 text-center font-bold text-rose-800 dark:text-rose-400 border-b border-gray-100 dark:border-gray-700 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>
+                                                                            {entry.externalScores?.codeforces || 0}
+                                                                        </td>
+                                                                    </>
+                                                                )}
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.hackerrank || 0}</td>
-                                                                <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.leetcode || 0}</td>
-                                                                <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.interviewbit || 0}</td>
-                                                                <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.codechef || 0}</td>
-                                                                <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.codeforces || 0}</td>
+                                                                {!isOnline && (
+                                                                    <>
+                                                                        <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.hackerrank || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.leetcode || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.interviewbit || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.codechef || 0}</td>
+                                                                        <td style={currentUserBg} className={`px-2 py-1.5 whitespace-nowrap text-center text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700 border-r border-gray-200 dark:border-gray-800 ${isCurrentUser ? '' : 'bg-[var(--color-bg-card)]'}`}>{entry.externalScores?.codeforces || 0}</td>
+                                                                    </>
+                                                                )}
                                                             </>
                                                         )}
 

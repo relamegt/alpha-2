@@ -1586,11 +1586,20 @@ const CodeEditor = () => {
   const correctAnswersCount = useMemo(() => {
     if (!problem?.quizQuestions || !quizAnswers) return 0;
     return problem.quizQuestions.reduce((count, q, idx) => {
-      const correctIdx =
+      const correctVal =
         q.correctOptionIndex !== undefined
           ? q.correctOptionIndex
           : q.correctAnswer;
-      return quizAnswers[idx] === correctIdx ? count + 1 : count;
+      const studentAns = quizAnswers[idx];
+
+      if (Array.isArray(correctVal)) {
+        const studentArr = Array.isArray(studentAns) ? studentAns : (studentAns !== undefined ? [studentAns] : []);
+        const isCorrect = studentArr.length === correctVal.length && 
+                          studentArr.every(v => correctVal.map(String).includes(String(v)));
+        return isCorrect ? count + 1 : count;
+      }
+
+      return String(studentAns) === String(correctVal) ? count + 1 : count;
     }, 0);
   }, [problem?.quizQuestions, quizAnswers]);
 
@@ -5658,15 +5667,14 @@ const CodeEditor = () => {
                                 <div className="text-4xl font-black text-emerald-500 mb-1">
                                   {
                                     problem.quizQuestions?.filter((q, i) => {
-                                      const correctIdx =
-                                        q.correctOptionIndex !== undefined
-                                          ? q.correctOptionIndex
-                                          : q.correctAnswer;
-                                      return (
-                                        quizAnswers[i] !== undefined &&
-                                        parseInt(quizAnswers[i]) ===
-                                          parseInt(correctIdx)
-                                      );
+                                      const correctVal = q.correctOptionIndex !== undefined ? q.correctOptionIndex : q.correctAnswer;
+                                      const studentAns = quizAnswers[i];
+                                      if (Array.isArray(correctVal)) {
+                                          const studentArr = Array.isArray(studentAns) ? studentAns : (studentAns !== undefined ? [studentAns] : []);
+                                          return studentArr.length === correctVal.length && 
+                                                 studentArr.every(v => correctVal.map(String).includes(String(v)));
+                                      }
+                                      return studentAns !== undefined && String(studentAns) === String(correctVal);
                                     }).length
                                   }
                                 </div>
@@ -5841,17 +5849,19 @@ const CodeEditor = () => {
                                 const selectedOpt = quizAnswers[idx];
                                 const isSubmitted =
                                   quizSubmitted || problem.isSolved;
-                                const correctIdx =
-                                  q.correctOptionIndex !== undefined
-                                    ? q.correctOptionIndex
-                                    : q.correctAnswer;
-
                                 return (
                                   <div className="space-y-6 max-w-4xl">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-                                        Question {idx + 1}
-                                      </span>
+                                      <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                                          Question {idx + 1}
+                                        </span>
+                                        {q.isMultipleAnswers && (
+                                          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">
+                                            Multiple answers possible
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
 
                                     <div className="bg-white dark:bg-[#111827] border-2 border-amber-500 dark:border-gray-800 rounded-[2rem] p-6 sm:p-8 shadow-none dark:shadow-sm relative overflow-hidden">
@@ -5862,10 +5872,16 @@ const CodeEditor = () => {
 
                                       <div className="grid grid-cols-1 gap-4 relative">
                                         {q.options?.map((opt, oIdx) => {
-                                          const isThisSelected =
-                                            selectedOpt === oIdx;
-                                          const isCorrectOpt =
-                                            correctIdx === oIdx;
+                                          const correctVal = q.correctOptionIndex !== undefined ? q.correctOptionIndex : q.correctAnswer;
+                                          const isMultiple = q.isMultipleAnswers || Array.isArray(correctVal);
+                                          
+                                          const isThisSelected = isMultiple 
+                                            ? (Array.isArray(selectedOpt) && selectedOpt.includes(oIdx))
+                                            : selectedOpt === oIdx;
+                                            
+                                          const isCorrectOpt = isMultiple
+                                            ? (Array.isArray(correctVal) && correctVal.includes(oIdx))
+                                            : correctVal === oIdx;
 
                                           let btnClass =
                                             "border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#0F1117] hover:border-amber-300 dark:hover:border-amber-500/30";
@@ -5904,20 +5920,26 @@ const CodeEditor = () => {
                                               key={oIdx}
                                               disabled={isSubmitted}
                                               onClick={() =>
-                                                setQuizAnswers((prev) => ({
-                                                  ...prev,
-                                                  [idx]: oIdx,
-                                                }))
+                                                setQuizAnswers((prev) => {
+                                                  if (isMultiple) {
+                                                    const current = Array.isArray(prev[idx]) ? prev[idx] : [];
+                                                    const next = current.includes(oIdx)
+                                                      ? current.filter(val => val !== oIdx)
+                                                      : [...current, oIdx];
+                                                    return { ...prev, [idx]: next };
+                                                  }
+                                                  return { ...prev, [idx]: oIdx };
+                                                })
                                               }
                                               className={`flex items-center gap-5 p-5 rounded-2xl border-2 transition-all text-left group ${btnClass}`}
                                             >
                                               <div
-                                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${iconClass}`}
+                                                className={`w-5 h-5 flex items-center justify-center shrink-0 transition-all border-2 ${isMultiple ? 'rounded-md' : 'rounded-full'} ${iconClass}`}
                                               >
                                                 {(isThisSelected ||
                                                   (isSubmitted &&
                                                     isCorrectOpt)) && (
-                                                  <div className="w-2 h-2 rounded-full bg-white animate-in zoom-in-50" />
+                                                  <div className={`${isMultiple ? 'w-2.5 h-2.5 rounded-sm' : 'w-2 h-2 rounded-full'} bg-white animate-in zoom-in-50`} />
                                                 )}
                                               </div>
                                               <span

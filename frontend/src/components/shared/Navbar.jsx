@@ -9,11 +9,11 @@ import SaleBanner from './SaleBanner';
 
 const NavItem = ({ link, isDark, setIsMenuOpen }) => {
     const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
-    
+
     if (link.children) {
         return (
             <div className="relative group/item">
-                <button 
+                <button
                     onClick={() => setIsSubmenuOpen(!isSubmenuOpen)}
                     className={`w-[calc(100%-1rem)] flex items-center justify-between px-4 py-2.5 mx-2 rounded-md transition-all text-sm font-medium ${isSubmenuOpen ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#23232e]'}`}
                 >
@@ -27,7 +27,7 @@ const NavItem = ({ link, isDark, setIsMenuOpen }) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
-                
+
                 {/* Submenu - Accordion style on mobile */}
                 <div className={`${isSubmenuOpen ? 'block' : 'hidden'} lg:hidden bg-gray-50 dark:bg-[#1a1a24] mx-2 mt-0.5 rounded-md overflow-hidden animate-in slide-in-from-top-1 duration-200`}>
                     {link.children.map((child, cIdx) => (
@@ -268,9 +268,9 @@ const Navbar = () => {
                     icon: Icons.Contest,
                     children: [
                         { to: '/contests', label: 'Internal Contests' },
-                        { to: '/leaderboard?type=contest', label: 'External Contests' },
+                        !user?.isOnline && { to: '/leaderboard?type=contest', label: 'External Contests' },
                         { to: '/contests', label: 'Course Contests' },
-                    ]
+                    ].filter(Boolean)
                 },
                 {
                     label: 'Community',
@@ -306,94 +306,94 @@ const Navbar = () => {
         <div className="fixed top-0 left-0 right-0 z-50">
             <SaleBanner onHeightChange={setBannerHeight} />
             <nav ref={navRef} className="bg-white dark:bg-[#111117] border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    {/* Logo (Left side) */}
-                    <div className="flex-shrink-0 flex items-center">
-                        <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
-                            <img
-                                src="/alphalogo.png"
-                                alt="AlphaKnowledge"
-                                className="h-6 sm:h-8 w-auto object-contain"
-                            />
-                            <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">AlphaKnowledge</span>
-                        </Link>
-                    </div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        {/* Logo (Left side) */}
+                        <div className="flex-shrink-0 flex items-center">
+                            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
+                                <img
+                                    src="/alphalogo.png"
+                                    alt="AlphaKnowledge"
+                                    className="h-6 sm:h-8 w-auto object-contain"
+                                />
+                                <span className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">AlphaKnowledge</span>
+                            </Link>
+                        </div>
 
-                    {/* Right Side: Theme Toggle & Profile & Dropdown */}
-                    <div className="flex items-center gap-2">
-                        {/* Theme Toggle */}
-                        <ThemeToggle size="sm" className="sm:size-9" />
+                        {/* Right Side: Theme Toggle & Profile & Dropdown */}
+                        <div className="flex items-center gap-2">
+                            {/* Theme Toggle */}
+                            <ThemeToggle size="sm" className="sm:size-9" />
 
-                        <div className="relative h-16 flex items-center" ref={menuRef}>
-                            <button 
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex items-center space-x-2 sm:space-x-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none transition-colors px-2 sm:px-3 py-1.5 sm:py-2 rounded-md hover:bg-gray-50 dark:hover:bg-[#23232e]"
-                            >
-                                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 overflow-hidden shrink-0">
-                                    {user.profile?.profilePicture ? (
-                                        <img
-                                            src={user.profile.profilePicture}
-                                            alt={user.firstName}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <>
-                                            {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                                        </>
-                                    )}
-                                </div>
-                                <span className="font-medium text-sm hidden md:block">
-                                    {user.username || user.firstName}
-                                </span>
-                                <svg className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isMenuOpen ? 'rotate-180 text-gray-900 dark:text-white' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {isMenuOpen && (
-                                <div className={`absolute top-[60px] right-0 w-64 bg-white dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 block z-[500] py-2 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
-                                {/* Header in Dropdown (optional context) */}
-                                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
-                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                                </div>
-
-                                {/* Menu Items */}
-                                <div className="space-y-0.5">
-                                    {links.map((link, idx) => (
-                                        <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
-                                    ))}
-                                </div>
-
-                                {/* Divider */}
-                                <div className="my-2 border-t border-gray-100 dark:border-gray-700" />
-
-                                {/* Logout */}
+                            <div className="relative h-16 flex items-center" ref={menuRef}>
                                 <button
-                                    onClick={handleLogout}
-                                    disabled={isLoggingOut}
-                                    className="w-[calc(100%-1rem)] flex items-center space-x-3 px-4 py-2.5 mx-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-all text-sm font-medium text-left disabled:opacity-70 disabled:cursor-not-allowed"
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="flex items-center space-x-2 sm:space-x-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none transition-colors px-2 sm:px-3 py-1.5 sm:py-2 rounded-md hover:bg-gray-50 dark:hover:bg-[#23232e]"
                                 >
-                                    {isLoggingOut ? (
-                                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                    ) : (
-                                        <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
-                                    )}
-                                    <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 overflow-hidden shrink-0">
+                                        {user.profile?.profilePicture ? (
+                                            <img
+                                                src={user.profile.profilePicture}
+                                                alt={user.firstName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <>
+                                                {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                                            </>
+                                        )}
+                                    </div>
+                                    <span className="font-medium text-sm hidden md:block">
+                                        {user.username || user.firstName}
+                                    </span>
+                                    <svg className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isMenuOpen ? 'rotate-180 text-gray-900 dark:text-white' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </button>
-                                </div>
-                            )}
+
+                                {/* Dropdown Menu */}
+                                {isMenuOpen && (
+                                    <div className={`absolute top-[60px] right-0 w-64 bg-white dark:bg-[#111117] rounded-lg border border-gray-100 dark:border-gray-700 block z-[500] py-2 ${!isDark ? 'shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+                                        {/* Header in Dropdown (optional context) */}
+                                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 mb-1">
+                                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user.firstName} {user.lastName}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                        </div>
+
+                                        {/* Menu Items */}
+                                        <div className="space-y-0.5">
+                                            {links.map((link, idx) => (
+                                                <NavItem key={idx} link={link} isDark={isDark} setIsMenuOpen={setIsMenuOpen} />
+                                            ))}
+                                        </div>
+
+                                        {/* Divider */}
+                                        <div className="my-2 border-t border-gray-100 dark:border-gray-700" />
+
+                                        {/* Logout */}
+                                        <button
+                                            onClick={handleLogout}
+                                            disabled={isLoggingOut}
+                                            className="w-[calc(100%-1rem)] flex items-center space-x-3 px-4 py-2.5 mx-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-all text-sm font-medium text-left disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {isLoggingOut ? (
+                                                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                </svg>
+                                            )}
+                                            <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </nav>
-    </div>
-);
+            </nav>
+        </div>
+    );
 };
 
 export default Navbar;

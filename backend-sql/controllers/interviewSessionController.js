@@ -1,5 +1,6 @@
 const prisma = require('../config/db');
 const pdfParse = require('pdf-parse');
+const { PLANS } = require('../config/plans');
 
 function serializeSession(row) {
     if (!row) return null;
@@ -38,7 +39,13 @@ exports.createSession = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const limit = user.planInstance?.aiInterviewsLimit || 0;
+        // Effective limits combining DB instance and global defaults
+        const currentPlan = user.plan || 'FREE';
+        const planDetails = PLANS[currentPlan] || PLANS['FREE'];
+        const dbInstance = user.planInstance || {};
+        const globalDefaults = planDetails.features || {};
+
+        const limit = dbInstance.aiInterviewsLimit ?? globalDefaults.aiInterviewsLimit ?? 0;
         const used = user.dailyAiInterviewsUsed || 0;
 
         if (used >= limit) {
