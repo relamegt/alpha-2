@@ -8,19 +8,51 @@ import {
   FileCode, Plus, Trash2, Github, Send, ChevronRight,
   ChevronDown, FolderPlus, Globe, Code, Save, Terminal,
   Settings, Search, Files, Layers, Box, Play, CheckCircle2,
-  AlertCircle, X, CheckSquare, BarChart3
-
+  AlertCircle, X, CheckSquare, BarChart3, Layout, Zap, Info
 } from 'lucide-react';
 import './MultiFileAssignmentBuilder.css';
 import CustomDropdown from '../shared/CustomDropdown';
+import toast from 'react-hot-toast';
 
+const STATIC_FILES = {
+  'index.html': `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Assignment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <h1>AlphaLearn Static Project</h1>
+        <p>Start building your amazing project here!</p>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>`,
+  'style.css': `body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #f4f7ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
+.app {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+}`,
+  'script.js': `console.log("AlphaLearn: Static workspace loaded successfully!");`
+};
 
 const INITIAL_FILES = {
-  'src/App.jsx': `export default function App() {\n  return (\n    <div className="p-8 bg-[#000000] text-white min-h-screen font-sans">\n      <h1 className="text-4xl font-black text-indigo-400 mb-4 tracking-tighter">New Assignment</h1>\n      <p className="text-gray-400">Start building your project template here.</p>\n      <button className="mt-8 px-6 py-2 bg-indigo-600 rounded-lg font-bold hover:bg-indigo-500 transition-colors">\n        Interactive Button\n      </button>\n    </div>\n  );\n}`,
-  'src/index.css': `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\nbody { \n  background: #000000;\n  color: #f0f0f0;\n  -webkit-font-smoothing: antialiased;\n}`,
-  'package.json': `{\n  "name": "alphalearn-template",\n  "version": "1.0.0",\n  "dependencies": {\n    "react": "^18.2.0",\n    "react-dom": "^18.2.0",\n    "lucide-react": "^0.263.1"\n  }\n}`,
-  'README.md': `# Assignment Template\n\nProvide instructions here for the student.`
+  'README.md': '# New Project\n\nEdit this file to provide instructions for the assignment.'
 };
 
 const MERN_FILES = {
@@ -52,7 +84,7 @@ export default function MultiFileAssignmentBuilder() {
     defaultPorts: { frontend: 5173, backend: 5000 },
     readmeUrl: ''
   });
-  const [activeSidebar, setActiveSidebar] = useState('explorer'); // 'explorer' | 'testing' | 'submissions'
+  const [activeSidebar, setActiveSidebar] = useState('explorer'); // 'explorer' | 'testing' | 'submissions' | 'settings'
   const [activeBottomTab, setActiveBottomTab] = useState('console');
   const [testCases, setTestCases] = useState([]);
 
@@ -74,21 +106,23 @@ export default function MultiFileAssignmentBuilder() {
         }
       }).catch(err => addLog('error', 'Failed to load assignment data.'));
     } else if (isNew) {
-      // Just setting standard initial files for new project
       setAssignment({ title: 'Untitled Assignment' });
     }
   }, [id, isNew]);
 
   const handleInitialize = async () => {
-    if (!initForm.title) return alert('Title is required');
+    if (!initForm.title) return toast.error('Title is required');
+    setIsInitializing(true);
     const isMern = initForm.type === 'FULLSTACK_MERN';
+    const isStatic = initForm.type === 'HTML_CSS_JS';
+    const selectedFiles = isMern ? MERN_FILES : (isStatic ? STATIC_FILES : INITIAL_FILES);
     try {
       const { data } = await apiClient.post('/assignments', {
         ...initForm,
-        templateFiles: { files: isMern ? MERN_FILES : INITIAL_FILES },
+        templateFiles: { files: selectedFiles },
         testCases: []
       });
-      navigate(`/admin/assignments/build/${data.id}`, { replace: true });
+      navigate(`/assignments/build/${data.id}`, { replace: true });
       setAssignment(data);
       if (isMern) {
         setFiles(MERN_FILES);
@@ -97,9 +131,10 @@ export default function MultiFileAssignmentBuilder() {
       }
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       setGithubRepo(slug);
+      toast.success('Assignment initialized');
       addLog('success', 'Assignment created and initialized.');
     } catch (err) {
-      alert('Initialization failed: ' + err.message);
+      toast.error('Initialization failed');
     } finally {
       setIsInitializing(false);
     }
@@ -143,7 +178,7 @@ export default function MultiFileAssignmentBuilder() {
   };
 
   const onPublish = async () => {
-    if (!githubRepo) return alert('Please enter a GitHub repository name.');
+    if (!githubRepo) return toast.error('Please enter a GitHub repository name.');
     setIsPublishing(true);
     addLog('info', 'Starting GitHub publication flow...');
 
@@ -155,12 +190,13 @@ export default function MultiFileAssignmentBuilder() {
       });
 
       addLog('success', `Push successful! Live at: ${data.url}`);
+      toast.success('Successfully published to GitHub!');
       setTimeout(() => {
-        alert('Successfully published and synced to GitHub!');
-        navigate('/admin/assignments');
+        navigate('/assignments');
       }, 1000);
     } catch (err) {
       addLog('error', 'Publication failed: ' + (err.response?.data?.error || err.message));
+      toast.error('Publication failed');
     } finally {
       setIsPublishing(false);
     }
@@ -178,8 +214,10 @@ export default function MultiFileAssignmentBuilder() {
         defaultPorts: assignment?.defaultPorts
       });
       addLog('success', 'Draft & Test Cases saved.');
+      toast.success('Progress saved');
     } catch (err) {
       addLog('error', 'Save failed.');
+      toast.error('Save failed');
     }
   };
 
@@ -189,35 +227,40 @@ export default function MultiFileAssignmentBuilder() {
       <nav className="builder-nav">
         <div className="left">
           <div className="logo-box">
-            <Box className="text-primary-400" />
+            <Layout size={18} />
           </div>
           <span className="title">IDE Builder</span>
           <div className="breadcrumb">
-            <ChevronRight size={14} /> <span>{assignment?.title || 'Loading...'}</span>
+            <ChevronRight size={14} className="opacity-40" /> 
+            <span>{assignment?.title || 'Loading...'}</span>
           </div>
         </div>
 
         <div className="center">
           <div className="search-bar">
-            <Search size={14} />
-            <input type="text" placeholder="Search in project..." />
+            <Search size={16} className="text-gray-400" />
+            <input type="text" placeholder="Search project files..." />
           </div>
         </div>
 
-        <div className="right flex items-center gap-2">
+        <div className="right">
           <div className="repo-badge">
-            <Github size={14} />
-            <input value={githubRepo} onChange={e => setGithubRepo(e.target.value)} />
+            <Github size={16} className="text-gray-400" />
+            <input value={githubRepo} onChange={e => setGithubRepo(e.target.value)} placeholder="github-repo-name" />
           </div>
-          <button 
-            className={`btn ${activeSidebar === 'testing' ? 'btn-active' : 'btn-secondary'}`} 
-            onClick={() => setActiveSidebar(activeSidebar === 'testing' ? 'explorer' : 'testing')}
-          >
-            <CheckSquare size={16} /> {activeSidebar === 'testing' ? 'Hide Tests' : 'Configure Tests'}
+          <button className="btn btn-secondary" onClick={saveDraft}>
+            <Save size={16} /> 
+            <span>Save Draft</span>
           </button>
-          <button className="btn btn-primary" onClick={saveDraft}><Save size={16} /> Draft</button>
           <button className="btn btn-primary" onClick={onPublish} disabled={isPublishing}>
-            {isPublishing ? 'PUBLISHING...' : <><Send size={16} /> PUBLISH</>}
+            {isPublishing ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Publishing...</span>
+              </div>
+            ) : (
+              <><Send size={16} /> <span>Deploy to GitHub</span></>
+            )}
           </button>
         </div>
       </nav>
@@ -225,7 +268,7 @@ export default function MultiFileAssignmentBuilder() {
       <div className="main-content">
         <PanelGroup direction="horizontal">
           {/* Side Explorer Bar (Slim Icons) */}
-          <Panel defaultSize={4} minSize={4} maxSize={4}>
+          <Panel defaultSize={4.5} minSize={4.5} maxSize={4.5}>
             <div className="activity-bar">
               <div className="top">
                 <div
@@ -234,7 +277,7 @@ export default function MultiFileAssignmentBuilder() {
                   title="File Explorer"
                 >
                   <Files size={22} />
-                  <span className="icon-label text-[8px] uppercase mt-1 opacity-50">Files</span>
+                  <span className="icon-label">Files</span>
                 </div>
                 <div
                   className={`tool-icon ${activeSidebar === 'testing' ? 'active' : ''}`}
@@ -242,7 +285,7 @@ export default function MultiFileAssignmentBuilder() {
                   title="Test Cases"
                 >
                   <CheckSquare size={22} />
-                  <span className="icon-label text-[8px] uppercase mt-1 opacity-50">Tests</span>
+                  <span className="icon-label">Tests</span>
                 </div>
                 <div
                   className={`tool-icon ${activeSidebar === 'submissions' ? 'active' : ''}`}
@@ -250,11 +293,7 @@ export default function MultiFileAssignmentBuilder() {
                   title="Submissions & Analytics"
                 >
                   <BarChart3 size={22} />
-                  <span className="icon-label text-[8px] uppercase mt-1 opacity-50">Reports</span>
-                </div>
-                <div className="tool-icon flex flex-col items-center">
-                  <Search size={22} />
-                  <span className="icon-label text-[8px] uppercase mt-1 opacity-50">Search</span>
+                  <span className="icon-label">Reports</span>
                 </div>
               </div>
               <div className="bottom">
@@ -264,21 +303,21 @@ export default function MultiFileAssignmentBuilder() {
                   title="Assignment Settings"
                 >
                   <Settings size={22} />
-                  <span className="icon-label text-[8px] uppercase mt-1 opacity-50">Config</span>
+                  <span className="icon-label">Config</span>
                 </div>
               </div>
             </div>
           </Panel>
 
           {/* Managed Sidebar */}
-          <Panel defaultSize={20} minSize={10} collapsible={true}>
+          <Panel defaultSize={20} minSize={15} collapsible={true}>
             {activeSidebar === 'explorer' ? (
               <div className="explorer">
                 <div className="header">
-                  <span>EXPLORER: PROJECT</span>
+                  <span>Project Explorer</span>
                   <div className="controls">
-                    <button onClick={createNewFile}><Plus size={14} /></button>
-                    <button><FolderPlus size={14} /></button>
+                    <button onClick={createNewFile} title="New File"><Plus size={16} /></button>
+                    <button title="New Folder"><FolderPlus size={16} /></button>
                   </div>
                 </div>
                 <div className="tree">
@@ -288,10 +327,10 @@ export default function MultiFileAssignmentBuilder() {
                       className={`tree-item ${activeFile === name ? 'active' : ''}`}
                       onClick={() => handleFileClick(name)}
                     >
-                      <FileCode size={14} className="type-icon" />
+                      <FileCode size={16} className="type-icon text-indigo-400" />
                       <span className="name">{name}</span>
                       <div className="actions">
-                        <Trash2 size={12} onClick={(e) => deleteFile(name, e)} />
+                        <Trash2 size={14} onClick={(e) => deleteFile(name, e)} />
                       </div>
                     </div>
                   ))}
@@ -300,19 +339,19 @@ export default function MultiFileAssignmentBuilder() {
             ) : activeSidebar === 'testing' ? (
               <div className="explorer testing-sidebar">
                 <div className="header">
-                  <span>TEST CASES</span>
+                  <span>Validation Rules</span>
                   <div className="controls">
                     <button onClick={() => setTestCases([...testCases, { name: 'New Test', type: 'FILE_EXISTS', target: '', expected: '' }])}>
-                      <Plus size={14} />
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
-                <div className="test-list px-4 py-2 space-y-4 overflow-y-auto">
+                <div className="test-list overflow-y-auto">
                   {testCases.map((tc, idx) => (
-                    <div key={idx} className="bg-[#1e1e27] p-3 rounded-lg border border-[#282833] space-y-3">
+                    <div key={idx} className="test-card space-y-4">
                       <div className="flex justify-between items-center">
                         <input
-                          className="bg-transparent border-none text-[12px] font-bold text-gray-300 focus:outline-none w-full"
+                          className="bg-transparent border-none text-[13px] font-bold text-white focus:outline-none w-full"
                           value={tc.name}
                           onChange={e => {
                             const next = [...testCases];
@@ -320,70 +359,70 @@ export default function MultiFileAssignmentBuilder() {
                             setTestCases(next);
                           }}
                         />
-                        <Trash2
-                          size={12}
-                          className="text-red-500 cursor-pointer"
+                        <button 
                           onClick={() => setTestCases(testCases.filter((_, i) => i !== idx))}
-                        />
+                          className="text-gray-500 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[9px] uppercase font-bold text-gray-500">Validation Type</label>
-                        <CustomDropdown
-                          options={[
-                            { value: 'FILE_EXISTS', label: 'File Exists' },
-                            { value: 'TEXT_MATCH', label: 'Content Match' },
-                            { value: 'api_route_exists', label: 'API Route Exists' },
-                            { value: 'mongoose_model_exists', label: 'Mongoose Model Exists' },
-                            { value: 'mongoose_field_exists', label: 'Mongoose Field Check' },
-                            { value: 'mongodb_connected', label: 'MongoDB Connection Check' },
-                            { value: 'react_component_exists', label: 'React Component Exists' },
-                            { value: 'react_fetch_exists', label: 'API Fetch Used' },
-                            { value: 'react_useState_used', label: 'useState Used' },
-                            { value: 'vite_proxy_configured', label: 'Vite Proxy Set' },
-                            { value: 'fullstack_api_consumed', label: 'End-to-End API Check' }
-                          ]}
-                          value={tc.type}
-                          onChange={val => {
-                            const next = [...testCases];
-                            next[idx].type = val;
-                            setTestCases(next);
-                          }}
-                          size="small"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[9px] uppercase font-bold text-gray-500">Target (File/Selector)</label>
-                        <input
-                          className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[11px] p-1 rounded"
-                          placeholder="e.g. src/App.jsx"
-                          value={tc.target}
-                          onChange={e => {
-                            const next = [...testCases];
-                            next[idx].target = e.target.value;
-                            setTestCases(next);
-                          }}
-                        />
-                      </div>
-                      {tc.type !== 'FILE_EXISTS' && (
-                        <div className="space-y-2">
-                          <label className="text-[9px] uppercase font-bold text-gray-500">Expected Value</label>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] uppercase font-black text-indigo-400">Validator Type</label>
+                          <CustomDropdown
+                            options={[
+                              { value: 'FILE_EXISTS', label: 'File Exists' },
+                              { value: 'TEXT_MATCH', label: 'Content Match' },
+                              { value: 'api_route_exists', label: 'API Route' },
+                              { value: 'mongoose_model_exists', label: 'Mongoose Model' },
+                              { value: 'mongodb_connected', label: 'DB Connection' },
+                              { value: 'react_component_exists', label: 'React Component' },
+                              { value: 'react_useState_used', label: 'useState Check' }
+                            ]}
+                            value={tc.type}
+                            onChange={val => {
+                              const next = [...testCases];
+                              next[idx].type = val;
+                              setTestCases(next);
+                            }}
+                            size="small"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] uppercase font-black text-indigo-400">Path / Target</label>
                           <input
-                            className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[11px] p-1 rounded"
-                            placeholder="Value to find..."
-                            value={tc.expected}
+                            className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] text-[12px] p-2 rounded-lg"
+                            placeholder="e.g. src/App.jsx"
+                            value={tc.target}
                             onChange={e => {
                               const next = [...testCases];
-                              next[idx].expected = e.target.value;
+                              next[idx].target = e.target.value;
                               setTestCases(next);
                             }}
                           />
                         </div>
-                      )}
+                        {tc.type !== 'FILE_EXISTS' && (
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] uppercase font-black text-indigo-400">Expected Value</label>
+                            <input
+                              className="w-full bg-[var(--color-bg-primary)] border border-[var(--color-border)] text-[12px] p-2 rounded-lg"
+                              placeholder="Value to find..."
+                              value={tc.expected}
+                              onChange={e => {
+                                const next = [...testCases];
+                                next[idx].expected = e.target.value;
+                                setTestCases(next);
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {testCases.length === 0 && (
-                    <div className="text-center py-8 opacity-40 text-[12px]">
-                      No test cases defined.
+                    <div className="text-center py-12 opacity-40">
+                      <Zap className="mx-auto mb-4 opacity-20" size={32} />
+                      <p className="text-[12px] font-medium px-4">No validation rules defined yet.</p>
                     </div>
                   )}
                 </div>
@@ -391,11 +430,11 @@ export default function MultiFileAssignmentBuilder() {
             ) : activeSidebar === 'settings' ? (
               <div className="explorer settings-sidebar">
                 <div className="header">
-                  <span>ASSIGNMENT SETTINGS</span>
+                  <span>IDE Configuration</span>
                 </div>
-                <div className="p-4 space-y-4 overflow-y-auto h-full">
+                <div className="p-5 space-y-6 overflow-y-auto">
                   <div className="form-group-builder">
-                    <label>Title</label>
+                    <label>Assignment Title</label>
                     <input 
                       type="text" 
                       value={assignment?.title || ''} 
@@ -403,29 +442,31 @@ export default function MultiFileAssignmentBuilder() {
                     />
                   </div>
                   <div className="form-group-builder">
-                    <label>Description</label>
+                    <label>Project Overview</label>
                     <textarea 
-                      rows={4}
+                      rows={5}
                       value={assignment?.description || ''} 
                       onChange={e => setAssignment({...assignment, description: e.target.value})}
                     />
                   </div>
                   <div className="form-group-builder">
-                    <label>README URL (GitHub RAW)</label>
+                    <label>README URL (Raw)</label>
                     <input 
                       type="text" 
                       placeholder="https://raw.githubusercontent.com/..."
                       value={assignment?.readmeUrl || ''} 
                       onChange={e => setAssignment({...assignment, readmeUrl: e.target.value})}
                     />
-                    <p className="help-text">If set, this README will be rendered instead of the description.</p>
+                    <p className="help-text">Direct raw link to external README instructions.</p>
                   </div>
                   
-                  <div className="mt-6 border-t border-[#282833] pt-4">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3">Service Config</h4>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="form-group-builder">
-                        <label>Frontend Dir</label>
+                  <div className="space-y-4 pt-4 border-t border-[var(--color-border-light)]">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <Settings size={12} /> Service Architecture
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="form-group-builder mb-0">
+                        <label>Frontend Root</label>
                         <input 
                           type="text" 
                           value={assignment?.serviceStructure?.frontendDir || ''} 
@@ -435,8 +476,8 @@ export default function MultiFileAssignmentBuilder() {
                           })}
                         />
                       </div>
-                      <div className="form-group-builder">
-                        <label>Backend Dir</label>
+                      <div className="form-group-builder mb-0">
+                        <label>Backend Root</label>
                         <input 
                           type="text" 
                           value={assignment?.serviceStructure?.backendDir || ''} 
@@ -453,45 +494,45 @@ export default function MultiFileAssignmentBuilder() {
             ) : (
               <div className="explorer submissions-sidebar">
                 <div className="header">
-                  <span>ANALYTICS & SUBMISSIONS</span>
+                  <span>System Analytics</span>
                 </div>
-                <div className="p-4 space-y-6 overflow-y-auto h-full">
-                  <div className="analytics- bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
-                      <BarChart3 size={12} /> Performance Heatmap
+                <div className="p-5 space-y-6 overflow-y-auto">
+                  <div className="bg-[var(--color-bg-primary)] p-5 rounded-2xl border border-[var(--color-border)]">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase mb-4 flex items-center gap-2">
+                      <BarChart3 size={14} className="text-indigo-400" /> Requirement Pass Rate
                     </h4>
-                    <div className="space-y-2">
-                      {testCases.map((tc, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-emerald-500 h-full" style={{ width: '70%' }}></div>
+                    <div className="space-y-4">
+                      {testCases.slice(0, 3).map((tc, i) => (
+                        <div key={i} className="space-y-1.5">
+                          <div className="flex justify-between items-center text-[11px] font-bold">
+                             <span className="text-gray-400 truncate max-w-[100px]">{tc.name}</span>
+                             <span className="text-emerald-400">82%</span>
                           </div>
-                          <span className="text-[9px] text-gray-500 whitespace-nowrap">70% Pass</span>
+                          <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-emerald-500 h-full" style={{ width: '82%' }}></div>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="analytics- bg-[var(--color-bg-card)] p-4 rounded-xl border border-[#282833]">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
-                      <AlertCircle size={12} className="text-red-400" /> Common Failures
+                  <div className="bg-[var(--color-bg-primary)] p-5 rounded-2xl border border-[var(--color-border)]">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase mb-4 flex items-center gap-2">
+                      <AlertCircle size={14} className="text-rose-400" /> Critical Bottlenecks
                     </h4>
-                    <div className="space-y-2 text-[11px] text-gray-300">
-                      <div className="p-2 bg-red-500/5 rounded border border-red-500/10">
-                        API Route: /api/users - 45% failure rate
-                      </div>
-                      <div className="p-2 bg-red-500/5 rounded border border-red-500/10">
-                        Mongoose: User schema - 12% failure rate
+                    <div className="space-y-2 text-[11px]">
+                      <div className="p-3 bg-rose-500/5 rounded-xl border border-rose-500/10 text-rose-200">
+                        Database connection logic failing for 34% of students.
                       </div>
                     </div>
                   </div>
 
-                  <div className="submissions-list space-y-2">
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-2">
-                      <Layers size={12} /> Recent Submissions
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase flex items-center gap-2 px-1">
+                      <Layers size={14} /> Student Submissions
                     </h4>
-                    <div className="text-[11px] text-gray-500 italic py-4 text-center">
-                      Select an assignment with active enrollments to view submission data.
+                    <div className="text-[12px] text-gray-500 italic py-8 text-center bg-[var(--color-bg-primary)] rounded-2xl border border-dashed border-[var(--color-border)]">
+                      Sync with batch to view live submissions.
                     </div>
                   </div>
                 </div>
@@ -502,7 +543,7 @@ export default function MultiFileAssignmentBuilder() {
           <PanelResizeHandle className="divider-h" />
 
           {/* Editor & Bottom Panel */}
-          <Panel defaultSize={76}>
+          <Panel defaultSize={75.5}>
             <PanelGroup direction="vertical">
               <Panel defaultSize={70}>
                 <div className="editor-zone">
@@ -513,9 +554,9 @@ export default function MultiFileAssignmentBuilder() {
                         className={`tab ${activeFile === f ? 'active' : ''}`}
                         onClick={() => handleFileClick(f)}
                       >
-                        <FileCode size={12} className="tab-icon" />
+                        <FileCode size={14} className={activeFile === f ? 'text-indigo-400' : 'text-gray-500'} />
                         <span>{f.split('/').pop()}</span>
-                        <X size={12} className="close" onClick={(e) => closeFile(f, e)} />
+                        <X size={14} className="close" onClick={(e) => closeFile(f, e)} />
                       </div>
                     ))}
                   </div>
@@ -530,55 +571,61 @@ export default function MultiFileAssignmentBuilder() {
                         fontSize: 14,
                         minimap: { enabled: true },
                         fontFamily: 'JetBrains Mono, monospace',
-                        scrollbar: { vertical: 'hidden' },
-                        padding: { top: 20 }
+                        scrollbar: { vertical: 'hidden', horizontal: 'hidden' },
+                        padding: { top: 24, bottom: 24 },
+                        lineNumbersMinChars: 3,
+                        cursorBlinking: 'smooth',
+                        smoothScrolling: true,
+                        renderLineHighlight: 'all'
                       }}
                     />
                   </div>
                 </div>
               </Panel>
               <PanelResizeHandle className="divider-v" />
-              <Panel defaultSize={30} minSize={5} collapsible={true}>
+              <Panel defaultSize={30} minSize={10} collapsible={true}>
                 <div className="terminal-zone">
                   <div className="header">
                     <div 
                       className={`tab ${activeBottomTab === 'console' ? 'active' : ''}`}
                       onClick={() => setActiveBottomTab('console')}
                     >
-                      OUTPUT
+                      Output Terminal
                     </div>
                     <div 
                       className={`tab ${activeBottomTab === 'testing' ? 'active' : ''}`}
                       onClick={() => setActiveBottomTab('testing')}
                     >
-                      TEST CASES
+                      Validation Rules
                     </div>
                   </div>
-                  <div className="console-output">
+                  <div className="console-output custom-thin-scrollbar">
                     {activeBottomTab === 'console' ? (
                       logs.map((log, i) => (
                         <div key={i} className={`log-line ${log.type}`}>
-                          <span className="time">{log.time}</span>
+                          <span className="time">[{log.time}]</span>
                           <span className="msg">{log.msg}</span>
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 space-y-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Project Validation Rules</h3>
+                      <div className="validation-grid custom-thin-scrollbar">
+                        <div className="col-span-full flex justify-between items-center mb-2 px-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-widest">Project Validation Rules</h3>
+                            <div className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded text-[9px] font-bold">Admin Only</div>
+                          </div>
                           <button 
-                            className="btn btn-primary !py-1 !px-3 !text-[10px]"
-                            onClick={() => setTestCases([...testCases, { name: 'New Test', type: 'FILE_EXISTS', target: '', expected: '' }])}
+                            className="btn btn-primary !py-1.5 !px-4 !text-[11px]"
+                            onClick={() => setTestCases([...testCases, { name: 'New Requirement', type: 'FILE_EXISTS', target: '', expected: '' }])}
                           >
-                            <Plus size={12} /> Add Requirement
+                            <Plus size={14} /> Add Requirement
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                          {testCases.map((tc, idx) => (
-                            <div key={idx} className="bg-[var(--color-bg-primary)] p-4 rounded-xl border border-[#282833] space-y-3 shadow-lg hover:border-indigo-500/30 transition-all">
-                              <div className="flex justify-between items-center">
+                        {testCases.map((tc, idx) => (
+                          <div key={idx} className="validation-card shadow-lg hover:border-indigo-500/40">
+                              <div className="flex items-center gap-3">
                                 <input
-                                  className="bg-transparent border-none text-[12px] font-bold text-white focus:outline-none w-full"
+                                  className="bg-transparent border-none text-[13px] font-bold text-white focus:outline-none w-full"
                                   value={tc.name}
                                   onChange={e => {
                                     const next = [...testCases];
@@ -586,72 +633,94 @@ export default function MultiFileAssignmentBuilder() {
                                     setTestCases(next);
                                   }}
                                 />
-                                <Trash2
-                                  size={12}
-                                  className="text-red-500 cursor-pointer hover:scale-110 transition-transform"
-                                  onClick={() => setTestCases(testCases.filter((_, i) => i !== idx))}
+                                <div className="flex items-center gap-2">
+                                  <button 
+                                    className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all ${tc.isHidden ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}
+                                    onClick={() => {
+                                      const next = [...testCases];
+                                      next[idx].isHidden = !next[idx].isHidden;
+                                      setTestCases(next);
+                                    }}
+                                  >
+                                    {tc.isHidden ? 'HIDDEN' : 'PUBLIC'}
+                                  </button>
+                                  <button onClick={() => setTestCases(testCases.filter((_, i) => i !== idx))}>
+                                    <Trash2 size={14} className="text-gray-500 hover:text-rose-500 transition-colors" />
+                                  </button>
+                                </div>
+                              </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] uppercase font-black text-gray-500">Validator</label>
+                                <CustomDropdown
+                                  options={
+                                    projectType === 'HTML_CSS_JS' 
+                                      ? [
+                                          { value: 'element_exists', label: 'DOM: Element Exists' },
+                                          { value: 'element_text', label: 'DOM: Text Content' },
+                                          { value: 'element_count', label: 'DOM: Element Count' },
+                                          { value: 'css_property', label: 'CSS: Style Match' },
+                                          { value: 'js_variable', label: 'JS: Global Variable' },
+                                          { value: 'js_function_exists', label: 'JS: Function Check' }
+                                        ]
+                                      : [
+                                          { value: 'FILE_EXISTS', label: 'File Exists' },
+                                          { value: 'TEXT_MATCH', label: 'Content Match' },
+                                          { value: 'api_route_exists', label: 'API Endpoint' },
+                                          { value: 'mongoose_model_exists', label: 'MDB Model' },
+                                          { value: 'react_component_exists', label: 'React Component' }
+                                        ]
+                                  }
+                                  value={tc.type}
+                                  onChange={val => {
+                                    const next = [...testCases];
+                                    next[idx].type = val;
+                                    setTestCases(next);
+                                  }}
+                                  size="small"
                                 />
                               </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                  <label className="text-[8px] uppercase font-bold text-gray-500">Validator</label>
-                                  <CustomDropdown
-                                    options={[
-                                      { value: 'FILE_EXISTS', label: 'File Exists' },
-                                      { value: 'TEXT_MATCH', label: 'Content Match' },
-                                      { value: 'api_route_exists', label: 'API Route' },
-                                      { value: 'mongoose_model_exists', label: 'Mongoose Model' },
-                                      { value: 'mongodb_connected', label: 'DB Check' },
-                                      { value: 'react_component_exists', label: 'React Component' },
-                                      { value: 'react_useState_used', label: 'State Hook' }
-                                    ]}
-                                    value={tc.type}
-                                    onChange={val => {
-                                      const next = [...testCases];
-                                      next[idx].type = val;
-                                      setTestCases(next);
-                                    }}
-                                    size="small"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[8px] uppercase font-bold text-gray-500">Path / Target</label>
-                                  <input
-                                    className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
-                                    placeholder="src/App.jsx"
-                                    value={tc.target}
-                                    onChange={e => {
-                                      const next = [...testCases];
-                                      next[idx].target = e.target.value;
-                                      setTestCases(next);
-                                    }}
-                                  />
-                                </div>
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] uppercase font-black text-gray-500">
+                                  {projectType === 'HTML_CSS_JS' ? 'Selector / Target' : 'Target Path'}
+                                </label>
+                                <input
+                                  className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] text-[11px] p-2 rounded-xl text-gray-200"
+                                  placeholder={projectType === 'HTML_CSS_JS' ? 'e.g. .container h1' : 'e.g. src/App.jsx'}
+                                  value={tc.target}
+                                  onChange={e => {
+                                    const next = [...testCases];
+                                    next[idx].target = e.target.value;
+                                    setTestCases(next);
+                                  }}
+                                />
                               </div>
-                              {tc.type !== 'FILE_EXISTS' && (
-                                <div className="space-y-1">
-                                  <label className="text-[8px] uppercase font-bold text-gray-500">Expected (Exact/Regex)</label>
-                                  <input
-                                    className="w-full bg-[var(--color-bg-primary)] border border-[#282833] text-[10px] p-1.5 rounded text-gray-300"
-                                    placeholder="Enter value..."
-                                    value={tc.expected}
-                                    onChange={e => {
-                                      const next = [...testCases];
-                                      next[idx].expected = e.target.value;
-                                      setTestCases(next);
-                                    }}
-                                  />
-                                </div>
-                              )}
                             </div>
-                          ))}
-                          {testCases.length === 0 && (
-                            <div className="col-span-full py-12 text-center border-2 border-dashed border-[#282833] rounded-2xl opacity-40">
-                               <Plus className="mx-auto mb-2 opacity-50" size={24} />
-                               <p className="text-[12px]">Add your first validation requirement to get started.</p>
-                            </div>
-                          )}
-                        </div>
+                            {tc.type !== 'FILE_EXISTS' && tc.type !== 'element_exists' && (
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] uppercase font-black text-gray-500">
+                                  {projectType === 'HTML_CSS_JS' ? 'Expected Value' : 'Expected (Exact/Regex)'}
+                                </label>
+                                <input
+                                  className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] text-[11px] p-2 rounded-xl text-gray-200"
+                                  placeholder={projectType === 'HTML_CSS_JS' ? 'e.g. #ff0000' : 'Value to find...'}
+                                  value={tc.expected}
+                                  onChange={e => {
+                                    const next = [...testCases];
+                                    next[idx].expected = e.target.value;
+                                    setTestCases(next);
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {testCases.length === 0 && (
+                          <div className="col-span-full py-16 text-center border-2 border-dashed border-[var(--color-border)] rounded-3xl opacity-30">
+                             <Plus className="mx-auto mb-3 text-gray-500" size={32} />
+                             <p className="text-[13px] font-bold">Define validation logic to automate grading.</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -664,118 +733,120 @@ export default function MultiFileAssignmentBuilder() {
 
       <footer className="builder-status-bar">
         <div className="left">
-          <div className="item git"><Layers size={12} /> main*</div>
-          <div className="item sync"><Globe size={12} /> Ready for Deployment</div>
+          <div className="item"><Layers size={13} /> <span>main*</span></div>
+          <div className="item"><Globe size={13} /> <span>Live Preview Ready</span></div>
+          <div className="item"><Info size={13} /> <span>{Object.keys(files).length} Files Loaded</span></div>
         </div>
         <div className="right">
-          <div className="item">Space: 2</div>
+          <div className="item">Spaces: 2</div>
           <div className="item">UTF-8</div>
-          <div className="item">JavaScript JSX</div>
-          <div className="item bell"><CheckCircle2 size={12} className="text-emerald-400" /></div>
+          <div className="item">JS (Babel)</div>
+          <div className="item text-emerald-400"><CheckCircle2 size={13} /> <span>Connected</span></div>
         </div>
       </footer>
 
       {/* Initialization Modal */}
-      {isNew && (
-        <div className="init-overlay">
-          <div className="init-modal">
-            <h2>Initialize New Assignment</h2>
-            <p>Configure your workspace to begin building.</p>
+      <AnimatePresence>
+        {isNew && (
+          <div className="init-overlay">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="init-modal"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                 <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl">
+                    <Box size={28} />
+                 </div>
+                 <div>
+                    <h2>Initialize Project</h2>
+                    <p className="mb-0">Configure your assignment workspace environment.</p>
+                 </div>
+              </div>
 
-            <div className="form-group">
-              <label>Assignment Title</label>
-              <input
-                type="text" placeholder="e.g. React Counter App"
-                value={initForm.title} onChange={e => setInitForm({ ...initForm, title: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Project Type</label>
-              <CustomDropdown
-                options={[
-                  { value: 'HTML_CSS_JS', label: 'Static (HTML/CSS/JS)' },
-                  { value: 'REACT', label: 'React Project' },
-                  { value: 'NODE', label: 'Node.js Project' },
-                  { value: 'FULLSTACK', label: 'Fullstack App' },
-                  { value: 'FULLSTACK_MERN', label: 'MERN Stack Project' }
-                ]}
-                value={initForm.type}
-                onChange={val => setInitForm({ ...initForm, type: val })}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Readme URL (GitHub RAW)</label>
-              <input
-                type="text" placeholder="https://raw.githubusercontent.com/.../README.md"
-                value={initForm.readmeUrl} onChange={e => setInitForm({ ...initForm, readmeUrl: e.target.value })}
-              />
-              <p className="text-[10px] text-gray-500 mt-1">Leave empty to use internal description.</p>
-            </div>
-
-            {initForm.type === 'FULLSTACK_MERN' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                className="mern-config-fields bg-[var(--color-bg-primary)] p-4 rounded-xl border border-[#282833] mb-4 space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="form-group mb-0">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Frontend Dir</label>
-                    <input
-                      type="text" value={initForm.serviceStructure.frontendDir}
-                      onChange={e => setInitForm({ ...initForm, serviceStructure: { ...initForm.serviceStructure, frontendDir: e.target.value } })}
-                    />
-                  </div>
-                  <div className="form-group mb-0">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Backend Dir</label>
-                    <input
-                      type="text" value={initForm.serviceStructure.backendDir}
-                      onChange={e => setInitForm({ ...initForm, serviceStructure: { ...initForm.serviceStructure, backendDir: e.target.value } })}
-                    />
-                  </div>
+              <div className="space-y-6">
+                <div className="form-group">
+                  <label>Project Title</label>
+                  <input
+                    type="text" placeholder="e.g. MERN User Auth System"
+                    value={initForm.title} onChange={e => setInitForm({ ...initForm, title: e.target.value })}
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="form-group mb-0">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Frontend Port</label>
-                    <input
-                      type="number" value={initForm.defaultPorts.frontend}
-                      onChange={e => setInitForm({ ...initForm, defaultPorts: { ...initForm.defaultPorts, frontend: parseInt(e.target.value) } })}
-                    />
-                  </div>
-                  <div className="form-group mb-0">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Backend Port</label>
-                    <input
-                      type="number" value={initForm.defaultPorts.backend}
-                      onChange={e => setInitForm({ ...initForm, defaultPorts: { ...initForm.defaultPorts, backend: parseInt(e.target.value) } })}
-                    />
-                  </div>
+
+                <div className="form-group">
+                  <label>Environment Template</label>
+                  <CustomDropdown
+                    options={[
+                      { value: 'HTML_CSS_JS', label: 'Static (HTML/CSS/JS)' },
+                      { value: 'REACT', label: 'React.js Modern' },
+                      { value: 'NODE', label: 'Node.js Backend' },
+                      { value: 'FULLSTACK', label: 'Fullstack Bundle' },
+                      { value: 'FULLSTACK_MERN', label: 'MERN Stack (Vite + Express)' }
+                    ]}
+                    value={initForm.type}
+                    onChange={val => setInitForm({ ...initForm, type: val })}
+                  />
                 </div>
-              </motion.div>
-            )}
 
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                placeholder="What will students learn?"
-                value={initForm.description} onChange={e => setInitForm({ ...initForm, description: e.target.value })}
-              />
-            </div>
+                <div className="form-group">
+                  <label>External Readme (Optional)</label>
+                  <input
+                    type="text" placeholder="https://raw.githubusercontent.com/.../README.md"
+                    value={initForm.readmeUrl} onChange={e => setInitForm({ ...initForm, readmeUrl: e.target.value })}
+                  />
+                </div>
 
-            <button className="btn-init" onClick={handleInitialize} disabled={isInitializing}>
-              {isInitializing ? 'INITIALIZING...' : 'START BUILDING'}
-            </button>
+                {initForm.type === 'FULLSTACK_MERN' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                    className="bg-[var(--color-bg-primary)] p-5 rounded-2xl border border-[var(--color-border)] space-y-4"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="form-group mb-0">
+                        <label className="text-[9px] text-gray-500 uppercase font-black">Client Path</label>
+                        <input
+                          type="text" value={initForm.serviceStructure.frontendDir}
+                          onChange={e => setInitForm({ ...initForm, serviceStructure: { ...initForm.serviceStructure, frontendDir: e.target.value } })}
+                        />
+                      </div>
+                      <div className="form-group mb-0">
+                        <label className="text-[9px] text-gray-500 uppercase font-black">Server Path</label>
+                        <input
+                          type="text" value={initForm.serviceStructure.backendDir}
+                          onChange={e => setInitForm({ ...initForm, serviceStructure: { ...initForm.serviceStructure, backendDir: e.target.value } })}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div className="form-group">
+                  <label>Learning Objectives</label>
+                  <textarea
+                    placeholder="Describe what the student needs to build..."
+                    value={initForm.description} onChange={e => setInitForm({ ...initForm, description: e.target.value })}
+                  />
+                </div>
+
+                <button className="btn-init" onClick={handleInitialize} disabled={isInitializing}>
+                  {isInitializing ? (
+                    <div className="flex items-center justify-center gap-3">
+                       <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                       <span>Setting up Environment...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                       <Zap size={20} />
+                       <span>Initialize Workspace</span>
+                    </div>
+                  )}
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-
-
-
-
-
-
-

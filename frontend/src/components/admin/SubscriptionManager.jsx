@@ -274,6 +274,12 @@ const SubscriptionManager = () => {
                                                     <Tag size={10} /> Coupon: {sub.couponCode}
                                                 </p>
                                             )}
+                                            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 mt-2">
+                                                 <Clock size={14} />
+                                                 <span className="text-sm font-medium">
+                                                     {sub.durationMonths >= 1000 ? 'LIFETIME' : `${sub.durationMonths} months`}
+                                                 </span>
+                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className="text-xs font-mono text-gray-500 dark:text-gray-400 block break-all leading-relaxed" title={sub.razorpayOrderId}>
@@ -382,7 +388,7 @@ const SubscriptionManager = () => {
                                                     { label: '6 Mo', value: 6 },
                                                     { label: '1 Year', value: 12 },
                                                     { label: '2 Year', value: 24 },
-                                                    { label: 'Lifetime', value: 12000 }
+                                                    { label: 'Lifetime', value: 120000 }
                                                 ].map(opt => (
                                                     <button
                                                         key={opt.value}

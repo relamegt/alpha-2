@@ -640,7 +640,8 @@ const EditorialRenderer = ({
     hasViewedEditorial,
     onUnlockEditorial, 
     hideVideo = false,
-    isCompact = false
+    isCompact = false,
+    bypassLock = false
 }) => {
     const { isDark } = useTheme();
     const components = getMarkdownComponents(isCompact);
@@ -792,7 +793,7 @@ const EditorialRenderer = ({
         }
     };
 
-    if (!isAdmin && !hasViewedEditorial) {
+    if (!isAdmin && !hasViewedEditorial && !bypassLock) {
         return (
             <div className="p-6 h-full flex flex-col items-center justify-center py-20 animate-fade-in relative overflow-hidden">
                 <div className="relative z-10 flex flex-col items-center max-w-sm text-center">

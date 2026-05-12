@@ -967,7 +967,7 @@ const UserManagement = () => {
                                                     { label: '6 Mo', value: 6 },
                                                     { label: '1 Year', value: 12 },
                                                     { label: '2 Year', value: 24 },
-                                                    { label: 'Lifetime', value: 1200 }
+                                                    { label: 'Lifetime', value: 120000 }
                                                 ].map(opt => (
                                                     <button
                                                         key={opt.value}

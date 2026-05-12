@@ -219,7 +219,7 @@ const AdminLayout = () => {
     };
 
     const pathnames = location.pathname.split('/').filter(x => x && x !== 'admin');
-    const isFullWidthPage = location.pathname.includes('/compiler') || location.pathname.includes('/editorial-creator');
+    const isFullWidthPage = location.pathname.includes('/compiler') || location.pathname.includes('/editorial-creator') || location.pathname.includes('/assignments/build');
 
     return (
         <div className="flex min-h-screen bg-[var(--color-bg-primary)] transition-colors duration-300">

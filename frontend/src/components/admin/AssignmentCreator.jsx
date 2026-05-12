@@ -53,7 +53,7 @@ export default function AssignmentCreator() {
       const { data: assignment } = await apiClient.post('/assignments', payload);
 
       // Navigate straight to the IDE Builder to start coding
-      navigate(`/admin/assignments/build/${assignment.id}`);
+      navigate(`/assignments/build/${assignment.id}`);
     } catch (err) {
       alert('Error creating assignment: ' + err.message);
     } finally {
@@ -65,7 +65,7 @@ export default function AssignmentCreator() {
     <div className="assignment-creator">
       <div className="creator-header">
         <h1>Create New Assignment</h1>
-        <button className="btn-secondary px-6" onClick={() => navigate('/admin/assignments')}>Cancel</button>
+        <button className="btn-secondary px-6" onClick={() => navigate('/assignments')}>Cancel</button>
       </div>
 
       <form onSubmit={handleSubmit} className="creator-form">

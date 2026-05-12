@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
-import { 
-  Plus, Trash2, Edit3, Eye, 
+import {
+  Plus, Trash2, Edit3, Eye,
   ExternalLink, Layers, CheckSquare,
   Search, Filter
 } from 'lucide-react';
@@ -10,8 +10,8 @@ import './AssignmentManager.css';
 
 export default function AssignmentManager() {
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [searchTerm, setSearchTerm]   = useState('');
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const navigate = useNavigate();
 
@@ -53,7 +53,7 @@ export default function AssignmentManager() {
   };
 
   const toggleSelect = (id) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -66,8 +66,8 @@ export default function AssignmentManager() {
     }
   };
 
-  const filtered = assignments.filter(a => 
-    a.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filtered = assignments.filter(a =>
+    a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.type?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -92,7 +92,7 @@ export default function AssignmentManager() {
                 <Trash2 size={18} /> Delete Selected ({selectedIds.length})
               </button>
             )}
-            <button className="btn-primary" onClick={() => navigate('/admin/assignments/new')}>
+            <button className="btn-primary" onClick={() => navigate('/assignments/new')}>
               <Plus size={18} /> New Assignment
             </button>
           </div>
@@ -102,9 +102,9 @@ export default function AssignmentManager() {
       <div className="page-tabs-container">
         <div className="page-search-wrapper w-full max-w-md">
           <Search className="page-search-icon" size={18} />
-          <input 
-            type="text" 
-            placeholder="Filter by title or type..." 
+          <input
+            type="text"
+            placeholder="Filter by title or type..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="page-search-input"
@@ -117,8 +117,8 @@ export default function AssignmentManager() {
           <thead>
             <tr>
               <th className="w-10">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={filtered.length > 0 && selectedIds.length === filtered.length}
                   onChange={() => toggleSelectAll(filtered)}
                   className="rounded border-gray-300 dark:bg-gray-800"
@@ -135,8 +135,8 @@ export default function AssignmentManager() {
             {filtered.map(a => (
               <tr key={a.id} className={selectedIds.includes(a.id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}>
                 <td>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={selectedIds.includes(a.id)}
                     onChange={() => toggleSelect(a.id)}
                     className="rounded border-gray-300 dark:bg-gray-800"
@@ -159,22 +159,22 @@ export default function AssignmentManager() {
                   </span>
                 </td>
                 <td>
-                   {a.testCases?.length > 0 ? (
-                     <div className="test-badge active">
-                       <CheckSquare size={12} /> {a.testCases.length} Rules
-                     </div>
-                   ) : (
-                     <div className="test-badge empty">
-                       No Tests
-                     </div>
-                   )}
+                  {a.testCases?.length > 0 ? (
+                    <div className="test-badge active">
+                      <CheckSquare size={12} /> {a.testCases.length} Rules
+                    </div>
+                  ) : (
+                    <div className="test-badge empty">
+                      No Tests
+                    </div>
+                  )}
                 </td>
                 <td className="actions-td">
                   <div className="action-row">
                     <button className="icon-btn view" onClick={() => window.open(`/assignments/${a.id}`, '_blank')} title="Student View">
                       <Eye size={16} />
                     </button>
-                    <button className="icon-btn build" onClick={() => navigate(`/admin/assignments/build/${a.id}`)} title="Open IDE Builder">
+                    <button className="icon-btn build" onClick={() => navigate(`/assignments/build/${a.id}`)} title="Open IDE Builder">
                       <Layers size={16} />
                     </button>
                     <button className="icon-btn delete" onClick={() => handleDelete(a.id)} title="Delete">

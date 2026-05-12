@@ -16,6 +16,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import interviewExperienceService from '../../../services/interviewExperienceService';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ import CustomDropdown from '../../shared/CustomDropdown';
 const ExperienceSubmissionWizard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,7 +85,7 @@ const ExperienceSubmissionWizard = () => {
       queryClient.invalidateQueries(['interview-experiences']);
       queryClient.invalidateQueries(['popular-companies']);
       toast.success('Interview Experience Shared Successfully!');
-      navigate(location.pathname.includes('/admin') ? '/admin/interview-experience' : '/dashboard/interview/experience');
+      navigate(user?.role === 'admin' ? '/interview/experience' : '/dashboard/interview/experience');
     } catch (error) {
       console.error(error);
       toast.error('Failed to submit. Please try again.');

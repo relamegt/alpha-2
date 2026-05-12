@@ -7,8 +7,10 @@ import LaunchIDEButton from './IDELauncher/LaunchIDEButton';
 import { 
   ChevronLeft, BookOpen, Terminal, 
   CheckCircle2, Clock, BarChart3, 
-  ArrowUpRight, Info
+  ArrowUpRight, Info, Zap, Layout,
+  ShieldCheck
 } from 'lucide-react';
+import { CommandBlock } from './IDELauncher/IDEComponents';
 import './AssignmentPage.css';
 
 const INLINE_TYPES = ['HTML_CSS_JS'];
@@ -83,6 +85,10 @@ export default function AssignmentPage() {
                         assignment.description || 
                         '# Assignment Instructions\n\nNo detailed instructions provided.';
 
+  if (INLINE_TYPES.includes(assignment.type)) {
+    return <InlineEditor assignment={assignment} description={readmeContent} />;
+  }
+
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-8 animate-in fade-in duration-500">
       {/* Top Banner / Header */}
@@ -114,123 +120,127 @@ export default function AssignmentPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto min-h-0 pr-2 scrollbar-hide">
-        <div className="max-w-5xl mx-auto py-8 space-y-8">
-          {/* Main Content Area */}
-          <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
-            <div className="border-b border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-white/[0.02] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <BookOpen className="text-primary-600" size={20} />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Project Instructions</h2>
-              </div>
-              <div className="flex items-center gap-4 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                <div className="flex items-center gap-1.5">
-                   <Clock size={14} /> {assignment.type === 'FULLSTACK_MERN' ? '120 MIN' : '45 MIN'}
-                </div>
-                <div className="flex items-center gap-1.5">
-                   <CheckCircle2 size={14} /> {assignment.testCases?.length || 0} TESTS
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8">
-              {/* README Render */}
-              <div className="markdown-viewer prose dark:prose-invert max-w-none prose-headings:tracking-tight prose-a:text-primary-600">
-                <ReactMarkdown>{readmeContent}</ReactMarkdown>
-              </div>
-
-              {/* MERN Quick Start */}
-              {assignment.type === 'FULLSTACK_MERN' && (
-                <div className="mt-12 p-6 bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-500/20 rounded-xl">
-                  <h3 className="text-base font-semibold text-indigo-600 dark:text-indigo-400 mb-4 flex items-center gap-2">
-                    <Terminal size={18} /> MERN Workspace Quick Start
-                  </h3>
-                  <div className="space-y-4 text-sm text-gray-600 dark:text-indigo-50/70">
-                    <p>This project uses a multi-service structure with <strong>{assignment.serviceStructure?.frontendDir || 'client'}</strong> and <strong>{assignment.serviceStructure?.backendDir || 'server'}</strong>.</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-3 bg-gray-50 dark:bg-[var(--color-bg-card)] rounded-lg border border-gray-100 dark:border-gray-800">
-                        <div className="font-semibold text-gray-900 dark:text-white mb-1">Frontend</div>
-                        <code className="text-xs text-primary-600">Port: {assignment.defaultPorts?.frontend || 5173}</code>
-                      </div>
-                      <div className="p-3 bg-gray-50 dark:bg-[var(--color-bg-card)] rounded-lg border border-gray-100 dark:border-gray-800">
-                        <div className="font-semibold text-gray-900 dark:text-white mb-1">Backend</div>
-                        <code className="text-xs text-primary-600">Port: {assignment.defaultPorts?.backend || 5000}</code>
-                      </div>
+      <main className="flex-1 overflow-y-auto min-h-0 pr-2 scrollbar-hide pb-20">
+        <div className="max-w-7xl mx-auto py-8">
+          <div className={`grid grid-cols-1 ${IDE_TYPES.includes(assignment.type) ? 'lg:grid-cols-12' : ''} gap-8 items-start`}>
+            
+            {/* Left: Main Content (Instructions) */}
+            <div className={`${IDE_TYPES.includes(assignment.type) ? 'lg:col-span-8' : ''} space-y-8`}>
+              <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                <div className="border-b border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-white/[0.02] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                      <BookOpen className="text-primary-600" size={18} />
                     </div>
-                    <ul className="list-disc list-inside space-y-1 mt-2 font-medium">
-                      <li>Use <code>npm run install:all</code> to install dependencies for both services.</li>
-                      <li>Use <code>npm run dev</code> to launch both services concurrently.</li>
-                      <li>Environment variables (.env) are automatically pre-configured.</li>
-                    </ul>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Project Documentation</h2>
+                  </div>
+                  <div className="flex items-center gap-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5">
+                       <Clock size={14} /> {assignment.type === 'FULLSTACK_MERN' ? '120 MIN' : '45 MIN'}
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Validation Rules Preview (if any) */}
+                <div className="p-8 lg:p-12">
+                  <div className="markdown-viewer prose dark:prose-invert max-w-none prose-headings:tracking-tight prose-a:text-primary-600 prose-img:rounded-2xl prose-pre:bg-gray-950 prose-pre:border prose-pre:border-gray-800">
+                    <ReactMarkdown>{readmeContent}</ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+
+              {/* Validation Rules Section */}
               {assignment.testCases?.length > 0 && (
-                <div className="mt-12 pt-8 border-t border-[var(--color-border-interactive)]">
-                   <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                     <CheckCircle2 size={18} className="text-emerald-500" />
-                     Validation Requirements
-                   </h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {assignment.testCases.map((tc, i) => (
-                       <div key={i} className="flex items-center gap-3 p-4 bg-gray-50/50 dark:bg-[var(--color-bg-card)] rounded-xl border border-gray-100 dark:border-gray-800">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary-600 shadow-[0_0_8px_rgba(125,99,242,0.3)]"></div>
-                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{tc.name}</span>
-                          {tc.group && (
-                            <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-400 uppercase tracking-wider">
-                              {tc.group.toUpperCase()}
-                            </span>
-                          )}
-                       </div>
-                     ))}
+                <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                   <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                      <ShieldCheck className="text-emerald-500" size={18} />
+                      <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">
+                        Validation Requirements
+                      </h3>
+                   </div>
+                   <div className="p-8">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       {assignment.testCases.map((tc, i) => (
+                         <div key={i} className="flex items-center gap-4 p-4 bg-gray-50/50 dark:bg-black/10 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-emerald-500/30 transition-all group">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)] group-hover:scale-125 transition-transform"></div>
+                            <div className="flex-1">
+                              <span className="text-sm font-bold text-gray-700 dark:text-gray-200 block">{tc.name}</span>
+                              {tc.group && (
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">
+                                  {tc.group}
+                                </span>
+                              )}
+                            </div>
+                         </div>
+                       ))}
+                     </div>
                    </div>
                 </div>
               )}
-
-              {/* Call to Action: Launch IDE */}
-              <div className="mt-12 p-8 bg-gradient-to-br from-primary-50 dark:from-primary-900/10 to-transparent border border-primary-100 dark:border-primary-500/20 rounded-xl flex flex-col items-center text-center">
-                 <Terminal size={40} className="text-primary-600 mb-4 opacity-40" />
-                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 tracking-tight">Ready to start?</h3>
-                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-md font-medium leading-relaxed">
-                   Click below to initialize your cloud workspace. All your progress will be automatically saved to your profile.
-                 </p>
-                 
-                 {IDE_TYPES.includes(assignment.type) ? (
-                   <LaunchIDEButton assignment={assignment} />
-                 ) : (
-                   <button 
-                     className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-2" 
-                     onClick={() => document.getElementById('inline-editor-section')?.scrollIntoView({ behavior: 'smooth' })}
-                   >
-                     Launch Web Editor <ArrowUpRight size={16} />
-                   </button>
-                 )}
-              </div>
             </div>
-          </div>
 
-          {/* Inline Editor (if applicable) */}
-          {INLINE_TYPES.includes(assignment.type) && (
-            <section id="inline-editor-section" className="mt-8 scroll-mt-8">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold flex items-center gap-3 tracking-tight">
-                    <Terminal size={24} className="text-primary-600" />
-                    Interactive Workspace
-                  </h2>
-                  <p className="text-gray-500 text-sm mt-1 font-medium">Directly edit and test your code inside the browser.</p>
+            {/* Right: IDE Workspace Sidebar */}
+            {IDE_TYPES.includes(assignment.type) && (
+              <div className="lg:col-span-4 space-y-6 sticky top-8">
+                {/* Launch Panel */}
+                <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+                  <div className="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02] flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                      <Layout className="text-primary-600" size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">IDE Workspace</h3>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase">Cloud Environment</p>
+                    </div>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    <LaunchIDEButton assignment={assignment} />
+                    
+                    <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                       <div className="flex items-center justify-between">
+                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Project Token</span>
+                         <span className="text-[10px] font-mono text-primary-600 font-bold bg-primary-500/5 px-2 py-1 rounded border border-primary-500/10">
+                           {assignment.project_token || assignment.id.split('-')[0].toUpperCase()}
+                         </span>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Commands Panel */}
+                <div className="bg-white dark:bg-[var(--color-bg-card)] border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <Terminal className="text-emerald-500" size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">CLI Workflow</h3>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase">Terminal Controls</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <CommandBlock 
+                      step={1} 
+                      label="Setup Workspace" 
+                      command={`alpha start ${assignment.project_token || assignment.id}`} 
+                    />
+                    <CommandBlock 
+                      step={2} 
+                      label="Test Progress" 
+                      command={`alpha run ${assignment.project_token || assignment.id}`} 
+                    />
+                    <CommandBlock 
+                      step={3} 
+                      label="Final Submission" 
+                      command={`alpha submit ${assignment.project_token || assignment.id}`} 
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm bg-white dark:bg-[var(--color-bg-card)]">
-                <InlineEditor assignment={assignment} />
-              </div>
-            </section>
-          )}
+            )}
+          </div>
         </div>
       </main>
-    </div>
+  </div>
   );
 }
 

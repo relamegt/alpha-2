@@ -248,7 +248,9 @@ const PlanManager = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                                                 <Clock size={14} />
-                                                <span className="text-sm font-medium">{Math.round(plan.durationInDays / 30)} months</span>
+                                                <span className="text-sm font-medium">
+                                                    {plan.durationInDays >= 3650000 ? 'LIFETIME' : `${Math.round(plan.durationInDays / 30)} months`}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -338,15 +340,15 @@ const PlanManager = () => {
                                     <div className="flex gap-2">
                                         <input
                                             type="number" required
-                                            disabled={formData.durationInDays >= 365000}
+                                            disabled={formData.durationInDays >= 3650000}
                                             className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all outline-none disabled:opacity-50"
-                                            value={formData.durationInDays >= 365000 ? 999 : Math.round(formData.durationInDays / 30)}
+                                            value={formData.durationInDays >= 3650000 ? 9999 : Math.round(formData.durationInDays / 30)}
                                             onChange={(e) => setFormData({ ...formData, durationInDays: parseInt(e.target.value) * 30 })}
                                         />
                                         <button 
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, durationInDays: formData.durationInDays >= 365000 ? 365 : 365000 })}
-                                            className={`px-4 rounded-xl text-xs font-bold transition-all border ${formData.durationInDays >= 365000 ? 'bg-amber-500 border-amber-500 text-white' : 'border-gray-200 dark:border-gray-800 text-gray-500'}`}
+                                            onClick={() => setFormData({ ...formData, durationInDays: formData.durationInDays >= 3650000 ? 365 : 3650000 })}
+                                            className={`px-4 rounded-xl text-xs font-bold transition-all border ${formData.durationInDays >= 3650000 ? 'bg-amber-500 border-amber-500 text-white' : 'border-gray-200 dark:border-gray-800 text-gray-500'}`}
                                         >
                                             Lifetime
                                         </button>
@@ -384,31 +386,32 @@ const PlanManager = () => {
                                                         setFormData({...formData, pricingOptions: newOpts});
                                                     }}
                                                 />
-                                                <div className="relative group">
-                                                    <input 
-                                                        type="number" placeholder="Months"
-                                                        disabled={opt.duration >= 365000}
-                                                        className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs outline-none disabled:opacity-50"
-                                                        value={opt.duration >= 365000 ? 999 : Math.round(opt.duration / 30)}
-                                                        onChange={(e) => {
-                                                            const newOpts = [...formData.pricingOptions];
-                                                            newOpts[idx].duration = parseInt(e.target.value) * 30;
-                                                            setFormData({...formData, pricingOptions: newOpts});
-                                                        }}
-                                                    />
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const newOpts = [...formData.pricingOptions];
-                                                            newOpts[idx].duration = opt.duration >= 365000 ? 365 : 365000;
-                                                            newOpts[idx].label = newOpts[idx].duration >= 365000 ? 'Lifetime' : `${Math.round(newOpts[idx].duration / 30)} Months`;
-                                                            setFormData({...formData, pricingOptions: newOpts});
-                                                        }}
-                                                        className={`absolute right-1 top-1 bottom-1 px-3 rounded-lg text-[9px] font-black uppercase transition-all z-10 ${opt.duration >= 365000 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                                                    >
-                                                        ∞
-                                                    </button>
-                                                </div>
+                                                <div className="flex gap-1">
+                                                     <input 
+                                                         type="number" placeholder="Mo"
+                                                         disabled={opt.duration >= 3650000}
+                                                         className="flex-1 px-2 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-[11px] outline-none disabled:opacity-50 min-w-0"
+                                                         value={opt.duration >= 3650000 ? 9999 : Math.round(opt.duration / 30)}
+                                                         onChange={(e) => {
+                                                             const newOpts = [...formData.pricingOptions];
+                                                             newOpts[idx].duration = parseInt(e.target.value) * 30;
+                                                             setFormData({...formData, pricingOptions: newOpts});
+                                                         }}
+                                                     />
+                                                     <button 
+                                                         type="button"
+                                                         onClick={() => {
+                                                             const newOpts = [...formData.pricingOptions];
+                                                             newOpts[idx].duration = opt.duration >= 3650000 ? 365 : 3650000;
+                                                             newOpts[idx].label = newOpts[idx].duration >= 3650000 ? 'Lifetime' : `${Math.round(newOpts[idx].duration / 30)} Months`;
+                                                             setFormData({...formData, pricingOptions: newOpts});
+                                                         }}
+                                                         className={`px-2 rounded-lg text-[10px] font-black transition-all shrink-0 ${opt.duration >= 3650000 ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-primary-500'}`}
+                                                         title="Set Lifetime"
+                                                     >
+                                                         ∞
+                                                     </button>
+                                                 </div>
                                                 <input 
                                                     type="number" placeholder="Price (INR)"
                                                     className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs outline-none font-bold"

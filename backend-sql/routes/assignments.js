@@ -11,7 +11,9 @@ router.delete('/:id',             protect, ctrl.delete);
 router.delete('/bulk',            protect, ctrl.bulkDelete);
 router.post('/:id/publish-github',protect, ctrl.publishToGithub);
 router.get('/:id/template',       protect, ctrl.getTemplate);   // IDE pulls this
+router.post('/:id/run/inline',    protect, ctrl.runInline);
 router.post('/:id/submit/inline', protect, ctrl.submitInline);  // inline submit
+router.get('/:id/submissions',    protect, ctrl.getSubmissions);
 router.post('/ide/session',       protect, ctrl.createIDESession);
 router.post('/ide/authenticate',           ctrl.validateIDEToken); // no auth — called by IDE
 

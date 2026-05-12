@@ -1054,7 +1054,7 @@ const SheetManagement = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => window.open(`/admin/editorial-creator?problemId=${prob.id}&title=${encodeURIComponent(prob.title)}`, '_blank')}
+                              onClick={() => window.open(`/editorial-creator?problemId=${prob.id}&title=${encodeURIComponent(prob.title)}`, '_blank')}
                               className="p-1.5 bg-gray-50 hover:bg-indigo-50 dark:bg-gray-800 dark:hover:bg-indigo-900/20 text-gray-500 hover:text-indigo-500 rounded-md transition-colors"
                               title="Edit Editorial (Creator)"
                             >

@@ -4387,94 +4387,94 @@ const CodeEditor = () => {
             </div>
           </>
         ) : (['assignment', 'FULLSTACK_MERN', 'REACT', 'NODE', 'FULLSTACK', 'HTML_CSS_JS'].includes(problem?.type)) ? (
-          <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0A0A0F] custom-scrollbar">
-            <div className="w-full max-w-5xl mx-auto flex flex-col gap-8 p-4 sm:p-6 lg:p-12">
-               {/* Header Section */}
-               <div className="flex flex-col gap-4 border-b border-gray-200 dark:border-gray-800 pb-8">
-                 <div className="flex flex-wrap items-center gap-3">
-                   <div className="flex items-center gap-2 px-3 py-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                     <BookOpen size={12} />
-                     Assignment
-                   </div>
-                   {problem.difficulty && <DiffBadge d={problem.difficulty} />}
-                   {problem.type === 'FULLSTACK_MERN' && (
-                     <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                       MERN Stack
-                     </span>
-                   )}
-                 </div>
-                 <h1 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                   {problem.title}
-                 </h1>
-                 <p className="text-gray-500 dark:text-gray-400 text-lg font-medium max-w-2xl leading-relaxed">
-                   {problem.shortDescription || "Follow the instructions below to complete this project and submit your work for evaluation."}
-                 </p>
-               </div>
-
-               {/* Instructions & Docs */}
-               <div className="grid grid-cols-1 gap-8">
-                 <div className="bg-white dark:bg-[#111117] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden">
-                   <div className="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/2 flex items-center justify-between">
-                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500">
-                         <FileText size={20} />
+          <div className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC] dark:bg-[#0A0A0F]">
+            {problem.type === 'HTML_CSS_JS' ? (
+              <InlineEditor 
+                assignment={problem} 
+                description={problem.description || "# Assignment Instructions\n\nNo detailed instructions provided."} 
+              />
+            ) : (
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="w-full max-w-5xl mx-auto flex flex-col gap-8 p-4 sm:p-6 lg:p-12">
+                   {/* Header Section */}
+                   <div className="flex flex-col gap-4 border-b border-gray-200 dark:border-gray-800 pb-8">
+                     <div className="flex flex-wrap items-center gap-3">
+                       <div className="flex items-center gap-2 px-3 py-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                         <BookOpen size={12} />
+                         Assignment
                        </div>
-                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Project README</h2>
+                       {problem.difficulty && <DiffBadge d={problem.difficulty} />}
+                       {problem.type === 'FULLSTACK_MERN' && (
+                         <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                           MERN Stack
+                         </span>
+                       )}
                      </div>
-                   </div>
-                   <div className="p-8 sm:p-12">
-                     <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-black prose-a:text-primary-500 prose-code:text-primary-500 dark:prose-code:text-primary-400">
-                       {problem.readmeUrl || problem.templateFiles?.repoUrl ? (
-                          <EditorialRenderer 
-                            problem={{
-                              ...problem,
-                              editorialLink: problem.readmeUrl || problem.templateFiles?.repoUrl
-                            }} 
-                            isCompact={true}
-                          />
-                        ) : (
-                          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={MarkdownComponents}>
-                            {problem.description || "# Assignment Overview\n\nFollow the steps below to initialize your workspace."}
-                          </ReactMarkdown>
-                        )}
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Workspace Launcher */}
-                 <div className="bg-[#111117] rounded-[32px] border border-gray-800 shadow-2xl p-8 sm:p-12 relative overflow-hidden group">
-                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 blur-[100px] -mr-32 -mt-32"></div>
-                   <div className="relative z-10 flex flex-col items-center text-center">
-                     <div className="w-20 h-20 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-inner transition-transform group-hover:scale-110 duration-500">
-                       <Terminal size={40} className="text-primary-400" />
-                     </div>
-                     <h3 className="text-2xl font-black text-white mb-3">Development Workspace</h3>
-                     <p className="text-gray-400 mb-10 max-w-md leading-relaxed">
-                       {['REACT', 'NODE', 'FULLSTACK', 'FULLSTACK_MERN'].includes(problem.type) 
-                         ? "Launch your cloud-integrated IDE to start coding this project in a professional environment."
-                         : "Use our built-in interactive editor to write and test your code directly in the browser."}
+                     <h1 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                       {problem.title}
+                     </h1>
+                     <p className="text-gray-500 dark:text-gray-400 text-lg font-medium max-w-2xl leading-relaxed">
+                       {problem.shortDescription || "Follow the instructions below to complete this project and submit your work for evaluation."}
                      </p>
-                     
-                     {['REACT', 'NODE', 'FULLSTACK', 'FULLSTACK_MERN'].includes(problem.type) ? (
-                       <div className="flex flex-col items-center gap-6 w-full">
-                         <LaunchIDEButton assignment={problem} />
-                         <div className="flex items-center gap-8 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-t border-white/5 pt-6 w-full justify-center">
-                           <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Docker Ready</div>
-                           <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Auto Save</div>
-                           <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Local Env</div>
-                         </div>
-                       </div>
-                     ) : (
-                       <div className="w-full">
-                         <div className="rounded-2xl overflow-hidden border border-gray-800/50 bg-black/40">
-                           <InlineEditor assignment={problem} />
-                         </div>
-                       </div>
-                     )}
                    </div>
-                 </div>
-               </div>
-            </div>
+
+                   {/* Instructions & Docs */}
+                   <div className="grid grid-cols-1 gap-8">
+                     <div className="bg-white dark:bg-[#111117] rounded-[32px] border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden">
+                       <div className="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/2 flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500">
+                             <FileText size={20} />
+                           </div>
+                           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Project README</h2>
+                         </div>
+                       </div>
+                       <div className="p-8 sm:p-12">
+                         <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-black prose-a:text-primary-500 prose-code:text-primary-500 dark:prose-code:text-primary-400">
+                           {problem.readmeUrl || problem.templateFiles?.repoUrl ? (
+                              <EditorialRenderer 
+                                problem={{
+                                  ...problem,
+                                  editorialLink: problem.readmeUrl || problem.templateFiles?.repoUrl
+                                }} 
+                                bypassLock={true}
+                                isCompact={true}
+                              />
+                            ) : (
+                              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={MarkdownComponents}>
+                                {problem.description || "# Assignment Overview\n\nFollow the steps below to initialize your workspace."}
+                              </ReactMarkdown>
+                            )}
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Workspace Launcher */}
+                     <div className="bg-[#111117] rounded-[32px] border border-gray-800 shadow-2xl p-8 sm:p-12 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 blur-[100px] -mr-32 -mt-32"></div>
+                       <div className="relative z-10 flex flex-col items-center text-center">
+                         <div className="w-20 h-20 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-inner transition-transform group-hover:scale-110 duration-500">
+                           <Terminal size={40} className="text-primary-400" />
+                         </div>
+                         <h3 className="text-2xl font-black text-white mb-3">Development Workspace</h3>
+                         <p className="text-gray-400 mb-10 max-w-md leading-relaxed">
+                            Launch your cloud-integrated IDE to start coding this project in a professional environment.
+                         </p>
+                         
+                         <div className="flex flex-col items-center gap-6 w-full">
+                           <LaunchIDEButton assignment={problem} />
+                           <div className="flex items-center gap-8 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-t border-white/5 pt-6 w-full justify-center">
+                             <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Docker Ready</div>
+                             <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Auto Save</div>
+                             <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Local Env</div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : problem?.type === "video" ? (
           (() => {

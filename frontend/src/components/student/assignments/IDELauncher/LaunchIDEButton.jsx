@@ -1,167 +1,76 @@
-import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { Play, Download, Settings, Github, Terminal, Info, CheckCircle } from 'lucide-react';
-import apiClient from '../../../../services/apiClient';
-import './LaunchIDEButton.css';
-import InstallGuide from './InstallGuide';
+import { useState } from 'react';
+import { Monitor, AlertTriangle, Loader2, Zap } from 'lucide-react';
+import { useIDEHealth } from '../../../../hooks/useIDEHealth';
 
 export default function LaunchIDEButton({ assignment }) {
-  const [status, setStatus]     = useState('idle'); // idle | launching | running | error
-  const [showGuide, setGuide]   = useState(false);
-  const pingRef                 = useRef(null);
+  const { isRunning, ideUrl } = useIDEHealth();
+  const [isOpening, setIsOpening] = useState(false);
 
-  async function launch() {
-    setStatus('launching');
-    try {
-      // Get session token from backend
-      const { data } = await apiClient.post('/assignments/ide/session', {
-        assignmentId: assignment.id
-      });
+  const handleLaunch = () => {
+    setIsOpening(true);
+    // Open in a new tab using the detected URL
+    window.open(ideUrl, '_blank');
+    // Reset opening state after a small delay
+    setTimeout(() => setIsOpening(false), 2000);
+  };
 
-      // Trigger alphalearn:// protocol
-      // This opens the launcher on student's machine
-      const protocolUrl =
-        `alphalearn://${assignment.id}?token=${data.token}`;
-
-      window.location.href = protocolUrl;
-
-      // Poll every 3s for up to 90s waiting for IDE container to start
-      let attempts = 0;
-      const maxAttempts = 30; // 30 × 3s = 90s
-      const checkIDE = setInterval(async () => {
-        attempts++;
-        try {
-          // mode: 'no-cors' means ANY response (even 404) = port is open = IDE is up
-          await fetch('http://localhost/', { mode: 'no-cors' });
-          clearInterval(checkIDE);
-          setStatus('running');
-          startPing();
-        } catch (e) {
-          // ERR_CONNECTION_REFUSED = container still starting
-          if (attempts >= maxAttempts) {
-            clearInterval(checkIDE);
-            console.warn('IDE did not start within 90s. Showing install guide.');
-            setStatus('idle');
-            setGuide(true);
-          }
-          // else keep polling
-        }
-      }, 3000);
-
-    } catch (err) {
-      setStatus('error');
-      console.error(err);
-    }
+  if (isRunning === null) {
+    return (
+      <button
+        disabled
+        className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500 px-6 py-4 rounded-2xl cursor-not-allowed text-sm font-bold border border-gray-100 dark:border-gray-800"
+      >
+        <Loader2 className="animate-spin w-4 h-4" />
+        Synchronizing with IDE...
+      </button>
+    );
   }
 
-  function startPing() {
-    if (pingRef.current) clearInterval(pingRef.current);
-    // Keep-alive: check every 30s if IDE is still up; update status if it stops
-    pingRef.current = setInterval(() => {
-      fetch('http://localhost/', { mode: 'no-cors' })
-        .then(() => setStatus('running'))
-        .catch(() => setStatus('idle'));
-    }, 30000);
+  if (isRunning) {
+    return (
+      <button
+        onClick={handleLaunch}
+        className="w-full flex items-center justify-center gap-3 text-white px-6 py-4 rounded-2xl text-sm font-black transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-primary-500/25 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500"
+      >
+        {isOpening ? <Loader2 className="animate-spin w-4 h-4" /> : <Monitor className="w-5 h-5" />}
+        {isOpening ? 'Opening Workspace...' : 'Launch Professional IDE'}
+        {!isOpening && <Zap className="w-4 h-4 opacity-70 animate-pulse" />}
+      </button>
+    );
   }
-
-  useEffect(() => {
-    return () => {
-        if (pingRef.current) clearInterval(pingRef.current);
-    };
-  }, []);
-
-  if (showGuide) return <InstallGuide onDone={() => { setGuide(false); launch(); }} />;
 
   return (
-    <div className="ide-launcher-card">
-      <div className="ide-info">
-        <div className="ide-type-badge">
-          {assignment.type === 'REACT' ? '⚛️ React' : assignment.type === 'NODE' ? '🟢 Node.js' : '🔷 Fullstack'} Assignment
+    <div className="w-full space-y-4">
+      <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-xs font-black text-amber-900 dark:text-amber-400 uppercase tracking-wider">IDE Offline</p>
+          <p className="text-xs font-medium text-amber-700/70 dark:text-amber-500/60 leading-relaxed">
+            Your local development environment is not running. Start it in your terminal to continue.
+          </p>
         </div>
-        <div className="init-steps">
-           <h4>Initialization Process:</h4>
-           <ul>
-             <li><span>1</span> Secure Connection with AlphaLearn Server</li>
-             <li><span>2</span> Clone Template Code from GitHub</li>
-             <li><span>3</span> Pull & Mount Docker Containers</li>
-             <li><span>4</span> Automatic dependency installation</li>
-             <li><span>5</span> Remote Test Execution active</li>
-           </ul>
-        </div>
-        {assignment.templateFiles?.githubUrl && (
-          <div className="github-url-box">
-             <span className="label">Template Repository:</span>
-             <a href={assignment.templateFiles.githubUrl} target="_blank" rel="noreferrer" className="url text-primary-400">
-                {assignment.templateFiles.githubUrl}
-             </a>
+      </div>
+      
+      <div className="p-5 bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 rounded-2xl">
+        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">How to start:</h4>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-[10px] font-black text-gray-500">1</div>
+            <p className="text-xs font-bold text-gray-600 dark:text-gray-400">Open Terminal / WSL</p>
           </div>
-        )}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-[10px] font-black text-gray-500">2</div>
+            <code className="text-[10px] font-mono text-primary-600 bg-primary-500/5 px-2 py-1 rounded">cd ~/alpha-ide && docker-compose up -d</code>
+          </div>
+        </div>
       </div>
 
-      <div className="launch-controls">
-        {status === 'idle' && (
-            <button onClick={launch} className="btn-launch-primary">
-            🚀 Launch Local IDE
-            </button>
-        )}
-
-        {status === 'launching' && (
-            <div className="ide-loading-state">
-            <div className="spinner-glow" />
-            <span>Initializing local environment...</span>
-            <p className="sub-text">
-                The AlphaLearn Launcher will start shortly. Please authorize any security prompts.
-            </p>
-            </div>
-        )}
-
-        {status === 'running' && (
-            <div className="ide-ready-state">
-            <div className="status-indicator">
-                <div className="pulse-dot" />
-                <span className="status-text">IDE Operational</span>
-            </div>
-            <div className="ide-action-links">
-                <a href="http://localhost" target="_blank" rel="noreferrer"
-                className="btn-ide-link main">
-                Open Workspace ↗
-                </a>
-                <a href="http://localhost:3001" target="_blank" rel="noreferrer"
-                className="btn-ide-link secondary">
-                Live Preview ↗
-                </a>
-            </div>
-            </div>
-        )}
-
-        {status === 'error' && (
-            <div className="ide-error-state">
-            <span className="error-icon">❌</span>
-            <div className="error-content">
-                <strong>Connection failed</strong>
-                <p>Could not communicate with the local launcher.</p>
-                <button onClick={launch} className="btn-retry">Retry Launch</button>
-            </div>
-            </div>
-        )}
-      </div>
-
-      <div className="launcher-tips">
-          <h4>Requirement:</h4>
-          <ul>
-              <li>Docker Desktop must be running</li>
-              <li>AlphaLearn CLI installed</li>
-          </ul>
-          <button className="link-help" onClick={() => setGuide(true)}>Need help with setup?</button>
-      </div>
+      <button
+        onClick={() => window.location.reload()}
+        className="w-full py-3 text-[10px] font-black text-gray-500 hover:text-primary-600 uppercase tracking-widest transition-all"
+      >
+        🔄 Refresh Status
+      </button>
     </div>
   );
 }
-
-
-
-
-
-
-
-

@@ -101,6 +101,34 @@ exports.validateIDEToken = async (req, res) => {
   }
 };
 
+// ── Run inline (Check public test cases only) ─────────────
+exports.runInline = async (req, res) => {
+  try {
+    const { html, css, js } = req.body;
+    const assignmentId      = req.params.id;
+    const assignment        = await prisma.assignment.findUnique({ where: { id: assignmentId } });
+
+    // Only evaluate non-hidden test cases for "Run"
+    const publicTests = (assignment.testCases || []).filter(t => !t.isHidden);
+
+    const testResults = await evaluationService.evaluateInline({
+      html, css, js,
+      testCases: publicTests
+    });
+
+    const score = testResults.filter(t => t.passed).length;
+    const total = testResults.length;
+
+    res.json({ 
+      score: total > 0 ? Math.round((score / total) * 100) : 0, 
+      passed: score === total && total > 0, 
+      testResults 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // ── Submit inline (HTML/CSS/JS) ────────────────────────────
 exports.submitInline = async (req, res) => {
   try {
@@ -128,6 +156,23 @@ exports.submitInline = async (req, res) => {
     });
 
     res.json({ submissionId: submission.id, score: submission.score, passed: submission.passed, testResults });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── Get student submissions for an assignment ─────────────
+exports.getSubmissions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const subs = await prisma.assignmentSubmission.findMany({
+      where: { assignmentId: id, userId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(subs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

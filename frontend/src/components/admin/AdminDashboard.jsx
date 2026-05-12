@@ -72,7 +72,7 @@ const AdminDashboard = () => {
                             <span>View Reports</span>
                         </button>
                         <button
-                            onClick={() => navigate('/admin/batches')}
+                            onClick={() => navigate('/batches')}
                             className="btn-primary flex items-center gap-2"
                         >
                             <Users size={18} />
@@ -276,7 +276,7 @@ const AdminDashboard = () => {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <button
-                        onClick={() => navigate('/admin/contests')}
+                        onClick={() => navigate('/contests')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-blue-200 dark:hover:border-blue-500 hover:shadow-md hover:shadow-blue-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -291,7 +291,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/problems')}
+                        onClick={() => navigate('/problems-manager')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-purple-200 dark:hover:border-purple-500 hover:shadow-md hover:shadow-purple-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -306,7 +306,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/sql-problems')}
+                        onClick={() => navigate('/sql-problems')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-blue-200 dark:hover:border-blue-500 hover:shadow-md hover:shadow-blue-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -321,7 +321,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/videos')}
+                        onClick={() => navigate('/videos')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-red-200 dark:hover:border-red-500 hover:shadow-md hover:shadow-red-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -336,7 +336,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/quizzes')}
+                        onClick={() => navigate('/quizzes')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-orange-200 dark:hover:border-orange-500 hover:shadow-md hover:shadow-orange-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -351,7 +351,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/sheets')}
+                        onClick={() => navigate('/sheets')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-emerald-200 dark:hover:border-emerald-500 hover:shadow-md hover:shadow-emerald-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -366,7 +366,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/assignments')}
+                        onClick={() => navigate('/assignments')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-amber-200 dark:hover:border-amber-500 hover:shadow-md hover:shadow-amber-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -381,7 +381,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/editorial-creator')}
+                        onClick={() => navigate('/editorial-creator')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-indigo-200 dark:hover:border-indigo-500 hover:shadow-md hover:shadow-indigo-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -396,7 +396,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/users')}
+                        onClick={() => navigate('/users')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-indigo-200 dark:hover:border-indigo-500 hover:shadow-md hover:shadow-indigo-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
@@ -411,7 +411,7 @@ const AdminDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/admin/courses')}
+                        onClick={() => navigate('/courses')}
                         className="group p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-[var(--color-bg-card)] hover:border-teal-200 dark:hover:border-teal-500 hover:shadow-md hover:shadow-teal-50 dark:hover:shadow-none transition-all text-left flex flex-col h-full relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-current rounded-bl-full -mr-4 -mt-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform"></div>
